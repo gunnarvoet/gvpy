@@ -1,7 +1,7 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+'''Module gvimport for importing data to python, mostly ®Matlab stuff for now.
 
-'''
-Modules for importing data to python, mostly ®Matlab stuff for now.
 '''
 
 import scipy.io as spio

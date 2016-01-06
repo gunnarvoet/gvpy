@@ -1,9 +1,11 @@
 #!/usr/bin/env python
-# Filename: gvcolormaps.py
+# -*- coding: utf-8 -*-
+"""Module gvcolormaps with own colormaps.
+
+"""
 
 import numpy as np
 import matplotlib as mpl
-#import gvimport as gvi
 
 __author__ = "Gunnar Voet"
 __email__ = "gvoet@ucsd.edu"

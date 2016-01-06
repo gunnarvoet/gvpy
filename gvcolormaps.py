@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 # Filename: gvcolormaps.py
 
 import numpy as np

@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 # Filename: gvfigure.py
 
 import matplotlib.pyplot as plt

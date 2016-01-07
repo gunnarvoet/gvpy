@@ -7,7 +7,7 @@
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
-def dgvfigure(width=7.5, height=5.5) :
+def newfig(width=7.5, height=5.5) :
     """Create figure with own style.
 
     Set up figure with floating axes by defining `width` and `height`. This
@@ -85,7 +85,7 @@ def dgvfigure(width=7.5, height=5.5) :
 
     return fig, ax
 
-def axstyle(ax):
+def axstyle(ax) :
     """
     ax = axstyle(ax)):
     Apply own style to axis.
@@ -141,3 +141,34 @@ def axstyle(ax):
     # Change the axis title to off-black
     ax.title.set_color(almost_black)
     return ax
+
+def gvprint(fname,pyname,dirname='fig') :
+    """
+    adapted from https://github.com/jklymak/pythonlib/jmkfigure.py
+    """
+    import os
+    
+    try:
+        os.mkdir(dirname)
+    except:
+        pass
+
+    if dirname=='fig':
+        pwd=os.getcwd()+'/fig/'
+    else:
+        pwd=dirname+'/'
+    plt.savefig(dirname+'/'+fname+'.pdf',dpi=400)
+    plt.savefig(dirname+'/'+fname+'.png',dpi=400)
+    
+    fout = open(dirname+'/'+fname+'.tex','w')
+    str = """\\begin{{figure*}}[htbp]
+\\centering
+\\includegraphics[width=1.0\\textwidth]{{{fname}}}
+\\caption{{  \\newline \\hspace{{\\linewidth}}   {{\\footnotesize {pwd}{fname}.pdf}}}}
+\\label{{fig:{fname}}}
+\\end{{figure*}}""".format(pwd=pwd,pyname=pyname,fname=fname)
+    fout.write(str)
+    fout.close()
+    
+    cmd = 'less '+dirname+'/%s.tex | pbcopy' % fname
+    os.system(cmd) 

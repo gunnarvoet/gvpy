@@ -29,8 +29,8 @@ def newfig(width=7.5, height=5.5) :
     
     plt.rc('figure',figsize=(width,height),dpi=300)
     plt.rc('font',size=9)
-    plt.rc('font',family='sans-serif')
-    # mpl.rcParams['font.family'] = 'sans-serif'
+    # plt.rc('font',family='sans-serif')
+    mpl.rcParams['font.family'] = 'sans-serif'
     mpl.rcParams['font.sans-serif'] = 'Helvetica'
     mpl.rcParams['font.variant'] = 'normal'
     mpl.rcParams['font.weight'] = 'normal'

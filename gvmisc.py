@@ -21,3 +21,14 @@ def near(A, target):
     right = A[idx]
     idx -= target - left < right - target
     return idx
+
+def getshape(d):
+    '''
+    getshape(d):
+    Get dict with info on dict d
+    '''
+    if isinstance(d, dict):
+        return {k:np.shape(d[k]) for k in d}
+    else:
+        # Replace all non-dict values with None.
+        return None

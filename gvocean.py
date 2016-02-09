@@ -120,13 +120,13 @@ def eps_overturn(P,Z,T,S,lon,lat,dnoise=0.001,pdref=4000):
     THepsilon[N2<=0] = np.nan
     THk              = 0.2*THepsilon/N2
 
-    out['eps']    = np.zeros_like(z0)
+    out['eps']    = np.zeros_like(z0)*np.nan
     out['eps'][x] = THepsilon
-    out['k']      = np.zeros_like(z0)
+    out['k']      = np.zeros_like(z0)*np.nan
     out['k'][x]   = THk
-    out['n2']     = np.zeros_like(z0)
+    out['n2']     = np.zeros_like(z0)*np.nan
     out['n2'][x]  = N2
-    out['Lt']     = np.zeros_like(z0)
+    out['Lt']     = np.zeros_like(z0)*np.nan
     out['Lt'][x]  = THsc
     
     return out

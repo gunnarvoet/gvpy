@@ -24,7 +24,7 @@ def eps_overturn(P,Z,T,S,lon,lat,dnoise=0.001,pdref=4000):
     z0   = z0.astype('float')
 
     # Find non-NaNs
-    x = np.where(np.isfinite(t))
+    x = np.where(np.isfinite(T))
     x = x[0]
 
     # Extract variables without the NaNs

@@ -89,10 +89,10 @@ def eps_overturn(P,Z,T,S,lon,lat,dnoise=0.001,pdref=4000):
     # % Loop through detected overturns
     # % and calculate Thorpe Scales, N2 and dT/dz over the overturn
     # THsc = nan(size(Z));
-    THsc = np.ones_like(z)*np.nan
-    N2   = np.ones_like(z)*np.nan
+    THsc = np.zeros_like(z)*np.nan
+    N2   = np.zeros_like(z)*np.nan
     # CN2  = np.ones_like(z)*np.nan
-    DTDZ = np.ones_like(z)*np.nan
+    DTDZ = np.zeros_like(z)*np.nan
     
     out = {}
     out['idx'] = np.zeros_like(z0)

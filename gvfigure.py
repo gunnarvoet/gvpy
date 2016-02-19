@@ -85,6 +85,44 @@ def newfig(width=7.5, height=5.5) :
 
     return fig, ax
 
+def newfigyy(width=7.5, height=5.5) :
+    """Create figure with own style. Two y-axes.
+
+    Set up figure with floating axes by defining `width` and `height`. This
+    uses matplotlib's rcParams.
+
+    Parameters
+    ----------
+    width : float
+        Figure width in inch
+    height : float
+        Figure height in inch
+
+    Returns
+    -------
+    fig : Figure handle
+    ax1, ax2 : Axis handles
+
+    """
+
+    fig,ax1 = newfig(10,4)
+    ax2 = ax1.twinx()
+    ax1 = axstyle(ax1)
+    spines_to_remove = ['top', 'left', 'bottom']
+    for spine in spines_to_remove:
+        ax2.spines[spine].set_visible(False)
+    ax2.xaxis.set_ticks_position('none')
+    ax2.yaxis.set_ticks_position('none')
+    almost_black = '#262626'
+    spines_to_keep = ['right']
+    for spine in spines_to_keep:
+        ax2.spines[spine].set_linewidth(0.5)
+        ax2.spines[spine].set_color(almost_black)
+        ax2.spines[spine].set_position(('outward', 5))
+    ax2.xaxis.label.set_color(almost_black)
+    ax2.yaxis.label.set_color(almost_black)
+    return fig,ax1,ax2
+
 def axstyle(ax) :
     """
     ax = axstyle(ax)):

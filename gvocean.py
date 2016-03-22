@@ -131,7 +131,7 @@ def eps_overturn(P,Z,T,S,lon,lat,dnoise=0.001,pdref=4000):
     
     return out
 
-def woa_get_ts(lon,lat,plot=0):
+def woa_get_ts(llon,llat,plot=0):
     import xarray as xr
     tempfile = '/Users/gunnar/Data/world_ocean_atlas/woa13_decav_t00_04v2.nc'
     saltfile = '/Users/gunnar/Data/world_ocean_atlas/woa13_decav_s00_04v2.nc'
@@ -140,13 +140,13 @@ def woa_get_ts(lon,lat,plot=0):
     a = dt.isel(time=0)
     a.reset_coords(drop=True)
     t = a['t_mn']
-    T = t.sel(lon=lon,lat=lat,method='nearest').values
+    T = t.sel(lon=llon,lat=llat,method='nearest').values
 
     ds = xr.open_dataset(saltfile,decode_times=False)
     a = ds.isel(time=0)
     a.reset_coords(drop=True)
     s = a['s_mn']
-    S = s.sel(lon=lon,lat=lat,method='nearest').values
+    S = s.sel(lon=llon,lat=llat,method='nearest').values
     depth = s['depth'].data
 
 

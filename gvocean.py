@@ -130,3 +130,40 @@ def eps_overturn(P,Z,T,S,lon,lat,dnoise=0.001,pdref=4000):
     out['Lt'][x]  = THsc
     
     return out
+
+def woa_get_ts(lon,lat,plot=0):
+    import xarray as xr
+    tempfile = '/Users/gunnar/Data/world_ocean_atlas/woa13_decav_t00_04v2.nc'
+    saltfile = '/Users/gunnar/Data/world_ocean_atlas/woa13_decav_s00_04v2.nc'
+
+    dt = xr.open_dataset(tempfile,decode_times=False)
+    a = dt.isel(time=0)
+    a.reset_coords(drop=True)
+    t = a['t_mn']
+    T = t.sel(lon=lon,lat=lat,method='nearest').data
+
+    ds = xr.open_dataset(saltfile,decode_times=False)
+    a = ds.isel(time=0)
+    a.reset_coords(drop=True)
+    s = a['s_mn']
+    S = s.sel(lon=lon,lat=lat,method='nearest').data
+    depth = s['depth'].data
+
+
+    if plot:
+        # import gvfigure as gvf
+        import matplotlib.pyplot as plt
+        # fig,ax = gvf.newfig(3,5)
+        # plt.plot(T,depth)
+        # ax.invert_yaxis()
+        f, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
+        ax1.plot(T,depth,'k')
+        ax1.set_xlabel('Temperature')
+        ax1.set_ylabel('Depth [m]')
+        ax2.plot(S,depth,'k')
+        ax2.set_xlabel('Salinity')
+        ax1.invert_yaxis()
+        f.set_figwidth(5)
+        f.set_figheight(5)
+
+    return T,S,depth

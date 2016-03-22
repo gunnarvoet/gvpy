@@ -140,13 +140,13 @@ def woa_get_ts(lon,lat,plot=0):
     a = dt.isel(time=0)
     a.reset_coords(drop=True)
     t = a['t_mn']
-    T = t.sel(lon=lon,lat=lat,method='nearest').data
+    T = t.sel(lon=lon,lat=lat,method='nearest').values
 
     ds = xr.open_dataset(saltfile,decode_times=False)
     a = ds.isel(time=0)
     a.reset_coords(drop=True)
     s = a['s_mn']
-    S = s.sel(lon=lon,lat=lat,method='nearest').data
+    S = s.sel(lon=lon,lat=lat,method='nearest').values
     depth = s['depth'].data
 
 

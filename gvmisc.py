@@ -48,3 +48,10 @@ def cmap_div(numcolors=11, name='custom_div_cmap',
                                              colors =[mincol, midcol, maxcol],
                                              N=numcolors)
     return cmap
+
+def jupaexit:
+    '''
+    jupaexit()
+    Exit attached console without killing kernel
+    '''
+    exit(keep_kernel=True)

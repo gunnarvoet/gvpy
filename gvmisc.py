@@ -11,7 +11,6 @@ __version__ = "0.1"
 
 def near(A, target):
     '''
-    near(A, target):
     Find index of value in A closest to target
     '''
     #A must be sorted
@@ -24,7 +23,6 @@ def near(A, target):
 
 def getshape(d):
     '''
-    getshape(d):
     Get dict with info on dict d
     '''
     if isinstance(d, dict):

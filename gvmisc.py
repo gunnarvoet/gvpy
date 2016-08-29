@@ -44,8 +44,15 @@ def cmap_div(numcolors=11, name='custom_div_cmap',
     """
 
     from matplotlib.colors import LinearSegmentedColormap
-
     cmap = LinearSegmentedColormap.from_list(name=name,
                                              colors=[mincol, midcol, maxcol],
                                              N=numcwolors)
     return cmap
+
+
+def jupaexit:
+    '''
+    jupaexit()
+    Exit attached console without killing kernel
+    '''
+    exit(keep_kernel=True)

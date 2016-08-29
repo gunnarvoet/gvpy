@@ -7,7 +7,8 @@
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
-def newfig(width=7.5, height=5.5) :
+
+def newfig(width=7.5, height=5.5):
     """Create figure with own style.
 
     Set up figure with floating axes by defining `width` and `height`. This
@@ -26,9 +27,8 @@ def newfig(width=7.5, height=5.5) :
     ax : Axis handle
 
     """
-    
-    plt.rc('figure',figsize=(width,height))
-    plt.rc('font',size=10)
+    plt.rc('figure', figsize=(width, height))
+    plt.rc('font', size=10)
     # plt.rc('font',family='sans-serif')
     mpl.rcParams['font.family'] = 'sans-serif'
     mpl.rcParams['font.sans-serif'] = 'Helvetica'
@@ -39,7 +39,7 @@ def newfig(width=7.5, height=5.5) :
     mpl.rcParams['mathtext.rm'] = 'Helvetica'
     mpl.rcParams['mathtext.it'] = 'Helvetica:italic'
     mpl.rcParams['mathtext.bf'] = 'Helvetica:bold'
-    
+
     # AXES
     mpl.rcParams['axes.grid'] = True
     mpl.rcParams['axes.linewidth'] = 0.5
@@ -47,9 +47,9 @@ def newfig(width=7.5, height=5.5) :
     # TICKS
     mpl.rcParams['xtick.direction'] = 'in'
     mpl.rcParams['ytick.direction'] = 'in'
-    
+
     # GRID
-    mpl.rcParams['grid.color'] = (0.7,0.7,0.7)
+    mpl.rcParams['grid.color'] = (0.7, 0.7, 0.7)
     mpl.rcParams['grid.linewidth'] = 0.5
     mpl.rcParams['grid.linestyle'] = '-'
     mpl.rcParams['grid.alpha'] = 0.8
@@ -75,7 +75,7 @@ def newfig(width=7.5, height=5.5) :
         ax.spines[spine].set_linewidth(0.5)
         ax.spines[spine].set_color(almost_black)
         ax.spines[spine].set_position(('outward', 5))
-        
+
     # Change the labels to the off-black
     ax.xaxis.label.set_color(almost_black)
     ax.yaxis.label.set_color(almost_black)
@@ -85,7 +85,8 @@ def newfig(width=7.5, height=5.5) :
 
     return fig, ax
 
-def newfigyy(width=7.5, height=5.5) :
+
+def newfigyy(width=7.5, height=5.5):
     """Create figure with own style. Two y-axes.
 
     Set up figure with floating axes by defining `width` and `height`. This
@@ -105,7 +106,7 @@ def newfigyy(width=7.5, height=5.5) :
 
     """
 
-    fig,ax1 = newfig(10,4)
+    fig, ax1 = newfig(10, 4)
     ax2 = ax1.twinx()
     ax1 = axstyle(ax1)
     spines_to_remove = ['top', 'left', 'bottom']
@@ -121,15 +122,16 @@ def newfigyy(width=7.5, height=5.5) :
         ax2.spines[spine].set_position(('outward', 5))
     ax2.xaxis.label.set_color(almost_black)
     ax2.yaxis.label.set_color(almost_black)
-    return fig,ax1,ax2
+    return fig, ax1, ax2
 
-def axstyle(ax) :
+
+def axstyle(ax):
     """
     ax = axstyle(ax)):
     Apply own style to axis.
     """
-    plt.rc('font',size=9)
-    plt.rc('font',family='sans-serif')
+    plt.rc('font', size=9)
+    plt.rc('font', family='sans-serif')
     mpl.rcParams['font.sans-serif'] = 'Helvetica'
     mpl.rcParams['font.variant'] = 'normal'
     mpl.rcParams['font.weight'] = 'normal'
@@ -138,7 +140,7 @@ def axstyle(ax) :
     mpl.rcParams['mathtext.rm'] = 'Helvetica'
     mpl.rcParams['mathtext.it'] = 'Helvetica:italic'
     mpl.rcParams['mathtext.bf'] = 'Helvetica:bold'
-    
+
     # AXES
     mpl.rcParams['axes.grid'] = True
     mpl.rcParams['axes.linewidth'] = 0.5
@@ -146,9 +148,9 @@ def axstyle(ax) :
     # TICKS
     mpl.rcParams['xtick.direction'] = 'in'
     mpl.rcParams['ytick.direction'] = 'in'
-    
+
     # GRID
-    mpl.rcParams['grid.color'] = (0.7,0.7,0.7)
+    mpl.rcParams['grid.color'] = (0.7, 0.7, 0.7)
     mpl.rcParams['grid.linewidth'] = 0.5
     mpl.rcParams['grid.linestyle'] = '-'
     mpl.rcParams['grid.alpha'] = 0.8
@@ -171,7 +173,7 @@ def axstyle(ax) :
         ax.spines[spine].set_linewidth(0.5)
         ax.spines[spine].set_color(almost_black)
         ax.spines[spine].set_position(('outward', 5))
-        
+
     # Change the labels to the off-black
     ax.xaxis.label.set_color(almost_black)
     ax.yaxis.label.set_color(almost_black)
@@ -180,33 +182,34 @@ def axstyle(ax) :
     ax.title.set_color(almost_black)
     return ax
 
-def gvprint(fname,pyname,dirname='fig') :
+
+def gvprint(fname, pyname, dirname='fig'):
     """
     adapted from https://github.com/jklymak/pythonlib/jmkfigure.py
     """
     import os
-    
+
     try:
         os.mkdir(dirname)
     except:
         pass
 
-    if dirname=='fig':
-        pwd=os.getcwd()+'/fig/'
+    if dirname == 'fig':
+        pwd = os.getcwd()+'/fig/'
     else:
-        pwd=dirname+'/'
-    plt.savefig(dirname+'/'+fname+'.pdf',dpi=400)
-    plt.savefig(dirname+'/'+fname+'.png',dpi=400)
-    
-    fout = open(dirname+'/'+fname+'.tex','w')
+        pwd = dirname+'/'
+    plt.savefig(dirname+'/'+fname+'.pdf', dpi=400)
+    plt.savefig(dirname+'/'+fname+'.png', dpi=400)
+
+    fout = open(dirname+'/'+fname+'.tex', 'w')
     str = """\\begin{{figure*}}[htbp]
 \\centering
 \\includegraphics[width=1.0\\textwidth]{{{fname}}}
 \\caption{{  \\newline \\hspace{{\\linewidth}}   {{\\footnotesize {pwd}{fname}.pdf}}}}
 \\label{{fig:{fname}}}
-\\end{{figure*}}""".format(pwd=pwd,pyname=pyname,fname=fname)
+\\end{{figure*}}""".format(pwd=pwd, pyname=pyname, fname=fname)
     fout.write(str)
     fout.close()
-    
+
     cmd = 'less '+dirname+'/%s.tex | pbcopy' % fname
-    os.system(cmd) 
+    os.system(cmd)

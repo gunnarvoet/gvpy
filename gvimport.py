@@ -13,6 +13,7 @@ __author__ = "Gunnar Voet"
 __email__ = "gvoet@ucsd.edu"
 __version__ = "0.1"
 
+
 def gvloadmat(filename):
     '''
     gvloadmat(filename):
@@ -24,6 +25,7 @@ def gvloadmat(filename):
     data = spio.loadmat(filename, struct_as_record=False, squeeze_me=True)
     return _check_keys(data)
 
+
 def _check_keys(dict):
     '''
     checks if entries in dictionary are mat-objects. If yes
@@ -31,14 +33,15 @@ def _check_keys(dict):
     '''
     for key in dict:
         ni = np.size(dict[key])
-        if ni<=1:
+        if ni <= 1:
             if isinstance(dict[key], spio.matlab.mio5_params.mat_struct):
                 dict[key] = _todict(dict[key])
         else:
-            for i in range(0,ni):
+            for i in range(0, ni):
                 if isinstance(dict[key][i], spio.matlab.mio5_params.mat_struct):
                     dict[key][i] = _todict(dict[key][i])
-    return dict        
+    return dict
+
 
 def _todict(matobj):
     '''
@@ -53,31 +56,33 @@ def _todict(matobj):
             dict[strg] = elem
     return dict
 
+
 def matlab2datetime(matlab_datenum):
-      '''
-      matlab2datetime(matlab_datenum):
-      Convert Matlab datenum format to python datetime.
-      '''
-      day = dt.datetime.fromordinal(int(matlab_datenum))
-      dayfrac = dt.timedelta(days=matlab_datenum%1) - dt.timedelta(days = 366)
-      return day + dayfrac
+    '''
+    matlab2datetime(matlab_datenum):
+    Convert Matlab datenum format to python datetime.
+    '''
+    day = dt.datetime.fromordinal(int(matlab_datenum))
+    dayfrac = dt.timedelta(days=matlab_datenum%1) - dt.timedelta(days=366)
+    return day + dayfrac
+
 
 def mtlb2datetime(matlab_datenum):
-      '''
-      mtlb2datetime(matlab_datenum):
-      Convert Matlab datenum format to python datetime.
-      This version also works for vector input and strips
-      milliseconds.
-      '''
-      if np.size(matlab_datenum)==1:
+    '''
+    mtlb2datetime(matlab_datenum):
+    Convert Matlab datenum format to python datetime.
+    This version also works for vector input and strips
+    milliseconds.
+    '''
+    if np.size(matlab_datenum) == 1:
         day = dt.datetime.fromordinal(int(matlab_datenum))
         dayfrac = dt.timedelta(days=matlab_datenum%1) - dt.timedelta(days = 366)
         t1 = day+dayfrac
-        t2 = dt.datetime.replace(t1,microsecond=0,second=0)
-      else:
+        t2 = dt.datetime.replace(t1, microsecond=0, second=0)
+    else:
         day = [dt.datetime.fromordinal(int(tval)) for tval in matlab_datenum]
-        dayfrac = [dt.timedelta(days=tval%1) - dt.timedelta(days = 366) for tval in matlab_datenum]
-        t1 = [day1+dayfrac1 for day1, dayfrac1 in zip(day,dayfrac)]
-        t2 = [dt.datetime.replace(tval,microsecond=0,second=0) for tval in t1]
-      
-      return t2
+        dayfrac = [dt.timedelta(days=tval%1) - dt.timedelta(days=366) for tval in matlab_datenum]
+        t1 = [day1+dayfrac1 for day1, dayfrac1 in zip(day, dayfrac)]
+        t2 = [dt.datetime.replace(tval, microsecond=0, second=0) for tval in t1]
+
+    return t2

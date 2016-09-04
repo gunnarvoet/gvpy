@@ -50,7 +50,7 @@ def cmap_div(numcolors=11, name='custom_div_cmap',
     return cmap
 
 
-def jupaexit:
+def jupaexit():
     '''
     jupaexit()
     Exit attached console without killing kernel

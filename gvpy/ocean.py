@@ -1,12 +1,10 @@
-'''Module gvocean with oceanography related functions
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+'''Module gvpy.ocean with oceanography related functions
 
 '''
 
 import numpy as np
-
-__author__ = "Gunnar Voet"
-__email__ = "gvoet@ucsd.edu"
-__version__ = "0.1"
 
 
 def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):

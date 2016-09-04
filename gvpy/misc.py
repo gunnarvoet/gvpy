@@ -1,13 +1,12 @@
-'''Module gvmisc with miscellaneous functions
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+'''Module gvpy.misc with miscellaneous functions
 
 '''
 
 import scipy.io as spio
 import numpy as np
 
-__author__ = "Gunnar Voet"
-__email__ = "gvoet@ucsd.edu"
-__version__ = "0.1"
 
 
 def near(A, target):
@@ -50,7 +49,7 @@ def cmap_div(numcolors=11, name='custom_div_cmap',
     return cmap
 
 
-def jupaexit:
+def jupaexit():
     '''
     jupaexit()
     Exit attached console without killing kernel

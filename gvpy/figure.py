@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Module gvfigure for matplotlib related stuff.
+"""Module gvpy.figure for matplotlib related stuff.
 
 """
 

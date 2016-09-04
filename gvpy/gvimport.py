@@ -1,17 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''Module gvimport for importing data to python, mostly ®Matlab stuff for now.
+'''Module gvpy.gvimport for importing data to python, mostly ®Matlab stuff for now.
 
 '''
 
 import scipy.io as spio
 import numpy as np
 import datetime as dt
-# from scipy.io import loadmat
-
-__author__ = "Gunnar Voet"
-__email__ = "gvoet@ucsd.edu"
-__version__ = "0.1"
 
 
 def gvloadmat(filename):
@@ -76,7 +71,7 @@ def mtlb2datetime(matlab_datenum):
     '''
     if np.size(matlab_datenum) == 1:
         day = dt.datetime.fromordinal(int(matlab_datenum))
-        dayfrac = dt.timedelta(days=matlab_datenum%1) - dt.timedelta(days = 366)
+        dayfrac = dt.timedelta(days=matlab_datenum%1) - dt.timedelta(days=366)
         t1 = day+dayfrac
         t2 = dt.datetime.replace(t1, microsecond=0, second=0)
     else:

@@ -8,8 +8,10 @@ __author__ = "Gunnar Voet"
 __email__ = "gvoet@ucsd.edu"
 __version__ = "0.1"
 
+'''
 import colormaps
 import figure
 import gvimport
 import ocean
 import misc
+'''

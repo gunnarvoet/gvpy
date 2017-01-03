@@ -5,6 +5,148 @@
 '''
 
 import numpy as np
+from scipy.signal import filtfilt
+from scipy.interpolate import interp1d
+
+def nsqfcn(s,t,p,p0,dp,lon,lat):
+    """Calculate square of buoyancy frequency [rad/s]^2 for profile of
+    temperature, salinity and pressure.
+
+    The Function: (1) low-pass filters t,s,p over dp,
+                  (2) linearly interpolates  t and s onto pressures, p0,
+                      p0+dp, p0+2dp, ....,
+                  (3) computes upper and lower potential densities at
+                      p0+dp/2, p0+3dp/2,...,
+                  (4) converts differences in potential density into nsq
+                  (5) returns NaNs if the filtered pressure is not
+                      monotonic.
+
+    If you want to have the buoyancy frequency in [cyc/s] then
+    calculate sqrt(n2)./(2*pi). For the period in [s] do sqrt(n2).*2.*pi
+
+    Adapted from Gregg and Alford.
+
+    Gunnar Voet
+    gvoet@ucsd.edu
+
+    Parameters
+    ----------
+    s : float
+        Salinity
+    t : float
+        In-situ temperature
+    p : float
+        Pressures
+    p0 : float
+        Lower bound (start) pressure for output values (not important...)
+    dp : float
+        Pressure interval of output data
+    lon : float
+        Longitude of observation
+    lat : float
+        Latitude of observation
+
+    Returns
+    -------
+    n2 : Buoyancy frequency squared in (rad/s)^2
+    pout : Pressure vector for n2
+
+    """
+    G  = 9.80655
+    dz = dp
+        # Make sure data comes in rows
+    #     if isrow(s); s = s'; end
+    #     if isrow(t); t = t'; end
+    #     if isrow(p); p = p'; end
+
+    # Make sure data has dtype np.ndarray
+    if type(s) is not np.ndarray:
+        s = np.array(s)
+    if type(p) is not np.ndarray:
+        p = np.array(p)
+    if type(t) is not np.ndarray:
+        t = np.array(t)
+
+    # Delete negative pressures
+    xi = np.where(p>=0)
+    p = p[xi]
+    s = s[xi]
+    t = t[xi]
+
+    # Exclude nan in t and s
+    xi = np.where((~np.isnan(s)) & (~np.isnan(t)));
+    p = p[xi]
+    s = s[xi]
+    t = t[xi]
+
+    # Put out all nan if no good data left
+    if ~p.any():
+        n2 = np.nan
+        pout = np.nan
+
+    # Reverse order of upward profiles
+    if p[-1]<p[0]:
+        p = p[::-1]
+        t = t[::-1]
+        s = s[::-1]
+
+    # Low pass filter temp and salinity to match specified dp
+    dp_data = np.diff(p)
+    dp_med  = np.median(dp_data)
+    # [b,a]=butter(4,2*dp_med/dp); %causing problems...
+    a = 1
+    b = np.hanning(2*np.floor(dp/dp_med))
+    b = b/np.sum(b)
+
+    tlp = filtfilt(b,a,t)
+    slp = filtfilt(b,a,s)
+    plp = filtfilt(b,a,p)
+
+    # Check that p is monotonic
+    if np.all(np.diff(plp)>=0):
+        pmin = plp[0]
+        pmax = plp[-1]
+
+    # # Sort density if opted for
+    #   if sort_dens
+    #     rho = sw_pden(slp,tlp,plp,plp);
+    #     [rhos, si] = sort(rho,'ascend');
+    #     tlp = tlp(si);
+    #     slp = slp(si);
+    #   end
+
+        while p0<=pmin:
+            p0 = p0+dp
+
+        # End points of nsq window
+        pwin = np.arange(p0,pmax,dp)
+        ft = interp1d(plp,tlp)
+        t_ep = ft(pwin)
+        fs = interp1d(plp,slp)
+        s_ep = fs(pwin)
+        # Determine the number of output points
+        (npts,) = t_ep.shape
+
+        # Compute pressures at center points
+        pout = np.arange(p0+dp/2,np.max(pwin),dp)
+
+        # Compute potential density of upper window pts at output pressures
+        sa_u = gsw.SA_from_SP(s_ep[0:-1], t_ep[0:-1], lon, lat)
+        pd_u = gsw.pot_rho_t_exact(sa_u, t_ep[0:-1], pwin[0:-1], pout)
+
+        # Compute potential density of lower window pts at output pressures
+        sa_l = gsw.SA_from_SP(s_ep[1:], t_ep[1:], lon, lat)
+        pd_l = gsw.pot_rho_t_exact(sa_l, t_ep[1:], pwin[1:], pout)
+
+        # Compute buoyancy frequency squared
+        n2 = G*(pd_l - pd_u)/(dp*pd_u)
+
+    else:
+        print('  filtered pressure not monotonic')
+        n2 = np.nan
+        pout = np.nan
+
+    return n2, pout
 
 
 def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
@@ -21,6 +163,16 @@ def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
 
     z0 = Z.copy()
     z0 = z0.astype('float')
+
+    # populate output dict
+    out = {}
+    out['idx'] = np.zeros_like(z0)
+    out['Lt'] = np.zeros_like(z0)*np.nan
+    out['eps'] = np.zeros_like(z0)*np.nan
+    out['k'] = np.zeros_like(z0)*np.nan
+    out['n2'] = np.zeros_like(z0)*np.nan
+    out['Lo'] = np.zeros_like(z0)*np.nan
+
 
     # Find non-NaNs
     x = np.where(np.isfinite(T))
@@ -44,12 +196,12 @@ def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
     D0 = sg4[0]
     sgt = D0-sg4[0]
     n = sgt/dnoise
-    n = np.round(n)
+    n = np.fix(n)
     sgi = [D0+n*dnoise]  # first element
     for i in np.arange(1, np.alen(sg4), 1):
         sgt = sg4[i]-sgi[i-1]
         n = sgt/dnoise
-        n = np.round(n)
+        n = np.fix(n)
         sgi.append(sgi[i-1]+n*dnoise)
     sgi = np.array(sgi)
 
@@ -60,73 +212,67 @@ def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
     # Calculate Thorpe length scale
     TH = z[Is]-z
     cumTH = np.cumsum(TH)
+    # make sure there are any overturns
+    if np.sum(cumTH)>2:
+        aa = np.where(cumTH > 1)
+        aa = aa[0]
 
-    aa = np.where(cumTH > 1)
-    aa = aa[0]
+        # last index in overturns
+        aatmp = aa.copy()
+        aatmp = np.append(aatmp, np.nanmax(aa)+10)
+        aad = np.diff(aatmp)
+        aadi = np.where(aad > 1)
+        aadi = aadi[0]
+        LastItems = aa[aadi].copy()
 
-    # last index in overturns
-    aatmp = aa.copy()
-    aatmp = np.append(aatmp, np.nanmax(aa)+10)
-    aad = np.diff(aatmp)
-    aadi = np.where(aad > 1)
-    aadi = aadi[0]
-    LastItems = aa[aadi].copy()
+        # first index in overturns
+        aatmp = aa.copy()
+        aatmp = np.insert(aatmp, 0, -1)
+        aad = np.diff(aatmp)
+        aadi = np.where(aad > 1)
+        aadi = aadi[0]
+        FirstItems = aa[aadi].copy()
 
-    # first index in overturns
-    aatmp = aa.copy()
-    aatmp = np.insert(aatmp, 0, -1)
-    aad = np.diff(aatmp)
-    aadi = np.where(aad > 1)
-    aadi = aadi[0]
-    FirstItems = aa[aadi].copy()
+        # % Sort temperature and salinity for calculating the buoyancy frequency
+        PTs = PT[Is]
+        SAs = SA[Is]
+        CTs = CT[Is]
 
-    # % Sort temperature and salinity for calculating the buoyancy frequency
-    PTs = PT[Is]
-    SAs = SA[Is]
-    CTs = CT[Is]
+        # % Loop through detected overturns
+        # % and calculate Thorpe Scales, N2 and dT/dz over the overturn
+        # THsc = nan(size(Z));
+        THsc = np.zeros_like(z)*np.nan
+        N2 = np.zeros_like(z)*np.nan
+        # CN2  = np.ones_like(z)*np.nan
+        DTDZ = np.zeros_like(z)*np.nan
 
-    # % Loop through detected overturns
-    # % and calculate Thorpe Scales, N2 and dT/dz over the overturn
-    # THsc = nan(size(Z));
-    THsc = np.zeros_like(z)*np.nan
-    N2 = np.zeros_like(z)*np.nan
-    # CN2  = np.ones_like(z)*np.nan
-    DTDZ = np.zeros_like(z)*np.nan
+        for iostart, ioend in zip(FirstItems, LastItems):
+            idx = np.arange(iostart, ioend+1, 1)
+            out['idx'][x[idx]] = 1
+            sc = np.sqrt(np.mean(np.square(TH[idx])))
+            # ctdn2 = np.nanmean(cn2[idx])
+            # Buoyancy frequency calculated over the overturn from sorted profiles
+            # Go beyond overturn (I am sure this will cause trouble with the
+            # indices at some point)
+            n2, Np = gsw.Nsquared(SAs[[iostart-1, ioend+1]],
+                                  CTs[[iostart-1, ioend+1]],
+                                  p[[iostart-1, ioend+1]], lat)
+            # Fill depth range of the overturn with the Thorpe scale
+            THsc[idx] = sc
+            # Fill depth range of the overturn with N^2
+            N2[idx] = n2
+            # Fill depth range of the overturn with average 10m N^2
+            # CN2[idx]  = ctdn2
 
-    out = {}
-    out['idx'] = np.zeros_like(z0)
+        # % Calculate epsilon
+        THepsilon = 0.9*THsc**2.0*np.sqrt(N2)**3
+        THepsilon[N2 <= 0] = np.nan
+        THk = 0.2*THepsilon/N2
 
-    for iostart, ioend in zip(FirstItems, LastItems):
-        idx = np.arange(iostart, ioend+1, 1)
-        out['idx'][x[idx]] = 1
-        sc = np.sqrt(np.mean(np.square(TH[idx])))
-        # ctdn2 = np.nanmean(cn2[idx])
-        # Buoyancy frequency calculated over the overturn from sorted profiles
-        # Go beyond overturn (I am sure this will cause trouble with the
-        # indices at some point)
-        n2, Np = gsw.Nsquared(SAs[[iostart-1, ioend+1]],
-                              CTs[[iostart-1, ioend+1]],
-                              p[[iostart-1, ioend+1]], lat)
-        # Fill depth range of the overturn with the Thorpe scale
-        THsc[idx] = sc
-        # Fill depth range of the overturn with N^2
-        N2[idx] = n2
-        # Fill depth range of the overturn with average 10m N^2
-        # CN2[idx]  = ctdn2
-
-    # % Calculate epsilon
-    THepsilon = 0.9*THsc**2.0*np.sqrt(N2)**3
-    THepsilon[N2 <= 0] = np.nan
-    THk = 0.2*THepsilon/N2
-
-    out['eps'] = np.zeros_like(z0)*np.nan
-    out['eps'][x] = THepsilon
-    out['k'] = np.zeros_like(z0)*np.nan
-    out['k'][x] = THk
-    out['n2'] = np.zeros_like(z0)*np.nan
-    out['n2'][x] = N2
-    out['Lt'] = np.zeros_like(z0)*np.nan
-    out['Lt'][x] = THsc
+        out['eps'][x] = THepsilon
+        out['k'][x] = THk
+        out['n2'][x] = N2
+        out['Lt'][x] = THsc
 
     return out
 

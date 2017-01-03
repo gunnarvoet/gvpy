@@ -31,7 +31,7 @@ def newfig(width=7.5, height=5.5):
     plt.rc('font', size=10)
     # plt.rc('font',family='sans-serif')
     mpl.rcParams['font.family'] = 'sans-serif'
-    mpl.rcParams['font.sans-serif'] = 'Helvetica'
+    mpl.rcParams['font.sans-serif'] = ['Helvetica']
     mpl.rcParams['font.variant'] = 'normal'
     mpl.rcParams['font.weight'] = 'normal'
 
@@ -130,9 +130,9 @@ def axstyle(ax):
     ax = axstyle(ax)):
     Apply own style to axis.
     """
-    plt.rc('font', size=9)
+    plt.rc('font', size=10)
     plt.rc('font', family='sans-serif')
-    mpl.rcParams['font.sans-serif'] = 'Helvetica'
+    mpl.rcParams['font.sans-serif'] = ['Helvetica']
     mpl.rcParams['font.variant'] = 'normal'
     mpl.rcParams['font.weight'] = 'normal'
 
@@ -186,6 +186,7 @@ def axstyle(ax):
 def gvprint(fname, pyname, dirname='fig'):
     """
     adapted from https://github.com/jklymak/pythonlib/jmkfigure.py
+    provide filename (fname)
     """
     import os
 

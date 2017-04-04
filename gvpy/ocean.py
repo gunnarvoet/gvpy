@@ -312,3 +312,58 @@ def woa_get_ts(llon, llat, plot=0):
         f.set_figheight(5)
 
     return T, S, depth
+
+def tpxo_extract(year, yday, lon, lat):
+    """Extract tidal velocity and height predictions from TPXO model.
+
+    Based on python software from UH.
+
+    Gunnar Voet
+    gvoet@ucsd.edu
+
+    Parameters
+    ----------
+    year : list(float) or float
+        Year
+    yday : list(float) or float
+        yearday
+    lon : list(float) or float
+        Longitude
+    lat : list(float) or float
+        Latitude
+
+    Returns
+    -------
+    out['u'] : Tidal velocity in east-west direction
+    out['v'] : Tidal velocity in north-south direction
+    out['h'] : Tidal elevation
+
+    """
+    from pytide import model
+    # make sure all variables have the same length
+    if len(yday)>1:
+        if len(year)==1:
+            year = np.ones_like(yday)*year
+        if len(lon)==1:
+            lon = np.ones_like(yday)*lon
+        if len(lat)==1:
+            lat = np.ones_like(yday)*lat
+
+    tidemod = model('tpxo7.2')
+    velu = []
+    velv = []
+    h = []
+    for yy, yd, lo, la in list(zip(year, yday, lon, lat)):
+        vel = tidemod.velocity(yy, yd, lo, la)
+        velu.append(vel.u.data)
+        velv.append(vel.v.data)
+        htmp = tidemod.height(yy, yd, lo, la)
+        h.append(htmp.h.data)
+    velu = np.concatenate(velu)
+    velv = np.concatenate(velv)
+    h = np.concatenate(h)
+    out = {}
+    out['v'] = velv
+    out['u'] = velu
+    out['h'] = h
+    return out

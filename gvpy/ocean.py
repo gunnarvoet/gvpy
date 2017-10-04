@@ -369,7 +369,6 @@ def tpxo_extract(year, yday, lon, lat):
     return out
 
 
-
 def uv2speeddir(u,v):
     """Convert velocity from u,v to speed and direction
 
@@ -432,3 +431,13 @@ def uv2speeddir(u,v):
 # clear x
 
 # dir = angle2;
+
+
+
+def inertial_period(lat):
+    Omega = 7.292e-5;
+    f     = 2*Omega*np.sin(np.deg2rad(lat))
+    Ti    = 2*np.pi/f
+    Ti    = Ti/3600/24
+    print('\nInertial period at {:1.2f}° is {:1.2f} days\n'.format(lat,np.abs(Ti)))
+    return Ti

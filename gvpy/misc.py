@@ -12,9 +12,9 @@ import numpy as np
 
 def near(A, target):
     '''
-    Find index of value in A closest to target
+    Find index of value in A closest to target.
+    A must be sorted!
     '''
-    # A must be sorted
     idx = A.searchsorted(target)
     idx = np.clip(idx, 1, len(A)-1)
     left = A[idx-1]
@@ -22,6 +22,18 @@ def near(A, target):
     idx -= target - left < right - target
     return idx
 
+def nearidx(array, value):
+    '''
+    Find index of value in array closest to target.
+    No need for array to be sorted.
+    '''
+    n = [abs(i-value) for i in array]
+    idx = n.index(min(n))
+    return idx
+
+def nearidx2(array, value):
+    idx, val = min(enumerate(array), key=lambda x: abs(x[1]-value))
+    return idx
 
 def getshape(d):
     '''

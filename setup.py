@@ -1,4 +1,9 @@
 from setuptools import find_packages, setup
+
+def readme():
+    with open('README.md') as f:
+        return f.read()
+
 setup(name="gvpy",
       version="0.1",
       description="Library of python modules for data analysis and visualization",

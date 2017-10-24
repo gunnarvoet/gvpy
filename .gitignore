@@ -3,3 +3,4 @@
 gvpy.egg-info
 build/
 dist/
+.cache

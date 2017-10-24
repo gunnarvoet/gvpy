@@ -2,11 +2,11 @@
 
 '''
 
-__all__ = ["colormaps", "figure", "import", "ocean", "misc"]
+__all__ = ["colormaps", "figure", "matimport", "ocean", "misc"]
 
 __author__ = "Gunnar Voet"
 __email__ = "gvoet@ucsd.edu"
 __version__ = "0.1"
 
-from . import colormaps, figure, import, ocean, misc
+from . import colormaps, figure, matimport, ocean, misc
 

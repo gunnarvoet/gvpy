@@ -9,70 +9,66 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def newfig(width=7.5, height=5.5):
-    """Create figure with own style.
-
-    Set up figure with floating axes by defining `width` and `height`.
-    Based on gv1 style.
+def newfig(width=7.5, height=5.5, fontsize=12):
+    """
+    Create new figure with own style.
 
     Parameters
     ----------
-    width : float
+    width : float (optional)
         Figure width in inch
-    height : float
+    height : float (optional)
         Figure height in inch
+    fontsize : int (optional)
+        Fontsize for tick labels, axis labels
 
     Returns
     -------
     fig : Figure handle
     ax : Axis handle
-
     """
-    # plt.rc('figure', figsize=(width, height))
-    # plt.rc('font', size=12)
-    # plt.rc('font',family='sans-serif')
-    # mpl.rcParams['font.family'] = 'sans-serif'
-    # mpl.rcParams['font.sans-serif'] = ['Helvetica']
-    # mpl.rcParams['font.variant'] = 'normal'
-    # mpl.rcParams['font.weight'] = 'normal'
 
-    # mpl.rcParams['mathtext.fontset'] = 'custom'
-    # mpl.rcParams['mathtext.rm'] = 'Helvetica'
-    # mpl.rcParams['mathtext.it'] = 'Helvetica:italic'
-    # mpl.rcParams['mathtext.bf'] = 'Helvetica:bold'
+    fig = plt.figure(figsize=(width, height))
+    ax = plt.subplot(111)
 
-    with plt.style.context(('gv1')):
-        fig = plt.figure(figsize=(width, height))
-        ax = plt.subplot(111)
+    # Get rid of ticks. The position of the numbers is informative enough of
+    # the position of the value.
+    ax.xaxis.set_ticks_position('none')
+    ax.yaxis.set_ticks_position('none')
 
-        # Get rid of ticks. The position of the numbers is informative enough of
-        # the position of the value.
-        ax.xaxis.set_ticks_position('none')
-        ax.yaxis.set_ticks_position('none')
+    # Remove top and right axes lines ("spines")
+    spines_to_remove = ['top', 'right']
+    for spine in spines_to_remove:
+        ax.spines[spine].set_visible(False)
 
-        # For remaining spines, thin out their line and change
-        # the black to a slightly off-black dark grey
-        almost_black = '#262626'
-        spines_to_keep = ['bottom', 'left']
-        for spine in spines_to_keep:
-            ax.spines[spine].set_linewidth(0.5)
-            ax.spines[spine].set_color(almost_black)
-            ax.spines[spine].set_position(('outward', 5))
+    # For remaining spines, thin out their line and change
+    # the black to a slightly off-black dark grey
+    almost_black = '#262626'
+    spines_to_keep = ['bottom', 'left']
+    for spine in spines_to_keep:
+        ax.spines[spine].set_linewidth(0.5)
+        ax.spines[spine].set_color(almost_black)
+        ax.spines[spine].set_position(('outward', 5))
 
-        # Change the labels to the off-black
-        ax.xaxis.label.set_color(almost_black)
-        ax.yaxis.label.set_color(almost_black)
+    # Change the labels to the off-black and adjust fontsize etc.
+    ax.tick_params(axis='both', which='major', labelsize=fontsize,
+                   length=0, colors=almost_black, direction='in' )
+    ax.yaxis.label.set_size(fontsize)
+    ax.xaxis.label.set_size(fontsize)
 
-        # Change the axis title to off-black
-        ax.title.set_color(almost_black)
+    # Change the axis title to off-black
+    ax.title.set_color(almost_black)
 
-        # Change figure position on screen
-        # plt.get_current_fig_manager().window.setGeometry(0,0,width,height)
+    # turn grid on
+    ax.grid(b=True, which='major', axis='both', color='0.7',
+            linewidth=0.75, linestyle='-', alpha=0.8 )
+
+    # Change figure position on screen
+    # plt.get_current_fig_manager().window.setGeometry(0,0,width,height)
 
     return fig, ax
 
-
-def newfigyy(width=7.5, height=5.5):
+def newfigyy(width=7.5, height=5.5, fontsize=12):
     """Create figure with own style. Two y-axes.
 
     Set up figure with floating axes by defining `width` and `height`.
@@ -80,10 +76,12 @@ def newfigyy(width=7.5, height=5.5):
 
     Parameters
     ----------
-    width : float
+    width : float (optional)
         Figure width in inch
-    height : float
+    height : float (optional)
         Figure height in inch
+    fontsize : float (optional)
+        Fontsize for tick labels, axis labels
 
     Returns
     -------
@@ -111,35 +109,23 @@ def newfigyy(width=7.5, height=5.5):
     return fig, ax1, ax2
 
 
-def axstyle(ax=plt.gca()):
+def axstyle(ax=None, fontsize=12):
     """
-    ax = axstyle(ax)):
     Apply own style to axis.
+
+    Parameters
+    ----------
+    ax : AxesSubplot (optional)
+        Current axis will be chosen if no axis provided
+
+    Returns
+    -------
+    ax : AxesSubplot
+        Axis handle
     """
-    plt.rc('font', size=10)
-    plt.rc('font', family='sans-serif')
-    mpl.rcParams['font.sans-serif'] = ['Helvetica']
-    mpl.rcParams['font.variant'] = 'normal'
-    mpl.rcParams['font.weight'] = 'normal'
 
-    mpl.rcParams['mathtext.fontset'] = 'custom'
-    mpl.rcParams['mathtext.rm'] = 'Helvetica'
-    mpl.rcParams['mathtext.it'] = 'Helvetica:italic'
-    mpl.rcParams['mathtext.bf'] = 'Helvetica:bold'
-
-    # AXES
-    mpl.rcParams['axes.grid'] = True
-    mpl.rcParams['axes.linewidth'] = 0.5
-
-    # TICKS
-    mpl.rcParams['xtick.direction'] = 'in'
-    mpl.rcParams['ytick.direction'] = 'in'
-
-    # GRID
-    mpl.rcParams['grid.color'] = (0.7, 0.7, 0.7)
-    mpl.rcParams['grid.linewidth'] = 0.5
-    mpl.rcParams['grid.linestyle'] = '-'
-    mpl.rcParams['grid.alpha'] = 0.8
+    if ax is None:
+        ax = plt.gca()
 
     # Remove top and right axes lines ("spines")
     spines_to_remove = ['top', 'right']
@@ -163,9 +149,20 @@ def axstyle(ax=plt.gca()):
     # Change the labels to the off-black
     ax.xaxis.label.set_color(almost_black)
     ax.yaxis.label.set_color(almost_black)
+    ax.yaxis.label.set_size(fontsize)
+    ax.xaxis.label.set_size(fontsize)
+
+    # Change the labels to the off-black
+    ax.tick_params(axis='both', which='major', labelsize=fontsize,
+                   length=0, colors=almost_black, direction='in' )
 
     # Change the axis title to off-black
     ax.title.set_color(almost_black)
+
+    # turn grid on
+    ax.grid(b=True, which='major', axis='both', color='0.7',
+            linewidth=0.5, linestyle='-', alpha=0.8 )
+
     return ax
 
 

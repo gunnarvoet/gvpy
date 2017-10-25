@@ -5,9 +5,7 @@
 '''
 
 from __future__ import print_function, division
-import scipy.io as spio
 import numpy as np
-
 
 
 def near(A, target):
@@ -22,6 +20,7 @@ def near(A, target):
     idx -= target - left < right - target
     return idx
 
+
 def nearidx(array, value):
     '''
     Find index of value in array closest to target.
@@ -31,9 +30,11 @@ def nearidx(array, value):
     idx = n.index(min(n))
     return idx
 
+
 def nearidx2(array, value):
     idx, val = min(enumerate(array), key=lambda x: abs(x[1]-value))
     return idx
+
 
 def getshape(d):
     '''
@@ -58,7 +59,7 @@ def cmap_div(numcolors=11, name='custom_div_cmap',
     from matplotlib.colors import LinearSegmentedColormap
     cmap = LinearSegmentedColormap.from_list(name=name,
                                              colors=[mincol, midcol, maxcol],
-                                             N=numcwolors)
+                                             N=numcolors)
     return cmap
 
 

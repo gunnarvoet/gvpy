@@ -4,7 +4,6 @@
 
 """
 
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -52,7 +51,7 @@ def newfig(width=7.5, height=5.5, fontsize=12):
 
     # Change the labels to the off-black and adjust fontsize etc.
     ax.tick_params(axis='both', which='major', labelsize=fontsize,
-                   length=0, colors=almost_black, direction='in' )
+                   length=0, colors=almost_black, direction='in')
     ax.yaxis.label.set_size(fontsize)
     ax.xaxis.label.set_size(fontsize)
 
@@ -61,52 +60,12 @@ def newfig(width=7.5, height=5.5, fontsize=12):
 
     # turn grid on
     ax.grid(b=True, which='major', axis='both', color='0.7',
-            linewidth=0.75, linestyle='-', alpha=0.8 )
+            linewidth=0.75, linestyle='-', alpha=0.8)
 
     # Change figure position on screen
     # plt.get_current_fig_manager().window.setGeometry(0,0,width,height)
 
     return fig, ax
-
-def newfigyy(width=7.5, height=5.5, fontsize=12):
-    """Create figure with own style. Two y-axes.
-
-    Set up figure with floating axes by defining `width` and `height`.
-    Based on newfig.
-
-    Parameters
-    ----------
-    width : float (optional)
-        Figure width in inch
-    height : float (optional)
-        Figure height in inch
-    fontsize : float (optional)
-        Fontsize for tick labels, axis labels
-
-    Returns
-    -------
-    fig : Figure handle
-    ax1, ax2 : Axis handles
-
-    """
-
-    fig, ax1 = newfig(width, height)
-    ax2 = ax1.twinx()
-    ax1 = axstyle(ax1)
-    spines_to_remove = ['top', 'left', 'bottom']
-    for spine in spines_to_remove:
-        ax2.spines[spine].set_visible(False)
-    ax2.xaxis.set_ticks_position('none')
-    ax2.yaxis.set_ticks_position('none')
-    almost_black = '#262626'
-    spines_to_keep = ['right']
-    for spine in spines_to_keep:
-        ax2.spines[spine].set_linewidth(0.5)
-        ax2.spines[spine].set_color(almost_black)
-        ax2.spines[spine].set_position(('outward', 5))
-    ax2.xaxis.label.set_color(almost_black)
-    ax2.yaxis.label.set_color(almost_black)
-    return fig, ax1, ax2
 
 
 def axstyle(ax=None, fontsize=12):
@@ -154,22 +113,63 @@ def axstyle(ax=None, fontsize=12):
 
     # Change the labels to the off-black
     ax.tick_params(axis='both', which='major', labelsize=fontsize,
-                   length=0, colors=almost_black, direction='in' )
+                   length=0, colors=almost_black, direction='in')
 
     # Change the axis title to off-black
     ax.title.set_color(almost_black)
 
     # turn grid on
     ax.grid(b=True, which='major', axis='both', color='0.7',
-            linewidth=0.5, linestyle='-', alpha=0.8 )
+            linewidth=0.5, linestyle='-', alpha=0.8)
 
     return ax
 
 
+def newfigyy(width=7.5, height=5.5, fontsize=12):
+    """Create figure with own style. Two y-axes.
+
+    Set up figure with floating axes by defining `width` and `height`.
+    Based on newfig.
+
+    Parameters
+    ----------
+    width : float (optional)
+        Figure width in inch
+    height : float (optional)
+        Figure height in inch
+    fontsize : float (optional)
+        Fontsize for tick labels, axis labels
+
+    Returns
+    -------
+    fig : Figure handle
+    ax1, ax2 : Axis handles
+
+    """
+
+    fig, ax1 = newfig(width, height)
+    ax2 = ax1.twinx()
+    ax1 = axstyle(ax1)
+    spines_to_remove = ['top', 'left', 'bottom']
+    for spine in spines_to_remove:
+        ax2.spines[spine].set_visible(False)
+    ax2.xaxis.set_ticks_position('none')
+    ax2.yaxis.set_ticks_position('none')
+    almost_black = '#262626'
+    spines_to_keep = ['right']
+    for spine in spines_to_keep:
+        ax2.spines[spine].set_linewidth(0.5)
+        ax2.spines[spine].set_color(almost_black)
+        ax2.spines[spine].set_position(('outward', 5))
+    ax2.xaxis.label.set_color(almost_black)
+    ax2.yaxis.label.set_color(almost_black)
+    return fig, ax1, ax2
+
+
 def pcm(*args, **kwargs):
     """
-    Wrapper for matplotlib's pcolormesh, blanking out nan's and thereby getting
-    the auto-range right on arrays that include nan's.
+    Wrapper for matplotlib's pcolormesh, blanking out nan's and
+    thereby getting the auto-range right on arrays that include nan's.
 
     Parameters
     ----------
@@ -190,13 +190,13 @@ def pcm(*args, **kwargs):
     elif len(args) == 3:
         x, y, z = args
 
-    # set vmin, vmax based on percentiles and determine whether this is a diverging
-    # dataset or not
+    # set vmin, vmax based on percentiles and determine whether this is a
+    # diverging ataset or not
     calc_data = np.ravel(z)
     calc_data = calc_data[np.isfinite(calc_data)]
     vmin = np.percentile(calc_data, 2.0)
-    vmax = np.percentile(calc_data, 100.0-2.0)
-    if (vmin<0) and (vmax>0):
+    vmax = np.percentile(calc_data, 100.0 - 2.0)
+    if (vmin < 0) and (vmax > 0):
         diverging = True
         center = 0
         vlim = max(abs(vmin - center), abs(vmax - center))
@@ -212,25 +212,30 @@ def pcm(*args, **kwargs):
         else:
             kwargs['cmap'] = 'Spectral_r'
 
-    if len(args)==1:
+    if len(args) == 1:
         if 'ax' in kwargs:
             pax = kwargs['ax']
             del kwargs['ax']
-            h = pax.pcolormesh(np.ma.masked_invalid(z),vmin=vmin,vmax=vmax,**kwargs)
+            h = pax.pcolormesh(np.ma.masked_invalid(z),
+                               vmin=vmin, vmax=vmax, **kwargs)
         else:
-            h = plt.pcolormesh(np.ma.masked_invalid(z),vmin=vmin,vmax=vmax,**kwargs)
+            h = plt.pcolormesh(np.ma.masked_invalid(z),
+                               vmin=vmin, vmax=vmax, **kwargs)
 
-    elif len(args)==3:
+    elif len(args) == 3:
         if 'ax' in kwargs:
             pax = kwargs['ax']
             del kwargs['ax']
-            h = pax.pcolormesh(x,y,np.ma.masked_invalid(z),vmin=vmin,vmax=vmax, **kwargs)
+            h = pax.pcolormesh(x, y, np.ma.masked_invalid(z),
+                               vmin=vmin, vmax=vmax, **kwargs)
         else:
-            h = plt.pcolormesh(x,y,np.ma.masked_invalid(z),vmin=vmin,vmax=vmax, **kwargs)
+            h = plt.pcolormesh(x, y, np.ma.masked_invalid(z),
+                               vmin=vmin, vmax=vmax, **kwargs)
     else:
         print('You need to pass either 1 (z) or 3 (x,y,z) arguments.')
 
     return h
+
 
 def figsave(fname, dirname='fig'):
     """
@@ -245,13 +250,13 @@ def figsave(fname, dirname='fig'):
         pass
 
     if dirname == 'fig':
-        pwd = os.getcwd()+'/fig/'
+        pwd = os.getcwd() + '/fig/'
     else:
-        pwd = dirname+'/'
-    plt.savefig(dirname+'/'+fname+'.pdf', dpi=150)
-    plt.savefig(dirname+'/'+fname+'.png', dpi=150)
+        pwd = dirname + '/'
+    plt.savefig(dirname + '/' + fname + '.pdf', dpi=150)
+    plt.savefig(dirname + '/' + fname + '.png', dpi=150)
 
-    fout = open(dirname+'/'+fname+'.tex', 'w')
+    fout = open(dirname + '/' + fname + '.tex', 'w')
     str = """\\begin{{figure*}}[htbp]
 \\centering
 \\includegraphics[width=1.0\\textwidth]{{{fname}}}
@@ -261,6 +266,6 @@ def figsave(fname, dirname='fig'):
     fout.write(str)
     fout.close()
 
-    cmd = 'less '+dirname+'/%s.tex | pbcopy' % fname
+    cmd = 'less ' + dirname + '/%s.tex | pbcopy' % fname
     os.system(cmd)
     print('figure printed to {}'.format(pwd))

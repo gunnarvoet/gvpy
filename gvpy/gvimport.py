@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''Module gvpy.gvimport for importing data to python, mostly ®Matlab stuff for now.
-
+'''Module gvpy.gvimport for importing data to python, mostly ®Matlab stuff
+for now.
 '''
 
 import scipy.io as spio
@@ -58,7 +58,7 @@ def matlab2datetime(matlab_datenum):
     Convert Matlab datenum format to python datetime.
     '''
     day = dt.datetime.fromordinal(int(matlab_datenum))
-    dayfrac = dt.timedelta(days=matlab_datenum%1) - dt.timedelta(days=366)
+    dayfrac = dt.timedelta(days=matlab_datenum % 1) - dt.timedelta(days=366)
     return day + dayfrac
 
 
@@ -71,12 +71,12 @@ def mtlb2datetime(matlab_datenum):
     '''
     if np.size(matlab_datenum) == 1:
         day = dt.datetime.fromordinal(int(matlab_datenum))
-        dayfrac = dt.timedelta(days=matlab_datenum%1) - dt.timedelta(days=366)
+        dayfrac = dt.timedelta(days=matlab_datenum % 1) - dt.timedelta(days=366)
         t1 = day+dayfrac
         t2 = dt.datetime.replace(t1, microsecond=0, second=0)
     else:
         day = [dt.datetime.fromordinal(int(tval)) for tval in matlab_datenum]
-        dayfrac = [dt.timedelta(days=tval%1) - dt.timedelta(days=366) for tval in matlab_datenum]
+        dayfrac = [dt.timedelta(days=tval % 1) - dt.timedelta(days=366) for tval in matlab_datenum]
         t1 = [day1+dayfrac1 for day1, dayfrac1 in zip(day, dayfrac)]
         t2 = [dt.datetime.replace(tval, microsecond=0, second=0) for tval in t1]
 

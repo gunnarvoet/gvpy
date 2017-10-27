@@ -69,3 +69,42 @@ def jupaexit():
     Exit attached console without killing kernel
     '''
     exit(keep_kernel=True)
+
+
+def qpload(filename):
+    """
+    Quick pickle - load
+
+    Parameters
+    ----------
+    filename : str
+        File name including path
+
+    Returns
+    -------
+    var : dtype
+        loaded variables
+    """
+    import pickle
+    f = open(filename, 'rb')
+    out = pickle.load(f)
+    f.close()
+    return out
+
+
+def qpsave(filename, vars):
+    """
+    Quick pickle - save
+
+    Parameters
+    ----------
+    filename : str
+        File name including path
+
+    vars : list
+        List with names of variables to be saved
+    """
+    import pickle
+    f = open(filename, 'wb')
+    pickle.dump(vars, f)
+    f.close()

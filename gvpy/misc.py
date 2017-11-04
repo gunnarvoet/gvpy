@@ -18,6 +18,7 @@ def near(A, target):
     left = A[idx-1]
     right = A[idx]
     idx -= target - left < right - target
+    assert len(idx) == 1,  'returning two values'
     return idx
 
 

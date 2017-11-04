@@ -68,7 +68,7 @@ def newfig(width=7.5, height=5.5, fontsize=12):
     return fig, ax
 
 
-def axstyle(ax=None, fontsize=12):
+def axstyle(ax=None, fontsize=12, nospine=False):
     """
     Apply own style to axis.
 
@@ -90,6 +90,12 @@ def axstyle(ax=None, fontsize=12):
     spines_to_remove = ['top', 'right']
     for spine in spines_to_remove:
         ax.spines[spine].set_visible(False)
+
+    # Remove bottom and left spines as well if desired
+    if nospine:
+        more_spines_to_remove = ['bottom', 'left']
+        for spine in more_spines_to_remove:
+            ax.spines[spine].set_visible(False)
 
     # Get rid of ticks. The position of the numbers is informative enough of
     # the position of the value.

@@ -275,3 +275,35 @@ def figsave(fname, dirname='fig'):
     cmd = 'less ' + dirname + '/%s.tex | pbcopy' % fname
     os.system(cmd)
     print('figure printed to {}'.format(pwd))
+
+
+def quickbasemap(ax, lon, lat, field):
+    """
+    Plot a quick map using basemap.
+
+    Parameters
+    ----------
+    ax : axis object
+        Handle to axis
+    lon, lat : float
+        Longitude / Latitude
+    field : float
+        Field to plot on map
+
+    Returns
+    -------
+    m : basemp object
+        handle to the map
+    x, y : float
+        lon, lat in map coordinates for plotting
+    """
+    from mpl_toolkits.basemap import Basemap
+    m = Basemap(llcrnrlon=np.min(lon), llcrnrlat=np.min(lat),
+                urcrnrlon=np.max(lon), urcrnrlat=np.max(lat),
+                resolution='l', area_thresh=1000.,
+                projection='gall',
+                lat_0=np.max(lat)-np.min(lat), lon_0=np.max(lon)-np.min(lon),
+                ax=ax)
+    lonm, latm = np.meshgrid(lon, lat)
+    x, y = m(lonm, latm)
+    return m, x, y

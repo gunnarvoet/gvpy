@@ -306,4 +306,5 @@ def quickbasemap(ax, lon, lat, field):
                 ax=ax)
     lonm, latm = np.meshgrid(lon, lat)
     x, y = m(lonm, latm)
+    m.contourf(x, y, field, ax=ax)
     return m, x, y

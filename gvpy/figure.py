@@ -277,7 +277,7 @@ def figsave(fname, dirname='fig'):
     print('figure printed to {}'.format(pwd))
 
 
-def quickbasemap(ax, lon, lat, field):
+def quickbasemap(ax, lon, lat, field=None):
     """
     Plot a quick map using basemap.
 
@@ -306,5 +306,6 @@ def quickbasemap(ax, lon, lat, field):
                 ax=ax)
     lonm, latm = np.meshgrid(lon, lat)
     x, y = m(lonm, latm)
-    m.contourf(x, y, field, ax=ax)
+    if field is not None:
+        m.contourf(x, y, field, ax=ax)
     return m, x, y

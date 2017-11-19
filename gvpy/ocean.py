@@ -372,14 +372,14 @@ def tpxo_extract(year, yday, lon, lat):
     return out
 
 
-def uv2speeddir(u,v):
+def uv2speeddir(u, v):
     """Convert velocity from u,v to speed and direction
 
     u : float
         East-West velocity
     v : float
         North-South velocity
-    
+
     Returns
     -------
     speed : Velocity amplitude
@@ -388,14 +388,15 @@ def uv2speeddir(u,v):
     """
 
     speed = np.sqrt(u**2+v**2)
-    direction = np.arctan2(v,u)
+    direction = np.arctan2(v, u)
+    return speed, direction
 
-    
-def smith_sandwell():
-    # Load Smith & Sandwell bathymetry as xarray Dataset
+
+def smith_sandwell(lon='all', lat='all', subsample=0):
+    # Load Smith & Sandwell bathymetry as xarray DataArray
     hn = socket.gethostname()
     hn = hn.split(sep='.')[0]
-    print('working on: '+ hn)
+    print('working on: ' + hn)
     if hn == 'oahu':
         nc_file = '/Users/gunnar/Data/bathymetry/smith_sandwell/topo30.grd'
     elif hn == 'upolu':
@@ -406,16 +407,21 @@ def smith_sandwell():
         print('hostname not recognized, assuming we are on oahu for now')
         nc_file = '/Users/gunnar/Data/bathymetry/smith_sandwell/topo30.grd'
     print('Loading bathymetry...')
-    b = xr.open_dataset(nc_file)
+    b = xr.open_dataarray(nc_file, chunks=1000)
+    b['lon'] = np.mod((b.lon+180), 360)-180
+    if lon is not 'all':
+        lonmask = ((b.lon > np.nanmin(lon)) & (b.lon < np.nanmax(lon)))
+        latmask = ((b.lat > np.nanmin(lat)) & (b.lat < np.nanmax(lat)))
+        b = b.isel(lon=lonmask, lat=latmask)
     return b
 
 
 def inertial_period(lat):
-    Omega = 7.292e-5;
-    f     = 2*Omega*np.sin(np.deg2rad(lat))
-    Ti    = 2*np.pi/f
-    Ti    = Ti/3600/24
-    print('\nInertial period at {:1.2f}° is {:1.2f} days\n'.format(lat,np.abs(Ti)))
+    Omega = 7.292e-5
+    f = 2*Omega*np.sin(np.deg2rad(lat))
+    Ti = 2*np.pi/f
+    Ti = Ti/3600/24
+    print('\nInertial period at {:1.2f}° is {:1.2f} days\n'.format(lat, np.abs(Ti)))
     return Ti
 
 

@@ -417,3 +417,66 @@ def inertial_period(lat):
     Ti    = Ti/3600/24
     print('\nInertial period at {:1.2f}° is {:1.2f} days\n'.format(lat,np.abs(Ti)))
     return Ti
+
+
+def woce_climatology(lon=None, lat=None, z=None, std=False):
+    """
+    Read WOCE climatology as xarray Dataset. Tries to read local copy of the
+    dataset, falls back to remote server access if data not accessible locally.
+    
+    Parameters
+    ----------
+    lon : list, numpy array (optional)
+        min/max of these values define longitude mask
+    lat : list, numpy array (optional)
+        min/max of these values define latitude mask
+    z : list, numpy array (optional)
+        min/max of these values define depth mask
+    std: bool
+        If True, also load standard deviations (optional)
+
+    Returns
+    -------
+    w : xarray Dataset
+        WOCE climatology
+    ws : xarray Dataset
+        WOCE climatology standard deviation
+    
+    TODO
+    ----
+    Implement lon/lat/z masks
+
+    Notes
+    -----
+    Remote data access at:
+    http://icdc.cen.uni-hamburg.de/thredds/catalog/ftpthredds/woce/catalog.html
+    More info:
+    http://icdc.cen.uni-hamburg.de/1/daten/ocean/woce-climatology.html
+    """
+    woce_local = '/Users/gunnar/Data/woce_hydrography/wghc_params.nc'
+    woce_remote = 'http://icdc.cen.uni-hamburg.de/thredds/dodsC/'+\
+                  'ftpthredds/woce/wghc_params.nc'
+    woce_std_local = '/Users/gunnar/Data/woce_hydrography/wghc_stddev.nc'
+    woce_std_remote = 'http://icdc.cen.uni-hamburg.de/thredds/dodsC/'+\
+                      'ftpthredds/woce/wghc_stddev.nc'
+    # read data, try locally first, fall back to remote
+    try:
+        w = xr.open_dataset(woce_local)
+    except:
+        print('accessing data remotely')
+        w = xr.open_dataset(woce_remote)
+    if std:
+        try:
+            ws = xr.open_dataset(woce_std_local)
+        except:
+            ws = xr.open_dataset(woce_std_remote)
+    # change a few variable names for easier access
+    rnm = {'ZAX': 'z', 'LON': 'lon', 'LAT': 'lat', 'BOT_DEP': 'depth',
+           'PRES': 'p', 'TEMP': 't', 'TPOTEN': 'th', 'SALINITY': 's',
+           'OXYGEN': 'o2', 'SIG0': 'sg0', 'SIG2': 'sg2', 'SIG4': 'sg4',
+           'GAMMAN': 'gamma'}
+    w.rename(rnm, inplace=True)
+    if std:
+        return w, ws
+    else:
+        return w

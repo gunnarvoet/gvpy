@@ -9,9 +9,10 @@ from scipy.signal import filtfilt
 from scipy.interpolate import interp1d
 import socket
 import xarray as xr
+from gvpy.misc import nearidx2
 
 
-def nsqfcn(s,t,p,p0,dp,lon,lat):
+def nsqfcn(s, t, p, p0, dp, lon, lat):
     """Calculate square of buoyancy frequency [rad/s]^2 for profile of
     temperature, salinity and pressure.
 
@@ -55,9 +56,9 @@ def nsqfcn(s,t,p,p0,dp,lon,lat):
     pout : Pressure vector for n2
 
     """
-    G  = 9.80655
+    G = 9.80655
     dz = dp
-        # Make sure data comes in rows
+    # Make sure data comes in rows
     #     if isrow(s); s = s'; end
     #     if isrow(t); t = t'; end
     #     if isrow(p); p = p'; end
@@ -71,13 +72,13 @@ def nsqfcn(s,t,p,p0,dp,lon,lat):
         t = np.array(t)
 
     # Delete negative pressures
-    xi = np.where(p>=0)
+    xi = np.where(p >= 0)
     p = p[xi]
     s = s[xi]
     t = t[xi]
 
     # Exclude nan in t and s
-    xi = np.where((~np.isnan(s)) & (~np.isnan(t)));
+    xi = np.where((~np.isnan(s)) & (~np.isnan(t)))
     p = p[xi]
     s = s[xi]
     t = t[xi]
@@ -88,25 +89,25 @@ def nsqfcn(s,t,p,p0,dp,lon,lat):
         pout = np.nan
 
     # Reverse order of upward profiles
-    if p[-1]<p[0]:
+    if p[-1] < p[0]:
         p = p[::-1]
         t = t[::-1]
         s = s[::-1]
 
     # Low pass filter temp and salinity to match specified dp
     dp_data = np.diff(p)
-    dp_med  = np.median(dp_data)
+    dp_med = np.median(dp_data)
     # [b,a]=butter(4,2*dp_med/dp); %causing problems...
     a = 1
     b = np.hanning(2*np.floor(dp/dp_med))
     b = b/np.sum(b)
 
-    tlp = filtfilt(b,a,t)
-    slp = filtfilt(b,a,s)
-    plp = filtfilt(b,a,p)
+    tlp = filtfilt(b, a, t)
+    slp = filtfilt(b, a, s)
+    plp = filtfilt(b, a, p)
 
     # Check that p is monotonic
-    if np.all(np.diff(plp)>=0):
+    if np.all(np.diff(plp) >= 0):
         pmin = plp[0]
         pmax = plp[-1]
 
@@ -118,20 +119,20 @@ def nsqfcn(s,t,p,p0,dp,lon,lat):
     #     slp = slp(si);
     #   end
 
-        while p0<=pmin:
+        while p0 <= pmin:
             p0 = p0+dp
 
         # End points of nsq window
-        pwin = np.arange(p0,pmax,dp)
-        ft = interp1d(plp,tlp)
+        pwin = np.arange(p0, pmax, dp)
+        ft = interp1d(plp, tlp)
         t_ep = ft(pwin)
-        fs = interp1d(plp,slp)
+        fs = interp1d(plp, slp)
         s_ep = fs(pwin)
         # Determine the number of output points
         (npts,) = t_ep.shape
 
         # Compute pressures at center points
-        pout = np.arange(p0+dp/2,np.max(pwin),dp)
+        pout = np.arange(p0+dp/2, np.max(pwin), dp)
 
         # Compute potential density of upper window pts at output pressures
         sa_u = gsw.SA_from_SP(s_ep[0:-1], t_ep[0:-1], lon, lat)
@@ -176,7 +177,6 @@ def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
     out['n2'] = np.zeros_like(z0)*np.nan
     out['Lo'] = np.zeros_like(z0)*np.nan
 
-
     # Find non-NaNs
     x = np.where(np.isfinite(T))
     x = x[0]
@@ -216,7 +216,7 @@ def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
     TH = z[Is]-z
     cumTH = np.cumsum(TH)
     # make sure there are any overturns
-    if np.sum(cumTH)>2:
+    if np.sum(cumTH) > 2:
         aa = np.where(cumTH > 1)
         aa = aa[0]
 
@@ -236,7 +236,7 @@ def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
         aadi = aadi[0]
         FirstItems = aa[aadi].copy()
 
-        # % Sort temperature and salinity for calculating the buoyancy frequency
+        # Sort temperature and salinity for calculating the buoyancy frequency
         PTs = PT[Is]
         SAs = SA[Is]
         CTs = CT[Is]
@@ -254,9 +254,9 @@ def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
             out['idx'][x[idx]] = 1
             sc = np.sqrt(np.mean(np.square(TH[idx])))
             # ctdn2 = np.nanmean(cn2[idx])
-            # Buoyancy frequency calculated over the overturn from sorted profiles
-            # Go beyond overturn (I am sure this will cause trouble with the
-            # indices at some point)
+            # Buoyancy frequency calculated over the overturn from sorted
+            # profiles. Go beyond overturn (I am sure this will cause trouble
+            # with the indices at some point).
             n2, Np = gsw.Nsquared(SAs[[iostart-1, ioend+1]],
                                   CTs[[iostart-1, ioend+1]],
                                   p[[iostart-1, ioend+1]], lat)
@@ -284,19 +284,26 @@ def woa_get_ts(llon, llat, plot=0):
     import xarray as xr
     tempfile = '/Users/gunnar/Data/world_ocean_atlas/woa13_decav_t00_04v2.nc'
     saltfile = '/Users/gunnar/Data/world_ocean_atlas/woa13_decav_s00_04v2.nc'
+    sigmafile = '/Users/gunnar/Data/world_ocean_atlas/woa13_decav_I00_04.nc'
 
     dt = xr.open_dataset(tempfile, decode_times=False)
     a = dt.isel(time=0)
     a.reset_coords(drop=True)
-    t = a['t_mn']
+    t = a['t_an']
     T = t.sel(lon=llon, lat=llat, method='nearest').values
 
     ds = xr.open_dataset(saltfile, decode_times=False)
     a = ds.isel(time=0)
     a.reset_coords(drop=True)
-    s = a['s_mn']
+    s = a['s_an']
     S = s.sel(lon=llon, lat=llat, method='nearest').values
     depth = s['depth'].data
+
+    dsg = xr.open_dataset(sigmafile, decode_times=False)
+    a = dsg.isel(time=0)
+    a.reset_coords(drop=True)
+    sg = a['I_an']
+    sg = sg.sel(lon=llon, lat=llat, method='nearest').values
 
     if plot:
         # import gvfigure as gvf
@@ -304,17 +311,20 @@ def woa_get_ts(llon, llat, plot=0):
         # fig,ax = gvf.newfig(3,5)
         # plt.plot(T,depth)
         # ax.invert_yaxis()
-        f, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
+        f, (ax1, ax2, ax3) = plt.subplots(1, 3, sharey=True)
         ax1.plot(T, depth, 'k')
-        ax1.set_xlabel('Temperature')
+        ax1.set_xlabel('Temperature [°C]')
         ax1.set_ylabel('Depth [m]')
         ax2.plot(S, depth, 'k')
         ax2.set_xlabel('Salinity')
+        ax3.plot(sg, depth, 'k')
+        ax3.set_xlabel(r'$\sigma$ [kg/m$^3$]')
         ax1.invert_yaxis()
-        f.set_figwidth(5)
+        f.set_figwidth(7.5)
         f.set_figheight(5)
 
-    return T, S, depth
+    return T, S, sg, depth
+
 
 def tpxo_extract(year, yday, lon, lat):
     """Extract tidal velocity and height predictions from TPXO model.
@@ -344,12 +354,12 @@ def tpxo_extract(year, yday, lon, lat):
     """
     from pytide import model
     # make sure all variables have the same length
-    if len(yday)>1:
-        if len(year)==1:
+    if len(yday) > 1:
+        if len(year) == 1:
             year = np.ones_like(yday)*year
-        if len(lon)==1:
+        if len(lon) == 1:
             lon = np.ones_like(yday)*lon
-        if len(lat)==1:
+        if len(lat) == 1:
             lat = np.ones_like(yday)*lat
 
     tidemod = model('tpxo7.2')
@@ -375,6 +385,8 @@ def tpxo_extract(year, yday, lon, lat):
 def uv2speeddir(u, v):
     """Convert velocity from u,v to speed and direction
 
+    Parameters
+    ----------
     u : float
         East-West velocity
     v : float
@@ -392,11 +404,30 @@ def uv2speeddir(u, v):
     return speed, direction
 
 
-def smith_sandwell(lon='all', lat='all', subsample=0):
+def smith_sandwell(lon='all', lat='all', subsample=0, verbose=0):
+    """Load Smith & Sandwell bathymetry
+
+    Parameters
+    ----------
+    lon : float, list or str
+        Longitude range. This may either be a single point,
+        a list of points, or 'all' (default). If given onne
+        point, the nearest ocean depth is returned. For a
+        list of locations, the are encompassing all points
+        is returned. 'all' returns the whole bathymetry.
+    lat : float, list or str
+        Latitude. Same options as lon.
+
+    Returns
+    -------
+    b : xarray DataArray
+        Bathymetry in an xarray DataArray using dask for quick access.
+    """
     # Load Smith & Sandwell bathymetry as xarray DataArray
     hn = socket.gethostname()
     hn = hn.split(sep='.')[0]
-    print('working on: ' + hn)
+    if verbose:
+        print('working on: ' + hn)
     if hn == 'oahu':
         nc_file = '/Users/gunnar/Data/bathymetry/smith_sandwell/topo30.grd'
     elif hn == 'upolu':
@@ -406,13 +437,21 @@ def smith_sandwell(lon='all', lat='all', subsample=0):
     else:
         print('hostname not recognized, assuming we are on oahu for now')
         nc_file = '/Users/gunnar/Data/bathymetry/smith_sandwell/topo30.grd'
-    print('Loading bathymetry...')
+    if verbose:
+        print('Loading bathymetry...')
     b = xr.open_dataarray(nc_file, chunks=1000)
     b['lon'] = np.mod((b.lon+180), 360)-180
     if lon is not 'all':
-        lonmask = ((b.lon > np.nanmin(lon)) & (b.lon < np.nanmax(lon)))
-        latmask = ((b.lat > np.nanmin(lat)) & (b.lat < np.nanmax(lat)))
-        b = b.isel(lon=lonmask, lat=latmask)
+        # for only one point
+        if np.ma.size(lon) == 1 and np.ma.size(lat) == 1:
+            lonmask = nearidx2(b.lon.values, lon)
+            latmask = nearidx2(b.lat.values, lat)
+            b = b.isel(lon=lonmask, lat=latmask)
+        # for a range of lon/lat
+        else:
+            lonmask = ((b.lon > np.nanmin(lon)) & (b.lon < np.nanmax(lon)))
+            latmask = ((b.lat > np.nanmin(lat)) & (b.lat < np.nanmax(lat)))
+            b = b.isel(lon=lonmask, lat=latmask)
     return b
 
 
@@ -486,3 +525,45 @@ def woce_climatology(lon=None, lat=None, z=None, std=False):
         return w, ws
     else:
         return w
+
+
+def lonlatstr(lon, lat):
+    """
+    Generate longitude/latitude strings from position in decimal format,
+    for example
+
+    Parameters
+    ----------
+    lon : float
+        Longitude
+    lat : float
+        Latitude
+
+    Returns
+    -------
+    slon : str
+        Longitude string
+    slat : str
+        Latitude str
+    """
+
+    if lon > 180:
+        lon = lon-360
+    if lon < 0:
+        EW = 'W'
+    else:
+        EW = 'E'
+    lonmin = np.abs(lon-np.floor(lon))*60
+    slon = '{:3d}° {:6.3f}\' {}'.format(int(np.abs(np.floor(lon))),
+                                           lonmin, EW)
+    slat = 'dummy'
+
+    if lat > 0:
+        NS = 'N'
+    else:
+        NS = 'S'
+    latmin = np.abs(lat-np.floor(lat))*60
+    slat = '{:3d}° {:6.3f}\' {}'.format(int(np.abs(np.floor(lat))),
+                                         latmin, NS)
+
+    return slon, slat

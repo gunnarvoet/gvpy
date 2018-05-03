@@ -6,7 +6,8 @@
 
 import numpy as np
 from scipy.signal import filtfilt
-from scipy.interpolate import interp1d, RectBivariateSpline
+from scipy.interpolate import interp1d
+from scipy import interpolate
 import socket
 import xarray as xr
 from gvpy.misc import nearidx2
@@ -494,7 +495,7 @@ def smith_sandwell_section(lon, lat, res=1, ext=0):
     ptopo = -bathy.data
 
     # 2D interpolation function used below
-    f = interpolate.f = RectBivariateSpline(plat,plon,ptopo)
+    f = interpolate.f = interpolate.RectBivariateSpline(plat,plon,ptopo)
 
     # calculate distance between original points
     dist = np.cumsum(gsw.distance(lon,lat,0)/1000)

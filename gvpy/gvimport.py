@@ -62,22 +62,29 @@ def matlab2datetime(matlab_datenum):
     return day + dayfrac
 
 
-def mtlb2datetime(matlab_datenum):
+def mtlb2datetime(matlab_datenum, strip_microseconds=False,
+                                  strip_seconds=False):
     '''
     mtlb2datetime(matlab_datenum):
     Convert Matlab datenum format to python datetime.
     This version also works for vector input and strips
-    milliseconds.
+    milliseconds if desired.
     '''
     if np.size(matlab_datenum) == 1:
         day = dt.datetime.fromordinal(int(matlab_datenum))
         dayfrac = dt.timedelta(days=matlab_datenum % 1) - dt.timedelta(days=366)
         t1 = day+dayfrac
-        t2 = dt.datetime.replace(t1, microsecond=0, second=0)
+        if strip_microseconds and strip_seconds:
+            t1 = dt.datetime.replace(t1, microsecond=0, second=0)
+        elif strip_microseconds:
+            t1 = dt.datetime.replace(t1, microsecond=0)
     else:
         day = [dt.datetime.fromordinal(int(tval)) for tval in matlab_datenum]
         dayfrac = [dt.timedelta(days=tval % 1) - dt.timedelta(days=366) for tval in matlab_datenum]
         t1 = [day1+dayfrac1 for day1, dayfrac1 in zip(day, dayfrac)]
-        t2 = [dt.datetime.replace(tval, microsecond=0, second=0) for tval in t1]
+        if strip_microseconds and strip_seconds:
+            t1 = [dt.datetime.replace(tval, microsecond=0, second=0) for tval in t1]
+        elif strip_microseconds:
+            t1 = [dt.datetime.replace(t1, microsecond=0) for tval in t1]
 
-    return t2
+    return t1

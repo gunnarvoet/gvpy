@@ -7,9 +7,10 @@ for now.
 import scipy.io as spio
 import numpy as np
 import datetime as dt
+from munch import munchify
 
 
-def gvloadmat(filename):
+def gvloadmat(filename, onevar=False):
     '''
     gvloadmat(filename):
     this function should be called instead of direct spio.loadmat
@@ -18,7 +19,23 @@ def gvloadmat(filename):
     which are still mat-objects
     '''
     data = spio.loadmat(filename, struct_as_record=False, squeeze_me=True)
-    return _check_keys(data)
+    out = _check_keys(data)
+
+    if onevar:
+        # let's check if there is only one variable in there and return it
+        kk = list(out.keys())
+        outvars = []
+        for k in kk:
+            if k[:2] != '__':
+                outvars.append(k)
+        if len(outvars) == 1:
+            print('returning munchfied data structure')
+            return munchify(out[outvars[0]])
+        else:
+            print('found more than one var...')
+            return out
+    else:
+        return out
 
 
 def _check_keys(dict):
@@ -55,7 +72,8 @@ def _todict(matobj):
 def matlab2datetime(matlab_datenum):
     '''
     matlab2datetime(matlab_datenum):
-    Convert Matlab datenum format to python datetime.
+    Convert Matlab datenum format to python datetime. Only works for single
+    timestamps, use mtlb2datetime for vector input.
     '''
     day = dt.datetime.fromordinal(int(matlab_datenum))
     dayfrac = dt.timedelta(days=matlab_datenum % 1) - dt.timedelta(days=366)

@@ -81,7 +81,7 @@ def matlab2datetime(matlab_datenum):
 
 
 def mtlb2datetime(matlab_datenum, strip_microseconds=False,
-                                  strip_seconds=False):
+                  strip_seconds=False):
     '''
     mtlb2datetime(matlab_datenum):
     Convert Matlab datenum format to python datetime.
@@ -91,18 +91,31 @@ def mtlb2datetime(matlab_datenum, strip_microseconds=False,
     if np.size(matlab_datenum) == 1:
         day = dt.datetime.fromordinal(int(matlab_datenum))
         dayfrac = dt.timedelta(days=matlab_datenum % 1) - dt.timedelta(days=366)
-        t1 = day+dayfrac
+        t1 = day + dayfrac
         if strip_microseconds and strip_seconds:
             t1 = dt.datetime.replace(t1, microsecond=0, second=0)
         elif strip_microseconds:
             t1 = dt.datetime.replace(t1, microsecond=0)
+
     else:
-        day = [dt.datetime.fromordinal(int(tval)) for tval in matlab_datenum]
-        dayfrac = [dt.timedelta(days=tval % 1) - dt.timedelta(days=366) for tval in matlab_datenum]
-        t1 = [day1+dayfrac1 for day1, dayfrac1 in zip(day, dayfrac)]
+        t1 = np.ones_like(matlab_datenum) * np.nan
+        t1 = t1.tolist()
+        nonan = np.isfinite(matlab_datenum)
+        md = matlab_datenum[nonan]
+        day = [dt.datetime.fromordinal(int(tval)) for tval in md]
+        dayfrac = [dt.timedelta(days=tval % 1) - dt.timedelta(days=366) for tval in md]
+        tt = [day1 + dayfrac1 for day1, dayfrac1 in zip(day, dayfrac)]
         if strip_microseconds and strip_seconds:
-            t1 = [dt.datetime.replace(tval, microsecond=0, second=0) for tval in t1]
+            tt = [dt.datetime.replace(tval, microsecond=0, second=0) for tval in tt]
         elif strip_microseconds:
-            t1 = [dt.datetime.replace(t1, microsecond=0) for tval in t1]
+            tt = [dt.datetime.replace(tval, microsecond=0) for tval in tt]
+        tt = [np.datetime64(ti) for ti in tt]
+        xi = np.where(nonan)[0]
+        for i, ii in enumerate(xi):
+            t1[ii] = tt[i]
+        xi = np.where(~nonan)[0]
+        for i in xi:
+            t1[i] = np.datetime64('nat')
+        t1 = np.array(t1)
 
     return t1

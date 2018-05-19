@@ -6,7 +6,7 @@
 
 import numpy as np
 from scipy.signal import filtfilt
-from scipy.interpolate import interp1d
+from scipy.interpolate import interp1d, NearestNDInterpolator
 from scipy import interpolate
 import socket
 import xarray as xr
@@ -477,31 +477,86 @@ def smith_sandwell_section(lon, lat, res=1, ext=0):
     out : dict
         Dictionary with output variables
     """
-
-
-    # Make sure lon and lat have the same dimensions
-    assert lon.shape==lat.shape, 'lat and lon must have the same size'
-    # Make sure lon and lat have at least 3 elements
-    assert len(lon)>1 and len(lat)>1, 'lon/lat must have at least 2 elements'
+    
+    # Extend range of Smith & Sandwell region to account for extension of the
+    # line defined by lon/lat. We'll extend by km / 100.
+    extra = np.array([-1 * ext, ext]) / 100
+    lonr = np.array([np.min(lon), np.max(lon)]) + extra
+    latr = np.array([np.min(lat), np.max(lat)]) + extra
 
     # Load bathymetry
-    bathy = smith_sandwell(lon, lat)
-#     b = bathy['bathy2']
-#     plon = b['lon']
-    plon = bathy.lon
-#     plat = b['lat']
-    plat = bathy.lat
-#     plon, plat = np.meshgrid(bathy.lon, bathy.lat)
-#     ptopo = -b['merged']
-    ptopo = -bathy.data
+    bathy = smith_sandwell(lonr, latr)
 
-    # 2D interpolation function used below
-    f = interpolate.f = interpolate.RectBivariateSpline(plat,plon,ptopo)
+    out = bathy_section(bathy, lon, lat, res, ext)
+
+    return out
+
+
+def bathy_section(bathy, lon, lat, res=1, ext=0):
+    """Extract bathymetry along pathway
+    defined by lon/lat coordinates.
+
+    Parameters
+    ----------
+    bathy : xarray.Dataset or DataArray
+        Bathymetry in xarray format, either as DataArray or as Dataset
+        with only one data variable. Coordinates may either be x/y or
+        lon/lat.
+    lon : arraylike
+        Longitude position along section
+    lat : arraylike
+        Latitude position along section
+    res : float
+        Bathymetry resolution
+    ext : float
+        Extension on both sides in km. Set to 0 for no extension
+
+    Returns
+    -------
+    out : dict
+        Dictionary with output variables
+    """
+
+    # Make sure lon and lat have the same dimensions
+    assert lon.shape == lat.shape, 'lat and lon must have the same size'
+    # Make sure lon and lat have at least 3 elements
+    assert len(lon) > 1 and len(lat) > 1, 'lon/lat must have at least 2 elements'
+
+    # Load bathymetry
+    coords = list(bathy.coords.keys())
+    if 'x' in coords and 'y' in coords:
+        plon = bathy.x
+        plat = bathy.y
+    elif 'lon' in coords and 'lat' in coords:
+        plon = bathy.lon
+        plat = bathy.lat
+    if isinstance(bathy, xr.DataArray):
+        ptopo = bathy.data
+    elif isinstance(bathy, xr.Dataset):
+        dvar = list(bathy.data_vars.keys())
+        assert len(dvar) == 1, 'Dataset must have only one data variable'
+        ptopo = bathy[dvar[0]].data
+
+    # 2D interpolation function used below. RectBivariateSpline can't deal with
+    # NaN's - we'll use NearestNDInterpolator in this case.
+    if np.any(np.isnan(ptopo)):
+        print('NaN''s present - using NearestNDInterpolator')
+        mplon, mplat = np.meshgrid(plon, plat)
+        mask = np.isfinite(ptopo)
+        intopo = ptopo[mask]
+        inlon = mplon[mask]
+        inlat = mplat[mask]
+        inpoints = np.vstack((inlon, inlat))
+        f = NearestNDInterpolator(inpoints.T, intopo)
+        NNDI = True
+    else:
+        f = interpolate.f = interpolate.RectBivariateSpline(plat, plon, ptopo)
+        NNDI = False
 
     # calculate distance between original points
-    dist = np.cumsum(gsw.distance(lon,lat,0)/1000)
+    dist = np.cumsum(gsw.distance(lon, lat, 0)/1000)
     # distance 0 as first element
-    dist = np.insert(dist,0,0)
+    dist = np.insert(dist, 0, 0)
 
     # Extend lon and lat if ext>0
     if ext:
@@ -509,85 +564,87 @@ def smith_sandwell_section(lon, lat, res=1, ext=0):
         Linear fit to start and end points. Do two separate fits if more than
         4 data points are give. Otherwise fit all points together.
 
-        Need to calculate distance first and then scale the lon/lat extension with distance.
+        Need to calculate distance first and then scale the lon/lat extension
+        with distance.
         '''
-        if len(lon)<5:
+        if len(lon) < 5:
             # only one fit for 4 or less data points
             dlo = np.abs(lon[0]-lon[-1])
             dla = np.abs(lat[0]-lat[-1])
-            dd  = np.abs(dist[0]-dist[-1])
-            # fit either against lon or lat, depending on orientation of section
-            if dlo>dla:
-                bfit = np.polyfit(lon,lat,1)
+            dd = np.abs(dist[0]-dist[-1])
+            # fit either against lon or lat, depending on orientation of
+            # section
+            if dlo > dla:
+                bfit = np.polyfit(lon, lat, 1)
                 # extension expressed in longitude (scale dist to lon)
                 lonext = 1.1*ext/dd*dlo
-                if lon[0]<lon[-1]:
-                    elon = np.array([lon[0]-lonext,lon[-1]+lonext])
+                if lon[0] < lon[-1]:
+                    elon = np.array([lon[0]-lonext, lon[-1]+lonext])
                 else:
-                    elon = np.array([lon[0]+lonext,lon[-1]-lonext])
-                blat = np.polyval(bfit,elon)
-                nlon = np.hstack((elon[0],lon,elon[-1]))
-                nlat = np.hstack((blat[0],lat,blat[-1]))
+                    elon = np.array([lon[0]+lonext, lon[-1]-lonext])
+                blat = np.polyval(bfit, elon)
+                nlon = np.hstack((elon[0], lon, elon[-1]))
+                nlat = np.hstack((blat[0], lat, blat[-1]))
             else:
-                bfit = np.polyfit(lat,lon,1)
+                bfit = np.polyfit(lat, lon, 1)
                 # extension expressed in latitude (scale dist to lat)
                 latext = 1.1*ext/dd*dla
-                if lat[0]<lat[-1]:
-                    elat = np.array([lat[0]-lonext,lat[-1]+lonext])
+                if lat[0] < lat[-1]:
+                    elat = np.array([lat[0]-latext, lat[-1]+latext])
                 else:
-                    elat = np.array([lat[0]+lonext,lat[-1]-lonext])
-                blon = np.polyval(bfit,elat)
-                nlon = np.hstack((blon[0],lon,blon[-1]))
-                nlat = np.hstack((elat[0],lat,elat[-1]))
+                    elat = np.array([lat[0]+latext, lat[-1]-latext])
+                blon = np.polyval(bfit, elat)
+                nlon = np.hstack((blon[0], lon, blon[-1]))
+                nlat = np.hstack((elat[0], lat, elat[-1]))
 
         else:
             # one fit on each side of the section as it may change direction
             dlo1 = np.abs(lon[0]-lon[2])
             dla1 = np.abs(lat[0]-lat[2])
-            dd1  = np.abs(dist[0]-dist[2])
+            dd1 = np.abs(dist[0]-dist[2])
             dlo2 = np.abs(lon[-3]-lon[-1])
             dla2 = np.abs(lat[-3]-lat[-1])
-            dd2  = np.abs(dist[-3]-dist[-1])
+            dd2 = np.abs(dist[-3]-dist[-1])
 
             # deal with one side first
-            if dlo1>dla1:
-                bfit1 = np.polyfit(lon[0:3],lat[0:3],1)
-                lonext1 = 1.1*ext/dd1*dlo1
-                if lon[0]<lon[2]:
-                    elon1 = np.array([lon[0]-lonext1,lon[0]])
+            if dlo1 > dla1:
+                bfit1 = np.polyfit(lon[0:3], lat[0:3], 1)
+                lonext1 = 1.1 * ext/dd1*dlo1
+                if lon[0] < lon[2]:
+                    elon1 = np.array([lon[0]-lonext1, lon[0]])
                 else:
-                    elon1 = np.array([lon[0]+lonext1,lon[0]])
-                elat1 = np.polyval(bfit1,elon1)
+                    elon1 = np.array([lon[0]+lonext1, lon[0]])
+                elat1 = np.polyval(bfit1, elon1)
             else:
-                bfit1 = np.polyfit(lat[0:3],lon[0:3],1)
+                bfit1 = np.polyfit(lat[0:3], lon[0:3], 1)
                 latext1 = 1.1*ext/dd1*dla1
-                if lat[0]<lat[2]:
-                    elat1 = np.array([lat[0]-latext1,lat[0]])
+                if lat[0] < lat[2]:
+                    elat1 = np.array([lat[0]-latext1, lat[0]])
                 else:
-                    elat1 = np.array([lat[0]+latext1,lat[0]])
-                elon1 = np.polyval(bfit1,elat1)
+                    elat1 = np.array([lat[0]+latext1, lat[0]])
+                elon1 = np.polyval(bfit1, elat1)
 
             # now the other side
-            if dlo2>dla2:
-                bfit2 = np.polyfit(lon[-3:],lat[-3:],1)
-                lonext2 = 1.1*ext/dd2*dlo2
-                if lon[-3]<lon[-1]:
-                    elon2 = np.array([lon[-1],lon[-1]+lonext2])
+            if dlo2 > dla2:
+                bfit2 = np.polyfit(lon[-3:], lat[-3:], 1)
+                lonext2 = 1.1 * ext/dd2*dlo2
+                if lon[-3] < lon[-1]:
+                    elon2 = np.array([lon[-1], lon[-1]+lonext2])
                 else:
-                    elon2 = np.array([lon[-1],lon[-1]-lonext2])
-                elat2 = np.polyval(bfit2,elon2)
+                    elon2 = np.array([lon[-1], lon[-1]-lonext2])
+                elat2 = np.polyval(bfit2, elon2)
             else:
-                bfit2 = np.polyfit(lat[-3:],lon[-3:],1)
+                bfit2 = np.polyfit(lat[-3:], lon[-3:], 1)
                 latext2 = 1.1*ext/dd2*dla2
-                if lat[-3]<lat[-1]:
-                    elat2 = np.array([lat[-1],lat[-1]+latext2])
+                if lat[-3] < lat[-1]:
+                    elat2 = np.array([lat[-1], lat[-1]+latext2])
                 else:
-                    elat2 = np.array([lat[-1],lat[-1]-latext2])
-                elon2 = np.polyval(bfit2,elat2)
+                    elat2 = np.array([lat[-1], lat[-1]-latext2])
+                elon2 = np.polyval(bfit2, elat2)
 
             # combine everything
-            nlon = np.hstack((elon1[0],lon,elon2[1]))
-            nlat = np.hstack((elat1[0],lat,elat2[1]))
+            nlon = np.hstack((elon1[0], lon, elon2[1]))
+            nlat = np.hstack((elat1[0], lat, elat2[1]))
 
         lon = nlon
         lat = nlat
@@ -604,54 +661,60 @@ def smith_sandwell_section(lon, lat, res=1, ext=0):
     out = {}
 
     # calculate distance between points
-    dist2 = gsw.distance(lon,lat,0)/1000
+    dist2 = gsw.distance(lon, lat, 0) / 1000
     dist2 = dist2[0]
     cdist2 = np.cumsum(dist2)
-    cdist2 = np.insert(cdist2,0,0)
+    cdist2 = np.insert(cdist2, 0, 0)
 
     # Create evenly spaced points between lon and lat
     # for i = 1:length(lon)-1
-    for i in np.arange(0,len(lon)-1,1):
+    for i in np.arange(0, len(lon)-1, 1):
 
-        n = dist2[i]/res
+        n = dist2[i] / res
 
         dlon = lon[i+1]-lon[i]
-        if not dlon==0:
+        if not dlon == 0:
             deltalon = dlon/n
-            lons = np.arange(lon[i],lon[i+1],deltalon)
+            lons = np.arange(lon[i], lon[i+1], deltalon)
         else:
-            lons = np.tile(lon[i],np.ceil(n))
-        ilon = np.hstack([ilon,lons])
+            lons = np.tile(lon[i], np.int(np.ceil(n)))
+        ilon = np.hstack([ilon, lons])
 
         dlat = lat[i+1]-lat[i]
-        if not dlat==0:
+        if not dlat == 0:
             deltalat = dlat/n
-            lats = np.arange(lat[i],lat[i+1],deltalat)
+            lats = np.arange(lat[i], lat[i+1], deltalat)
         else:
-            lats = np.tile(lat[i],np.ceil(n))
-        ilat = np.hstack([ilat,lats])
+            lats = np.tile(lat[i], np.int(np.ceil(n)))
+        ilat = np.hstack([ilat, lats])
 
-        if i==len(lon)-1:
-            ilon = np.append(ilon,olon[-1])
-            ilat = np.append(ilat,olat[-1])
+        if i == len(lon)-1:
+            ilon = np.append(ilon, olon[-1])
+            ilat = np.append(ilat, olat[-1])
 
-        if i==0:
-            odist = np.array([0,dist[i]])
+        if i == 0:
+            odist = np.array([0, dist[i]])
         else:
-            odist = np.append(odist,odist[-1]+dist2[i])
+            odist = np.append(odist, odist[-1]+dist2[i])
 
     # Evaluate the 2D interpolation function
-    itopo = f.ev(ilat,ilon)
-    idist = np.cumsum(gsw.distance(ilon,ilat,0)/1000)
+    if NNDI:
+        itopo = f(ilon, ilat)
+    else:
+        itopo = f.ev(ilat, ilon)
+    idist = np.cumsum(gsw.distance(ilon, ilat, 0) / 1000)
     # distance 0 as first element
-    idist = np.insert(idist,0,0)
+    idist = np.insert(idist, 0, 0)
 
     out['ilon'] = ilon
     out['ilat'] = ilat
     out['idist'] = idist
     out['itopo'] = itopo
 
-    out['otopo'] = f.ev(olat,olon)
+    if NNDI:
+        out['otopo'] = f(olon, olat)
+    else:
+        out['otopo'] = f.ev(olat, olon)
     out['olat'] = olat
     out['olon'] = olon
     out['odist'] = cdist2
@@ -662,13 +725,13 @@ def smith_sandwell_section(lon, lat, res=1, ext=0):
     # Extension specific
     if ext:
         # Remove offset in distance between the two bathymetries
-        out['olon']  = out['olon'][1:-1]
-        out['olat']  = out['olat'][1:-1]
-        out['otopo']    = out['otopo'][1:-1]
+        out['olon'] = out['olon'][1:-1]
+        out['olat'] = out['olat'][1:-1]
+        out['otopo'] = out['otopo'][1:-1]
         # set odist to 0 at initial lon[0]
-        offset = out['odist'][1]-out['odist'][0]
-        out['odist'] = out['odist'][1:-1]-offset
-        out['idist'] = out['idist']-offset
+        offset = out['odist'][1] - out['odist'][0]
+        out['odist'] = out['odist'][1:-1] - offset
+        out['idist'] = out['idist'] - offset
 
     return out
 

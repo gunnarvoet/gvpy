@@ -666,50 +666,51 @@ def bathy_section(bathy, lon, lat, res=1, ext=0):
     cdist2 = np.cumsum(dist2)
     cdist2 = np.insert(cdist2, 0, 0)
 
-    # Create evenly spaced points between lon and lat
-    # for i = 1:length(lon)-1
-    for i in np.arange(0, len(lon)-1, 1):
+    if res > 0 or ext > 0:
+        # Create evenly spaced points between lon and lat
+        # for i = 1:length(lon)-1
+        for i in np.arange(0, len(lon)-1, 1):
 
-        n = dist2[i] / res
+            n = dist2[i] / res
 
-        dlon = lon[i+1]-lon[i]
-        if not dlon == 0:
-            deltalon = dlon/n
-            lons = np.arange(lon[i], lon[i+1], deltalon)
+            dlon = lon[i+1]-lon[i]
+            if not dlon == 0:
+                deltalon = dlon/n
+                lons = np.arange(lon[i], lon[i+1], deltalon)
+            else:
+                lons = np.tile(lon[i], np.int(np.ceil(n)))
+            ilon = np.hstack([ilon, lons])
+
+            dlat = lat[i+1]-lat[i]
+            if not dlat == 0:
+                deltalat = dlat/n
+                lats = np.arange(lat[i], lat[i+1], deltalat)
+            else:
+                lats = np.tile(lat[i], np.int(np.ceil(n)))
+            ilat = np.hstack([ilat, lats])
+
+            if i == len(lon)-1:
+                ilon = np.append(ilon, olon[-1])
+                ilat = np.append(ilat, olat[-1])
+
+            if i == 0:
+                odist = np.array([0, dist[i]])
+            else:
+                odist = np.append(odist, odist[-1]+dist2[i])
+
+        # Evaluate the 2D interpolation function
+        if NNDI:
+            itopo = f(ilon, ilat)
         else:
-            lons = np.tile(lon[i], np.int(np.ceil(n)))
-        ilon = np.hstack([ilon, lons])
+            itopo = f.ev(ilat, ilon)
+        idist = np.cumsum(gsw.distance(ilon, ilat, 0) / 1000)
+        # distance 0 as first element
+        idist = np.insert(idist, 0, 0)
 
-        dlat = lat[i+1]-lat[i]
-        if not dlat == 0:
-            deltalat = dlat/n
-            lats = np.arange(lat[i], lat[i+1], deltalat)
-        else:
-            lats = np.tile(lat[i], np.int(np.ceil(n)))
-        ilat = np.hstack([ilat, lats])
-
-        if i == len(lon)-1:
-            ilon = np.append(ilon, olon[-1])
-            ilat = np.append(ilat, olat[-1])
-
-        if i == 0:
-            odist = np.array([0, dist[i]])
-        else:
-            odist = np.append(odist, odist[-1]+dist2[i])
-
-    # Evaluate the 2D interpolation function
-    if NNDI:
-        itopo = f(ilon, ilat)
-    else:
-        itopo = f.ev(ilat, ilon)
-    idist = np.cumsum(gsw.distance(ilon, ilat, 0) / 1000)
-    # distance 0 as first element
-    idist = np.insert(idist, 0, 0)
-
-    out['ilon'] = ilon
-    out['ilat'] = ilat
-    out['idist'] = idist
-    out['itopo'] = itopo
+        out['ilon'] = ilon
+        out['ilat'] = ilat
+        out['idist'] = idist
+        out['itopo'] = itopo
 
     if NNDI:
         out['otopo'] = f(olon, olat)

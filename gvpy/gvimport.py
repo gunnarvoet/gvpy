@@ -29,7 +29,7 @@ def gvloadmat(filename, onevar=False):
             if k[:2] != '__':
                 outvars.append(k)
         if len(outvars) == 1:
-            print('returning munchfied data structure')
+            print('returning munchified data structure')
             return munchify(out[outvars[0]])
         else:
             print('found more than one var...')

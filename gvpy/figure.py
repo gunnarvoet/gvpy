@@ -309,3 +309,29 @@ def quickbasemap(ax, lon, lat, field=None):
     if field is not None:
         m.contourf(x, y, field, ax=ax)
     return m, x, y
+
+
+def add_cax(fig, width=0.01, pad=0.01):
+    """
+    Add a colorbar axis to a row of axes (after last axis.) This axis can then 
+    be passed on to a colorbar call.
+
+    Parameters
+    ----------
+    fig : figure handle
+        Handle to figure.
+    width : float
+        Width of colorbar (optional, defaults to 0.01)
+    pad : float
+        Padding between last axis and cax (optional, defaults to 0.01)
+
+    Returns
+    -------
+    cax : AxesSubplot instance
+    """
+    ax = fig.axes
+    from mpl_toolkits.axes_grid1 import make_axes_locatable
+    divider = make_axes_locatable(ax[-1])
+    dpos = divider.get_position()
+    cax = fig.add_axes([dpos[0]+dpos[2]+pad, dpos[1], width, dpos[3]])
+    return cax

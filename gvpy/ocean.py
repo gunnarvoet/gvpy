@@ -739,11 +739,18 @@ def bathy_section(bathy, lon, lat, res=1, ext=0):
 
 def inertial_period(lat):
     Omega = 7.292e-5
-    f = 2*Omega*np.sin(np.deg2rad(lat))
-    Ti = 2*np.pi/f
-    Ti = Ti/3600/24
-    print('\nInertial period at {:1.2f}° is {:1.2f} days\n'.format(lat, np.abs(Ti)))
+    f = 2 * Omega * np.sin(np.deg2rad(lat))
+    Ti = 2 * np.pi / f
+    Ti = Ti / 3600 / 24
+    print('\nInertial period at {:1.2f}° is {:1.2f} days\n'.format(
+                                                       float(lat), np.abs(Ti)))
     return Ti
+
+
+def inertial_frequency(lat):
+    Omega = 7.292e-5
+    f = 2 * Omega * np.sin(np.deg2rad(lat))
+    return f
 
 
 def woce_climatology(lon=None, lat=None, z=None, std=False):

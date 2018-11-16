@@ -159,7 +159,49 @@ def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
     '''
     Calculate profile of turbulent dissipation epsilon from structure of a ctd
     profile.
-    Currently this takes only one profile and not a matrix from a whole twoyo.
+    Currently this takes only one profile and not a matrix e.g. from a whole
+    twoyo or ctd section.
+
+    Gunnar Voet
+    gvoet@ucsd.edu
+
+    Parameters
+    ----------
+    P : array-like
+        Pressure
+    Z : array-like
+        Depth
+    T : array-like
+        In-situ temperature
+    S : array-like
+        Salinity
+    lon : float
+        Longitude of observation
+    lat : float
+        Latitude of observation
+    dnoise : float
+        Noise level of density in kg/m^3 (default 0.001)
+    pdref : float
+        Reference pressure for potential density calculation
+
+    Returns
+    -------
+    out : dict
+        Dictionary containing the following results:
+      idx : array-like
+          Indicator for inversions found (1 for inversion, 0 otherwise)
+      Lt : array-like
+          Thorpe length scale [m]
+      eps : array-like
+          Turbulent dissipation [W/kg]
+      k : array-like
+          Turbulent diffusivity [m^2/s]
+      n2 : array-like
+          Stratification [s^-2]
+      Lo : array-like
+          Ozmidov scale
+    
+
     '''
     import numpy as np
     import gsw

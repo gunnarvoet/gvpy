@@ -335,3 +335,35 @@ def add_cax(fig, width=0.01, pad=0.01):
     dpos = divider.get_position()
     cax = fig.add_axes([dpos[0]+dpos[2]+pad, dpos[1], width, dpos[3]])
     return cax
+
+
+def ysym(ax=None):
+    """
+    Set ylim symmetric around zero based on current axis limits
+
+    Parameters
+    ----------
+    ax : axis handle
+        Handle to axis.
+    """
+    if ax is None:
+        ax = plt.gca()
+    ylims = ax.get_ylim()
+    absmax = np.max(np.abs(ylims))
+    ax.set_ylim([-absmax, absmax])
+
+
+def xsym(ax=None):
+    """
+    Set xlim symmetric around zero based on current axis limits
+
+    Parameters
+    ----------
+    ax : axis handle
+        Handle to axis.
+    """
+    if ax is None:
+        ax = plt.gca()
+    xlims = ax.get_xlim()
+    absmax = np.max(np.abs(xlims))
+    ax.set_xlim([-absmax, absmax])

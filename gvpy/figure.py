@@ -6,6 +6,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+from cycler import cycler
 
 
 def newfig(width=7.5, height=5.5, fontsize=12):
@@ -259,8 +260,8 @@ def figsave(fname, dirname='fig'):
         pwd = os.getcwd() + '/fig/'
     else:
         pwd = dirname + '/'
-    plt.savefig(dirname + '/' + fname + '.pdf', dpi=150)
-    plt.savefig(dirname + '/' + fname + '.png', dpi=150)
+    plt.savefig(dirname + '/' + fname + '.pdf', dpi=150, bbox_inches='tight')
+    plt.savefig(dirname + '/' + fname + '.png', dpi=200, bbox_inches='tight')
 
     fout = open(dirname + '/' + fname + '.tex', 'w')
     str = """\\begin{{figure*}}[htbp]
@@ -367,3 +368,21 @@ def xsym(ax=None):
     xlims = ax.get_xlim()
     absmax = np.max(np.abs(xlims))
     ax.set_xlim([-absmax, absmax])
+
+
+def colcyc10(ax=None):
+    """
+    Set xlim symmetric around zero based on current axis limits
+
+    Parameters
+    ----------
+    ax : axis handle
+        Handle to axis.
+    """
+    from cycler import cycler
+    if ax is None:
+        ax = plt.gca()
+    colors =  ['#1F77B4', '#FF7F0E', '#2CA02C', '#D62728',
+               '#9467BD', '#8C564B', '#CFECF9', '#7F7F7F',
+               '#BCBD22', '#17BECF']
+    ax.set_prop_cycle(cycler(color=colors))

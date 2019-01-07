@@ -200,7 +200,8 @@ def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
           Stratification [s^-2]
       Lo : array-like
           Ozmidov scale
-    
+      dtdz : array-like
+          Temperature gradient
 
     '''
     import numpy as np
@@ -220,6 +221,7 @@ def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
     out['k'] = np.zeros_like(z0)*np.nan
     out['n2'] = np.zeros_like(z0)*np.nan
     out['Lo'] = np.zeros_like(z0)*np.nan
+    out['dtdz'] = np.zeros_like(z0)*np.nan
 
     # Find non-NaNs
     x = np.where(np.isfinite(T))

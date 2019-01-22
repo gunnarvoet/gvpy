@@ -155,6 +155,111 @@ def nsqfcn(s, t, p, p0, dp, lon, lat):
     return n2, pout
 
 
+def tzfcn(CT, z, z0, dz):
+    """Calculate vertical temperature gradient for profile of
+    conservative temperature and depth.
+
+    The Function: (1) low-pass filters temperature over dp,
+                  (2) linearly interpolates t onto depths, z0,
+                      z0+dz, z0+2dz, ....,
+                  (4) converts differences in temperature into dt/dz
+                  (5) returns NaNs if the filtered depth is not
+                      monotonic.
+                      
+    Adapted from nsqfcn from Gregg and Alford.
+
+    Gunnar Voet
+    gvoet@ucsd.edu
+
+    Parameters
+    ----------
+    CT : float
+        Conservative temperature (or potential temperature)
+    z : float
+        Depth
+    z0 : float
+        Lower bound (start) depth for output values (not important...)
+    dz : float
+        Depth interval of output data and smoothing length scale
+
+    Returns
+    -------
+    tz : Vertical temperature gradient dt/dz [deg/m]
+
+    """
+    from scipy.signal import filtfilt
+    
+    # Change notation for t
+    t = CT
+    
+    # keep input z
+    zin = z
+
+    # Make sure data has dtype np.ndarray
+    if type(z) is not np.ndarray:
+        z = np.array(z)
+    if type(t) is not np.ndarray:
+        t = np.array(t)
+
+    # Exclude nan in t and z
+    xi = np.where((~np.isnan(z)) & (~np.isnan(t)))
+    z = z[xi]
+    t = t[xi]
+
+    # Put out all nan if no good data left
+    if ~z.any():
+        tz = np.nan
+        zout = np.nan
+
+    # Low pass filter temp to match specified dz
+    dz_data = np.diff(z)
+    dz_med = np.median(dz_data)
+    a = 1
+    b = np.hanning(2*np.floor(dz/dz_med))
+    b = b/np.sum(b)
+
+    tlp = filtfilt(b, a, t)
+    zlp = filtfilt(b, a, z)
+
+    # Check that z is monotonic
+    if np.all(np.diff(zlp) >= 0):
+        zmin = zlp[0]
+        zmax = zlp[-1]
+
+        while z0 <= zmin:
+            z0 = z0+dz
+
+        # End points of nsq window
+        zwin = np.arange(z0, zmax, dz)
+        ft = interp1d(zlp, tlp)
+        t_ep = ft(zwin)
+        # Determine the number of output points
+        (npts,) = t_ep.shape
+
+        # Compute depths at center points
+        zout = np.arange(z0+dz/2, np.max(zwin), dz)
+
+        # Temperature of upper window pts at output depth
+        t_u = t_ep[0:-1]
+
+        # Temperature of lower window pts at output depth
+        t_l = t_ep[1:]
+
+        # Compute temperature gradient
+        tz = (t_l - t_u)/(dz)
+        
+        # Interpolate back to original depth
+        ftzout = interp1d(zout, tz, bounds_error=False)
+        tzout = ftzout(zin)
+
+    else:
+        print('  filtered depth not monotonic')
+        tz = np.nan
+        zout = np.nan
+
+    return tzout
+
+
 def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
     '''
     Calculate profile of turbulent dissipation epsilon from structure of a ctd
@@ -239,22 +344,23 @@ def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
     CT = gsw.CT_from_t(SA, t, p)
     PT = gsw.pt0_from_t(SA, t, p)
 
-    sg4 = gsw.pot_rho_t_exact(SA, t, p, pdref)-1000
+    # Calculate potential density
+    sg = gsw.pot_rho_t_exact(SA, t, p, pdref)-1000
 
     # Create intermediate density profile
-    D0 = sg4[0]
-    sgt = D0-sg4[0]
+    D0 = sg[0]
+    sgt = D0-sg[0]
     n = sgt/dnoise
     n = np.fix(n)
     sgi = [D0+n*dnoise]  # first element
-    for i in np.arange(1, np.alen(sg4), 1):
-        sgt = sg4[i]-sgi[i-1]
+    for i in np.arange(1, np.alen(sg), 1):
+        sgt = sg[i]-sgi[i-1]
         n = sgt/dnoise
         n = np.fix(n)
         sgi.append(sgi[i-1]+n*dnoise)
     sgi = np.array(sgi)
 
-    # Sort
+    # Sort (important to use mergesort here)
     Ds = np.sort(sgi, kind='mergesort')
     Is = np.argsort(sgi, kind='mergesort')
 
@@ -282,14 +388,14 @@ def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
         aadi = aadi[0]
         FirstItems = aa[aadi].copy()
 
-        # Sort temperature and salinity for calculating the buoyancy frequency
+        # Sort temperature and salinity based on the density sorting index
+        # for calculating the buoyancy frequency
         PTs = PT[Is]
         SAs = SA[Is]
         CTs = CT[Is]
 
-        # % Loop through detected overturns
-        # % and calculate Thorpe Scales, N2 and dT/dz over the overturn
-        # THsc = nan(size(Z));
+        # Loop over detected overturns and calculate Thorpe Scales, N2
+        # and dT/dz over the overturn region
         THsc = np.zeros_like(z)*np.nan
         N2 = np.zeros_like(z)*np.nan
         # CN2  = np.ones_like(z)*np.nan
@@ -312,6 +418,13 @@ def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
             N2[idx] = n2
             # Fill depth range of the overturn with average 10m N^2
             # CN2[idx]  = ctdn2
+            # Fill depth range of the overturn with local temperature gradient
+            # Note that numpy's gradient() returns an output vector the same
+            # size as the input vector. As we are only providing two input
+            # values, we can safely disregard the second output value.
+            local_dtdz = np.gradient(CTs[[iostart-1, ioend+1]],
+                                     z[[iostart-1, ioend+1]])[0]
+            DTDZ[idx] = local_dtdz
 
         # % Calculate epsilon
         THepsilon = 0.9*THsc**2.0*np.sqrt(N2)**3
@@ -322,6 +435,7 @@ def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
         out['k'][x] = THk
         out['n2'][x] = N2
         out['Lt'][x] = THsc
+        out['dtdz'][x] = DTDZ
 
     return out
 

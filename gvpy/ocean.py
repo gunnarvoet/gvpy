@@ -260,8 +260,212 @@ def tzfcn(CT, z, z0, dz):
     return tzout
 
 
-def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
+def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000, verbose=False):
     '''
+    Calculate profile of turbulent dissipation epsilon from structure of a ctd
+    profile.
+    Currently this takes only one profile and not a matrix e.g. from a whole
+    twoyo or ctd section.
+
+    Gunnar Voet
+    gvoet@ucsd.edu
+
+    Parameters
+    ----------
+    P : array-like
+        Pressure
+    Z : array-like
+        Depth
+    T : array-like
+        In-situ temperature
+    S : array-like
+        Salinity
+    lon : float
+        Longitude of observation
+    lat : float
+        Latitude of observation
+    dnoise : float
+        Noise level of density in kg/m^3 (default 0.001)
+    pdref : float
+        Reference pressure for potential density calculation
+
+    Returns
+    -------
+    out : dict
+        Dictionary containing the following results:
+      idx : array-like
+          Indicator for inversions found (1 for inversion, 0 otherwise)
+      Lt : array-like
+          Thorpe length scale [m]
+      eps : array-like
+          Turbulent dissipation [W/kg]
+      k : array-like
+          Turbulent diffusivity [m^2/s]
+      n2 : array-like
+          Stratification [s^-2]
+      Lo : array-like
+          Ozmidov scale
+      dtdz : array-like
+          Temperature gradient
+
+    '''
+    import numpy as np
+    import gsw
+
+    # avoid error due to nan's in conditional statements
+    np.seterr(invalid='ignore')
+
+    z0 = Z.copy()
+    z0 = z0.astype('float')
+
+    # populate output dict
+    out = {}
+    out['idx'] = np.zeros_like(z0)
+    out['Lt'] = np.zeros_like(z0)*np.nan
+    out['eps'] = np.zeros_like(z0)*np.nan
+    out['k'] = np.zeros_like(z0)*np.nan
+    out['n2'] = np.zeros_like(z0)*np.nan
+    out['Lo'] = np.zeros_like(z0)*np.nan
+    out['dtdz'] = np.zeros_like(z0)*np.nan
+    out['dtdz2'] = np.zeros_like(z0)*np.nan
+
+    # Find non-NaNs
+    x = np.where(np.isfinite(T))
+    x = x[0]
+
+    # Extract variables without the NaNs
+    p = P[x].copy()
+    z = Z[x].copy()
+    z = z.astype('float')
+    t = T[x].copy()
+    s = S[x].copy()
+    # cn2   = ctdn['n2'][x].copy()
+
+    SA = gsw.SA_from_SP(s, t, lon, lat)
+    CT = gsw.CT_from_t(SA, t, p)
+    PT = gsw.pt0_from_t(SA, t, p)
+
+    # Calculate potential density
+    sg = gsw.pot_rho_t_exact(SA, t, p, pdref)-1000
+
+    # Create intermediate density profile
+    D0 = sg[0]
+    sgt = D0-sg[0]
+    n = sgt/dnoise
+    n = np.fix(n)
+    sgi = [D0+n*dnoise]  # first element
+    for i in np.arange(1, np.alen(sg), 1):
+        sgt = sg[i]-sgi[i-1]
+        n = sgt/dnoise
+        n = np.fix(n)
+        sgi.append(sgi[i-1]+n*dnoise)
+    sgi = np.array(sgi)
+
+    # Sort (important to use mergesort here)
+    Ds = np.sort(sgi, kind='mergesort')
+    Is = np.argsort(sgi, kind='mergesort')
+
+    # Calculate Thorpe length scale
+    TH = z[Is]-z
+    cumTH = np.cumsum(TH)
+    # make sure there are any overturns
+    if np.sum(cumTH) > 2:
+        aa = np.where(cumTH > 1)
+        aa = aa[0]
+
+        # last index in overturns
+        aatmp = aa.copy()
+        aatmp = np.append(aatmp, np.nanmax(aa)+10)
+        aad = np.diff(aatmp)
+        aadi = np.where(aad > 1)
+        aadi = aadi[0]
+        LastItems = aa[aadi].copy()
+
+        # first index in overturns
+        aatmp = aa.copy()
+        aatmp = np.insert(aatmp, 0, -1)
+        aad = np.diff(aatmp)
+        aadi = np.where(aad > 1)
+        aadi = aadi[0]
+        FirstItems = aa[aadi].copy()
+
+        # Make sure we didn't throw out a zero index in FirstItems
+        if len(LastItems) == len(FirstItems)+1:
+            if LastItems[0] < FirstItems[0]:
+                FirstItems = np.insert(FirstItems, 0, 0)
+                if verbose:
+                    print('inserting')
+                assert len(LastItems) == len(FirstItems)
+
+        # Sort temperature and salinity based on the density sorting index
+        # for calculating the buoyancy frequency
+        PTs = PT[Is]
+        SAs = SA[Is]
+        CTs = CT[Is]
+
+        # Loop over detected overturns and calculate Thorpe Scales, N2
+        # and dT/dz over the overturn region
+        THsc = np.zeros_like(z)*np.nan
+        N2 = np.zeros_like(z)*np.nan
+        # CN2  = np.ones_like(z)*np.nan
+        DTDZ1 = np.zeros_like(z)*np.nan
+        DTDZ2 = np.zeros_like(z)*np.nan
+
+        for iostart, ioend in zip(FirstItems, LastItems):
+            idx = np.arange(iostart, ioend+1, 1)
+            out['idx'][x[idx]] = 1
+            sc = np.sqrt(np.mean(np.square(TH[idx])))
+            # ctdn2 = np.nanmean(cn2[idx])
+            # Buoyancy frequency calculated over the overturn from sorted
+            # profiles. Go beyond overturn (I am sure this will cause trouble
+            # with the indices at some point).
+            n2, Np = gsw.Nsquared(SAs[[iostart-1, ioend+1]],
+                                  CTs[[iostart-1, ioend+1]],
+                                  p[[iostart-1, ioend+1]], lat)
+            # Fill depth range of the overturn with the Thorpe scale
+            THsc[idx] = sc
+            # Fill depth range of the overturn with N^2
+            N2[idx] = n2
+            # Fill depth range of the overturn with average 10m N^2
+            # CN2[idx]  = ctdn2
+            # Fill depth range of the overturn with local temperature gradient
+            # Note that numpy's gradient() returns an output vector the same
+            # size as the input vector. As we are only providing two input
+            # values, we can safely disregard the second output value.
+            
+            local_dtdz = np.gradient(CTs[[iostart-1, ioend+1]],
+                                     z[[iostart-1, ioend+1]])[0]
+            DTDZ1[idx] = local_dtdz
+                
+            if iostart > 0:
+                PTov = CTs[iostart-1:ioend+1]
+                zov = z[iostart-1:ioend+1]
+            else:
+                PTov = CTs[iostart:ioend+1]
+                zov = z[iostart:ioend+1]
+
+            local_dtdz = (np.min(PTov) - np.max(PTov)) / (np.max(zov) - np.min(zov) )
+            DTDZ2[idx] = local_dtdz
+
+        # % Calculate epsilon
+        THepsilon = 0.9*THsc**2.0*np.sqrt(N2)**3
+        THepsilon[N2 <= 0] = np.nan
+        THk = 0.2*THepsilon/N2
+
+        out['eps'][x] = THepsilon
+        out['k'][x] = THk
+        out['n2'][x] = N2
+        out['Lt'][x] = THsc
+        out['dtdz'][x] = DTDZ1
+        out['dtdz2'][x] = DTDZ2
+
+    return out
+
+
+def eps_overturn2(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
+    '''
+    NOTE: This version with sorted temperature for calculation of temperature
+    gradient.
     Calculate profile of turbulent dissipation epsilon from structure of a ctd
     profile.
     Currently this takes only one profile and not a matrix e.g. from a whole
@@ -364,29 +568,18 @@ def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
     Ds = np.sort(sgi, kind='mergesort')
     Is = np.argsort(sgi, kind='mergesort')
 
+    # Sort temperature profile as well for calculation of dT/dz
+    # Thetas = np.sort(PT, kind='mergesort')
+    # ThIs = np.argsort(PT, kind='mergesort')
+
     # Calculate Thorpe length scale
     TH = z[Is]-z
     cumTH = np.cumsum(TH)
     # make sure there are any overturns
     if np.sum(cumTH) > 2:
-        aa = np.where(cumTH > 1)
-        aa = aa[0]
 
-        # last index in overturns
-        aatmp = aa.copy()
-        aatmp = np.append(aatmp, np.nanmax(aa)+10)
-        aad = np.diff(aatmp)
-        aadi = np.where(aad > 1)
-        aadi = aadi[0]
-        LastItems = aa[aadi].copy()
-
-        # first index in overturns
-        aatmp = aa.copy()
-        aatmp = np.insert(aatmp, 0, -1)
-        aad = np.diff(aatmp)
-        aadi = np.where(aad > 1)
-        aadi = aadi[0]
-        FirstItems = aa[aadi].copy()
+        aa = np.where(cumTH > 2)[0]
+        blocks = _consec_blocks(aa, combine_gap=2)
 
         # Sort temperature and salinity based on the density sorting index
         # for calculating the buoyancy frequency
@@ -401,8 +594,8 @@ def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
         # CN2  = np.ones_like(z)*np.nan
         DTDZ = np.zeros_like(z)*np.nan
 
-        for iostart, ioend in zip(FirstItems, LastItems):
-            idx = np.arange(iostart, ioend+1, 1)
+        for iostart, ioend in zip(blocks[:, 0], blocks[:, 1]):
+            idx = np.arange(iostart, ioend, 1)
             out['idx'][x[idx]] = 1
             sc = np.sqrt(np.mean(np.square(TH[idx])))
             # ctdn2 = np.nanmean(cn2[idx])
@@ -416,14 +609,24 @@ def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
             THsc[idx] = sc
             # Fill depth range of the overturn with N^2
             N2[idx] = n2
-            # Fill depth range of the overturn with average 10m N^2
-            # CN2[idx]  = ctdn2
+        
             # Fill depth range of the overturn with local temperature gradient
             # Note that numpy's gradient() returns an output vector the same
             # size as the input vector. As we are only providing two input
             # values, we can safely disregard the second output value.
-            local_dtdz = np.gradient(CTs[[iostart-1, ioend+1]],
-                                     z[[iostart-1, ioend+1]])[0]
+            # local_dtdz = np.gradient(CTs[[iostart-1, ioend+1]],
+                                     # z[[iostart-1, ioend+1]])[0]
+            # Calculate temperature gradient based on the minimum/maximum tem-
+            # perature range over the overturn, similar to a sorted temperature
+            # profile.
+            if iostart > 0:
+                PTov = CTs[iostart-1:ioend+1]
+                zov = z[iostart-1:ioend+1]
+            else:
+                PTov = CTs[iostart:ioend+1]
+                zov = z[iostart:ioend+1]
+
+            local_dtdz = (np.min(PTov) - np.max(PTov)) / (np.max(zov) - np.min(zov) )
             DTDZ[idx] = local_dtdz
 
         # % Calculate epsilon
@@ -1015,3 +1218,62 @@ def lonlatstr(lon, lat):
                                          latmin, NS)
 
     return slon, slat
+
+
+def _consec_blocks(idx=None, combine_gap=0, combine_run=0):
+    """
+    block_idx = consec_blocks(idx,combine_gap=0, combine_run=0)
+
+    Routine that returns the start and end indexes of the consecutive blocks
+    of the index array (idx). The second argument combines consecutive blocks
+    together that are separated by <= combine. This is useful when you want
+    to perform some action on the n number of data points either side of a
+    gap, say, and don't want that action to be effected by a neighbouring
+    gap.
+
+    From Glenn Carter, University of Hawaii
+    """
+    if idx.size == 0:
+        return np.array([])
+
+    # Sort the index data and remove any identical points
+    idx = np.unique(idx)
+
+    # Find the block boundaries
+    didx = np.diff(idx)
+    ii = np.concatenate(((didx>1).nonzero()[0], np.atleast_1d(idx.shape[0]-1)))
+
+    # Create the block_idx array
+    block_idx = np.zeros((ii.shape[0], 2), dtype=int)
+    block_idx[0,:] = [idx[0], idx[ii[0]]]
+    for c in range(1, ii.shape[0]):
+        block_idx[c,0] = idx[ii[c-1]+1]
+        block_idx[c,1] = idx[ii[c]]
+
+    # Find the gap between and combine blocks that are closer together than
+    # the combine_gap threshold
+    gap = (block_idx[1:,0]-block_idx[0:-1,1])-1
+    if np.any(gap <= combine_gap):
+        count = 0
+        new_block = np.zeros(block_idx.shape, dtype=int)
+        new_block[0,0] = block_idx[0,0]
+        for ido in range(block_idx.shape[0]-1):
+            if gap[ido] > combine_gap:
+                new_block[count,1] = block_idx[ido,1]
+                count += 1
+                new_block[count,0] = block_idx[ido+1,0]
+        new_block[count,1] = block_idx[-1,1]
+        block_idx = new_block[:count+1,:]
+
+    # Combine any runs that are shorter than the combine_run threshold
+    runlength = (block_idx[:,1] - block_idx[:,0])
+    if np.any(runlength <= combine_run):
+        count = 0
+        new_block = np.zeros(block_idx.shape, dtype=int)
+        for ido in range(block_idx.shape[0]):
+            if runlength[ido] > combine_run:
+                new_block[count,:] = block_idx[ido,:]
+                count += 1
+        block_idx = new_block[:count,:]
+
+    return np.atleast_2d(block_idx)

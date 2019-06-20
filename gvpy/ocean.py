@@ -692,7 +692,7 @@ def bathy_section(bathy, lon, lat, res=1, ext=0):
         ptopo = bathy.data
     elif isinstance(bathy, xr.Dataset):
         dvar = list(bathy.data_vars.keys())
-        assert len(dvar) == 1, 'Dataset must have only one data variable'
+        assert len(dvar) == 1, 'Bathymetry dataset must have only one data variable'
         ptopo = bathy[dvar[0]].data
 
     # 2D interpolation function used below. RectBivariateSpline can't deal with
@@ -820,7 +820,8 @@ def bathy_section(bathy, lon, lat, res=1, ext=0):
 
     # calculate distance between points
     dist2 = gsw.distance(lon, lat, 0) / 1000
-    dist2 = dist2[0]
+    if np.ndim(dist2)>1:
+        dist2 = dist2[0]
     cdist2 = np.cumsum(dist2)
     cdist2 = np.insert(cdist2, 0, 0)
 

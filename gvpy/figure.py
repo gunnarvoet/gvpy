@@ -3,7 +3,7 @@
 """Module gvpy.figure for matplotlib related stuff.
 
 """
-
+import matplotlib.ticker as ticker
 import matplotlib.pyplot as plt
 import numpy as np
 from cycler import cycler
@@ -386,3 +386,24 @@ def colcyc10(ax=None):
                '#9467BD', '#8C564B', '#CFECF9', '#7F7F7F',
                '#BCBD22', '#17BECF']
     ax.set_prop_cycle(cycler(color=colors))
+
+
+def xytickdist(ax=None, x=1, y=1):
+    """
+    Set distance between ticks for xaxis and yaxis
+
+    Parameters
+    ----------
+    ax : axis handle
+        Handle to axis (optional).
+    x : float
+        Distance between xticks (default 1).
+    y : float
+        Distance between yticks (default 1).
+    """
+    if ax is None:
+        ax = plt.gca()
+    locx = ticker.MultipleLocator(base=x)
+    ax.xaxis.set_major_locator(locx)
+    locy = ticker.MultipleLocator(base=y)
+    ax.yaxis.set_major_locator(locy)

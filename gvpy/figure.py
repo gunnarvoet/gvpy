@@ -372,7 +372,7 @@ def xsym(ax=None):
 
 def colcyc10(ax=None):
     """
-    Set xlim symmetric around zero based on current axis limits
+    Set automatic color cycling for ax or current axis.
 
     Parameters
     ----------

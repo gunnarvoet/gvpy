@@ -767,7 +767,7 @@ def uv2speeddir(u, v):
     return speed, direction
 
 
-def smith_sandwell(lon='all', lat='all', subsample=0, verbose=0):
+def smith_sandwell(lon='all', lat='all', subsample=0, verbose=0, r15=0):
     """Load Smith & Sandwell bathymetry
 
     Parameters
@@ -789,17 +789,21 @@ def smith_sandwell(lon='all', lat='all', subsample=0, verbose=0):
     # Load Smith & Sandwell bathymetry as xarray DataArray
     hn = socket.gethostname()
     hn = hn.split(sep='.')[0]
+    if r15:
+        resolution=15
+    else:
+        resolution=30
     if verbose:
         print('working on: ' + hn)
     if hn == 'oahu':
-        nc_file = '/Users/gunnar/Data/bathymetry/smith_sandwell/topo30.grd'
+        nc_file = '/Users/gunnar/Data/bathymetry/smith_sandwell/topo{}.grd'.format(resolution)
     elif hn == 'upolu':
-        nc_file = '/Users/gunnar/Data/bathymetry/smith_sandwell/topo30.grd'
+        nc_file = '/Users/gunnar/Data/bathymetry/smith_sandwell/topo{}.grd'.format(resolution)
     elif hn == 'samoa':
-        nc_file = '/Users/gunnar/Data/bathymetry/smith_and_sandwell/topo30.grd'
+        nc_file = '/Users/gunnar/Data/bathymetry/smith_and_sandwell/topo{}.grd'.format(resolution)
     else:
         print('hostname not recognized, assuming we are on oahu for now')
-        nc_file = '/Users/gunnar/Data/bathymetry/smith_sandwell/topo30.grd'
+        nc_file = '/Users/gunnar/Data/bathymetry/smith_sandwell/topo{}.grd'.format(resolution)
     if verbose:
         print('Loading bathymetry...')
     b = xr.open_dataarray(nc_file, chunks=1000)

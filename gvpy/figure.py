@@ -5,8 +5,13 @@
 """
 import matplotlib.ticker as ticker
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
+import matplotlib.ticker as mticker
+import cartopy.crs as ccrs
 import numpy as np
 from cycler import cycler
+from pathlib import Path
 
 
 def newfig(width=7.5, height=5.5, fontsize=12):
@@ -244,6 +249,34 @@ def pcm(*args, **kwargs):
     return h
 
 
+def png(fname, figdir='fig', dpi=200):
+    """
+    Save figure as png.
+
+    Parameters
+    ----------
+    fname : str
+        Figure name without file extension.
+
+    figdir : str or Path object
+        Path to figure directory. Default ./fig/
+
+    dpi : int
+        Resolution (default 200)
+    """
+    # get current working directory
+    cwd = Path.cwd()
+    # see if we already have a figure directory
+    savedir = cwd.joinpath(figdir)
+    if savedir.exists() and savedir.is_dir():
+        print('saving to {}/'.format(figdir))
+    else:
+        print('creating figure directory at {}/'.format(savedir))
+        savedir.mkdir()
+    fname = fname+'.png'
+    plt.savefig(savedir.joinpath(fname), dpi=dpi, bbox_inches='tight')
+
+
 def figsave(fname, dirname='fig'):
     """
     adapted from https://github.com/jklymak/pythonlib/jmkfigure.py
@@ -407,3 +440,25 @@ def xytickdist(ax=None, x=1, y=1):
     ax.xaxis.set_major_locator(locx)
     locy = ticker.MultipleLocator(base=y)
     ax.yaxis.set_major_locator(locy)
+
+
+def concise_date(ax, minticks=6, maxticks=10):
+    locator = mdates.AutoDateLocator(minticks=minticks, maxticks=maxticks)
+    formatter = mdates.ConciseDateFormatter(locator)
+    ax.xaxis.set_major_locator(locator)
+    ax.xaxis.set_major_formatter(formatter)
+
+
+def cartopy_axes(ax, maxticks='auto'):
+    gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
+                  linewidth=.5, color='gray', alpha=0.5, linestyle='-')
+    gl.xlabels_top = False
+    gl.ylabels_right = False
+    if maxticks=='auto':
+        gl.xlocator = mticker.AutoLocator()
+        gl.ylocator = mticker.AutoLocator()
+    else:
+        gl.xlocator = mticker.MaxNLocator(maxticks)
+        gl.ylocator = mticker.MaxNLocator(maxticks)
+    gl.xformatter = LONGITUDE_FORMATTER
+    gl.yformatter = LATITUDE_FORMATTER

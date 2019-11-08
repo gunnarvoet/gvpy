@@ -38,26 +38,32 @@ def newfig(width=7.5, height=5.5, fontsize=12):
 
     # Get rid of ticks. The position of the numbers is informative enough of
     # the position of the value.
-    ax.xaxis.set_ticks_position('none')
-    ax.yaxis.set_ticks_position('none')
+    ax.xaxis.set_ticks_position("none")
+    ax.yaxis.set_ticks_position("none")
 
     # Remove top and right axes lines ("spines")
-    spines_to_remove = ['top', 'right']
+    spines_to_remove = ["top", "right"]
     for spine in spines_to_remove:
         ax.spines[spine].set_visible(False)
 
     # For remaining spines, thin out their line and change
     # the black to a slightly off-black dark grey
-    almost_black = '#262626'
-    spines_to_keep = ['bottom', 'left']
+    almost_black = "#262626"
+    spines_to_keep = ["bottom", "left"]
     for spine in spines_to_keep:
         ax.spines[spine].set_linewidth(0.5)
         ax.spines[spine].set_color(almost_black)
-        ax.spines[spine].set_position(('outward', 5))
+        ax.spines[spine].set_position(("outward", 5))
 
     # Change the labels to the off-black and adjust fontsize etc.
-    ax.tick_params(axis='both', which='major', labelsize=fontsize,
-                   length=0, colors=almost_black, direction='in')
+    ax.tick_params(
+        axis="both",
+        which="major",
+        labelsize=fontsize,
+        length=0,
+        colors=almost_black,
+        direction="in",
+    )
     ax.yaxis.label.set_size(fontsize)
     ax.xaxis.label.set_size(fontsize)
 
@@ -65,8 +71,15 @@ def newfig(width=7.5, height=5.5, fontsize=12):
     ax.title.set_color(almost_black)
 
     # turn grid on
-    ax.grid(b=True, which='major', axis='both', color='0.7',
-            linewidth=0.75, linestyle='-', alpha=0.8)
+    ax.grid(
+        b=True,
+        which="major",
+        axis="both",
+        color="0.7",
+        linewidth=0.75,
+        linestyle="-",
+        alpha=0.8,
+    )
 
     # Change figure position on screen
     # plt.get_current_fig_manager().window.setGeometry(0,0,width,height)
@@ -93,29 +106,29 @@ def axstyle(ax=None, fontsize=12, nospine=False):
         ax = plt.gca()
 
     # Remove top and right axes lines ("spines")
-    spines_to_remove = ['top', 'right']
+    spines_to_remove = ["top", "right"]
     for spine in spines_to_remove:
         ax.spines[spine].set_visible(False)
 
     # Remove bottom and left spines as well if desired
     if nospine:
-        more_spines_to_remove = ['bottom', 'left']
+        more_spines_to_remove = ["bottom", "left"]
         for spine in more_spines_to_remove:
             ax.spines[spine].set_visible(False)
 
     # Get rid of ticks. The position of the numbers is informative enough of
     # the position of the value.
-    ax.xaxis.set_ticks_position('none')
-    ax.yaxis.set_ticks_position('none')
+    ax.xaxis.set_ticks_position("none")
+    ax.yaxis.set_ticks_position("none")
 
     # For remaining spines, thin out their line and change
     # the black to a slightly off-black dark grey
-    almost_black = '#262626'
-    spines_to_keep = ['bottom', 'left']
+    almost_black = "#262626"
+    spines_to_keep = ["bottom", "left"]
     for spine in spines_to_keep:
         ax.spines[spine].set_linewidth(0.5)
         ax.spines[spine].set_color(almost_black)
-        ax.spines[spine].set_position(('outward', 5))
+        ax.spines[spine].set_position(("outward", 5))
 
     # Change the labels to the off-black
     ax.xaxis.label.set_color(almost_black)
@@ -124,15 +137,28 @@ def axstyle(ax=None, fontsize=12, nospine=False):
     ax.xaxis.label.set_size(fontsize)
 
     # Change the labels to the off-black
-    ax.tick_params(axis='both', which='major', labelsize=fontsize,
-                   length=0, colors=almost_black, direction='in')
+    ax.tick_params(
+        axis="both",
+        which="major",
+        labelsize=fontsize,
+        length=0,
+        colors=almost_black,
+        direction="in",
+    )
 
     # Change the axis title to off-black
     ax.title.set_color(almost_black)
 
     # turn grid on
-    ax.grid(b=True, which='major', axis='both', color='0.7',
-            linewidth=0.5, linestyle='-', alpha=0.8)
+    ax.grid(
+        b=True,
+        which="major",
+        axis="both",
+        color="0.7",
+        linewidth=0.5,
+        linestyle="-",
+        alpha=0.8,
+    )
 
     return ax
 
@@ -162,17 +188,17 @@ def newfigyy(width=7.5, height=5.5, fontsize=12):
     fig, ax1 = newfig(width, height)
     ax2 = ax1.twinx()
     ax1 = axstyle(ax1)
-    spines_to_remove = ['top', 'left', 'bottom']
+    spines_to_remove = ["top", "left", "bottom"]
     for spine in spines_to_remove:
         ax2.spines[spine].set_visible(False)
-    ax2.xaxis.set_ticks_position('none')
-    ax2.yaxis.set_ticks_position('none')
-    almost_black = '#262626'
-    spines_to_keep = ['right']
+    ax2.xaxis.set_ticks_position("none")
+    ax2.yaxis.set_ticks_position("none")
+    almost_black = "#262626"
+    spines_to_keep = ["right"]
     for spine in spines_to_keep:
         ax2.spines[spine].set_linewidth(0.5)
         ax2.spines[spine].set_color(almost_black)
-        ax2.spines[spine].set_position(('outward', 5))
+        ax2.spines[spine].set_position(("outward", 5))
     ax2.xaxis.label.set_color(almost_black)
     ax2.yaxis.label.set_color(almost_black)
     return fig, ax1, ax2
@@ -218,38 +244,38 @@ def pcm(*args, **kwargs):
     else:
         diverging = False
 
-    if 'cmap' not in kwargs:
+    if "cmap" not in kwargs:
         if diverging:
-            kwargs['cmap'] = 'RdBu_r'
+            kwargs["cmap"] = "RdBu_r"
         else:
-            kwargs['cmap'] = 'Spectral_r'
+            kwargs["cmap"] = "Spectral_r"
 
     if len(args) == 1:
-        if 'ax' in kwargs:
-            pax = kwargs['ax']
-            del kwargs['ax']
-            h = pax.pcolormesh(np.ma.masked_invalid(z),
-                               vmin=vmin, vmax=vmax, **kwargs)
+        if "ax" in kwargs:
+            pax = kwargs["ax"]
+            del kwargs["ax"]
+            h = pax.pcolormesh(np.ma.masked_invalid(z), vmin=vmin, vmax=vmax, **kwargs)
         else:
-            h = plt.pcolormesh(np.ma.masked_invalid(z),
-                               vmin=vmin, vmax=vmax, **kwargs)
+            h = plt.pcolormesh(np.ma.masked_invalid(z), vmin=vmin, vmax=vmax, **kwargs)
 
     elif len(args) == 3:
-        if 'ax' in kwargs:
-            pax = kwargs['ax']
-            del kwargs['ax']
-            h = pax.pcolormesh(x, y, np.ma.masked_invalid(z),
-                               vmin=vmin, vmax=vmax, **kwargs)
+        if "ax" in kwargs:
+            pax = kwargs["ax"]
+            del kwargs["ax"]
+            h = pax.pcolormesh(
+                x, y, np.ma.masked_invalid(z), vmin=vmin, vmax=vmax, **kwargs
+            )
         else:
-            h = plt.pcolormesh(x, y, np.ma.masked_invalid(z),
-                               vmin=vmin, vmax=vmax, **kwargs)
+            h = plt.pcolormesh(
+                x, y, np.ma.masked_invalid(z), vmin=vmin, vmax=vmax, **kwargs
+            )
     else:
-        print('You need to pass either 1 (z) or 3 (x,y,z) arguments.')
+        print("You need to pass either 1 (z) or 3 (x,y,z) arguments.")
 
     return h
 
 
-def png(fname, figdir='fig', dpi=200):
+def png(fname, figdir="fig", dpi=200):
     """
     Save figure as png.
 
@@ -269,15 +295,15 @@ def png(fname, figdir='fig', dpi=200):
     # see if we already have a figure directory
     savedir = cwd.joinpath(figdir)
     if savedir.exists() and savedir.is_dir():
-        print('saving to {}/'.format(figdir))
+        print("saving to {}/".format(figdir))
     else:
-        print('creating figure directory at {}/'.format(savedir))
+        print("creating figure directory at {}/".format(savedir))
         savedir.mkdir()
-    fname = fname+'.png'
-    plt.savefig(savedir.joinpath(fname), dpi=dpi, bbox_inches='tight')
+    fname = fname + ".png"
+    plt.savefig(savedir.joinpath(fname), dpi=dpi, bbox_inches="tight")
 
 
-def figsave(fname, dirname='fig'):
+def figsave(fname, dirname="fig"):
     """
     adapted from https://github.com/jklymak/pythonlib/jmkfigure.py
     provide filename (fname)
@@ -289,26 +315,28 @@ def figsave(fname, dirname='fig'):
     except:
         pass
 
-    if dirname == 'fig':
-        pwd = os.getcwd() + '/fig/'
+    if dirname == "fig":
+        pwd = os.getcwd() + "/fig/"
     else:
-        pwd = dirname + '/'
-    plt.savefig(dirname + '/' + fname + '.pdf', dpi=150, bbox_inches='tight')
-    plt.savefig(dirname + '/' + fname + '.png', dpi=200, bbox_inches='tight')
+        pwd = dirname + "/"
+    plt.savefig(dirname + "/" + fname + ".pdf", dpi=150, bbox_inches="tight")
+    plt.savefig(dirname + "/" + fname + ".png", dpi=200, bbox_inches="tight")
 
-    fout = open(dirname + '/' + fname + '.tex', 'w')
+    fout = open(dirname + "/" + fname + ".tex", "w")
     str = """\\begin{{figure*}}[htbp]
 \\centering
 \\includegraphics[width=1.0\\textwidth]{{{fname}}}
 \\caption{{  \\newline \\hspace{{\\linewidth}}   {{\\footnotesize {pwd}{fname}.pdf}}}}
 \\label{{fig:{fname}}}
-\\end{{figure*}}""".format(pwd=pwd, fname=fname)
+\\end{{figure*}}""".format(
+        pwd=pwd, fname=fname
+    )
     fout.write(str)
     fout.close()
 
-    cmd = 'less ' + dirname + '/%s.tex | pbcopy' % fname
+    cmd = "less " + dirname + "/%s.tex | pbcopy" % fname
     os.system(cmd)
-    print('figure printed to {}'.format(pwd))
+    print("figure printed to {}".format(pwd))
 
 
 def quickbasemap(ax, lon, lat, field=None):
@@ -332,12 +360,19 @@ def quickbasemap(ax, lon, lat, field=None):
         lon, lat in map coordinates for plotting
     """
     from mpl_toolkits.basemap import Basemap
-    m = Basemap(llcrnrlon=np.min(lon), llcrnrlat=np.min(lat),
-                urcrnrlon=np.max(lon), urcrnrlat=np.max(lat),
-                resolution='l', area_thresh=1000.,
-                projection='gall',
-                lat_0=np.max(lat)-np.min(lat), lon_0=np.max(lon)-np.min(lon),
-                ax=ax)
+
+    m = Basemap(
+        llcrnrlon=np.min(lon),
+        llcrnrlat=np.min(lat),
+        urcrnrlon=np.max(lon),
+        urcrnrlat=np.max(lat),
+        resolution="l",
+        area_thresh=1000.0,
+        projection="gall",
+        lat_0=np.max(lat) - np.min(lat),
+        lon_0=np.max(lon) - np.min(lon),
+        ax=ax,
+    )
     lonm, latm = np.meshgrid(lon, lat)
     x, y = m(lonm, latm)
     if field is not None:
@@ -365,9 +400,10 @@ def add_cax(fig, width=0.01, pad=0.01):
     """
     ax = fig.axes
     from mpl_toolkits.axes_grid1 import make_axes_locatable
+
     divider = make_axes_locatable(ax[-1])
     dpos = divider.get_position()
-    cax = fig.add_axes([dpos[0]+dpos[2]+pad, dpos[1], width, dpos[3]])
+    cax = fig.add_axes([dpos[0] + dpos[2] + pad, dpos[1], width, dpos[3]])
     return cax
 
 
@@ -413,11 +449,21 @@ def colcyc10(ax=None):
         Handle to axis.
     """
     from cycler import cycler
+
     if ax is None:
         ax = plt.gca()
-    colors =  ['#1F77B4', '#FF7F0E', '#2CA02C', '#D62728',
-               '#9467BD', '#8C564B', '#CFECF9', '#7F7F7F',
-               '#BCBD22', '#17BECF']
+    colors = [
+        "#1F77B4",
+        "#FF7F0E",
+        "#2CA02C",
+        "#D62728",
+        "#9467BD",
+        "#8C564B",
+        "#CFECF9",
+        "#7F7F7F",
+        "#BCBD22",
+        "#17BECF",
+    ]
     ax.set_prop_cycle(cycler(color=colors))
 
 
@@ -449,12 +495,18 @@ def concise_date(ax, minticks=6, maxticks=10):
     ax.xaxis.set_major_formatter(formatter)
 
 
-def cartopy_axes(ax, maxticks='auto'):
-    gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
-                  linewidth=.5, color='gray', alpha=0.5, linestyle='-')
+def cartopy_axes(ax, maxticks="auto"):
+    gl = ax.gridlines(
+        crs=ccrs.PlateCarree(),
+        draw_labels=True,
+        linewidth=0.5,
+        color="gray",
+        alpha=0.5,
+        linestyle="-",
+    )
     gl.xlabels_top = False
     gl.ylabels_right = False
-    if maxticks=='auto':
+    if maxticks == "auto":
         gl.xlocator = mticker.AutoLocator()
         gl.ylocator = mticker.AutoLocator()
     else:

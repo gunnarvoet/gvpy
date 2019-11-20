@@ -8,6 +8,89 @@ from __future__ import print_function, division
 import numpy as np
 import xarray as xr
 from  gvpy.gvimport import mtlb2datetime
+from seabird.cnv import fCNV
+from datetime import datetime, timedelta
+import gsw
+import pandas as pd
+
+
+
+def read_sbe_cnv(file, lat=0, lon=0):
+    """
+    Read Seabird SBE37 .cnv file and return as xarray.Dataset.
+
+    Parameters
+    ----------
+    file : str
+        Complete path to .cnv file
+    lat : float
+        Latitude (used for gsw calculations). Defaults to zero.
+    lon : float
+        Longitude (used for gsw calculations). Defaults to zero.
+
+    Returns
+    -------
+    mc : xarray.Dataset
+        Microcat data as Dataset with some metadata in the attributes.
+    """
+    # Read cnv file using Seabird package
+    cnv = fCNV(file)
+
+    # parse time
+    mcyday = cnv['timeJV2']
+    start_time_str_all = cnv.attributes['start_time']
+    start_time_str = start_time_str_all.split('[')[0]
+    base_year = pd.to_datetime(start_time_str).year
+    mctime = yday_to_datetime64(base_year, mcyday)
+    # let's make sure the first time stamp we generated matches the string in the cnv file
+    assert pd.to_datetime(np.datetime64(mctime[0], 's')) == pd.to_datetime(start_time_str)
+
+    # data vars
+    dvars = {'prdM': 'p', 'tv290C': 't'}
+    mcdata = {}
+    for k, di in dvars.items():
+        if k in cnv.keys():
+            # print(di, ':', k)
+            mcdata[di] = (['time'], cnv[k])
+    mc = xr.Dataset(data_vars=mcdata,
+                    coords={'time': mctime})
+    mc.attrs['file'] = cnv.attributes['filename']
+    mc.attrs['sbe_model'] = cnv.attributes['sbe_model']
+    # conductivity
+    cvars = {'cond0mS/cm': 'c', 'cond0S/m': 'c'}
+    for k, di in cvars.items():
+        if k in cnv.keys():
+            # convert from S/m to mS/cm as this is needed for gsw.SP_from_C
+            if k=='cond0S/m':
+                conductivity = cnv[k] * 10
+            else:
+                conductivity = cnv[k]
+            mc[di] = (['time'], conductivity)
+
+    # calculate oceanographic variables
+    mc['SP'] = (['time'], gsw.SP_from_C(mc.c, mc.t, mc.p))
+    if lat == 0 and lon == 0:
+        print('warning: absolute salinity, conservative temperature\n',
+              'and density calculation may be inaccurate\n',
+              'due to missing latitude/longitude')
+    mc['SA'] = (['time'], gsw.SA_from_SP(mc.SP, mc.p,
+                                         lat=lat, lon=lon))
+    mc['CT'] = (['time'], gsw.CT_from_t(mc.SA, mc.t, mc.p))
+    mc['sg0'] = (['time'], gsw.sigma0(mc.SA, mc.CT))
+
+    # add attributes
+    attributes = {'p': dict(long_name='pressure', units='dbar'),
+                  't': dict(long_name='in-situ temperature', units='°C'),
+                  'CT': dict(long_name='conservative temperature', units='°C'),
+                  'SA': dict(long_name='absolute salinity', units=r'kg/m$^3$'),
+                  'c': dict(long_name='conductivity', units='mS/cm'),
+                  'SP': dict(long_name='practical salinity', units=''),
+                  'sg0': dict(long_name=r'potential density $\sigma_0$', units=r'kg/m$^3$')}
+    for k, att in attributes.items():
+        if k in list(mc.variables.keys()):
+            mc[k].attrs = att
+
+    return mc
 
 
 def read_sadcp(ncfile):
@@ -92,3 +175,26 @@ def mat2dataset(m1):
     # drop dummy
     out = out.drop(['dummy'])
     return out
+
+
+def yday_to_datetime64(baseyear, yday):
+    """
+    Convert year day to numpy's datetime64 format.
+
+    Parameters
+    ----------
+    baseyear : int
+        Base year
+    yday : float
+        Year day
+
+    Returns
+    -------
+    time : np.datetime64
+        Time in numpy datetime64 format
+    """
+    base = datetime(baseyear, 1, 1)
+    time = [base + timedelta(days=ti) for ti in yday-1]
+    # convert to numpy datetime64
+    time64 = [np.datetime64(ti, 'ns') for ti in time]
+    return time64

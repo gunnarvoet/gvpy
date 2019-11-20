@@ -488,7 +488,21 @@ def xytickdist(ax=None, x=1, y=1):
     ax.yaxis.set_major_locator(locy)
 
 
-def concise_date(ax, minticks=6, maxticks=10):
+def concise_date(ax=None, minticks=6, maxticks=10):
+    """
+    Better date ticks using matplotlib's ConciseDateFormatter.
+
+    Parameters
+    ----------
+    ax : axis handle
+        Handle to axis (optional).
+    minticks : int
+        Minimum number of ticks (optional, default 6).
+    maxticks : int
+        Maximum number of ticks (optional, default 10).
+    """
+    if ax is None:
+        ax = plt.gca()
     locator = mdates.AutoDateLocator(minticks=minticks, maxticks=maxticks)
     formatter = mdates.ConciseDateFormatter(locator)
     ax.xaxis.set_major_locator(locator)

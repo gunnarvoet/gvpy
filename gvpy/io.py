@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Module gvpy.misc with in/out functions
+"""Module gvpy.io with in/out functions
 
 """
 
@@ -278,24 +278,6 @@ def read_raw_rdi(file, auxillary_only=False):
         "roll",
         "XducerDepth",
     ]
-    vars2d = [
-        "vel1",
-        "vel2",
-        "vel3",
-        "vel4",
-        "amp1",
-        "amp2",
-        "amp3",
-        "amp4",
-        "cor1",
-        "cor2",
-        "cor3",
-        "cor4",
-        "pg1",
-        "pg2",
-        "pg3",
-        "pg4",
-    ]
 
     out = xr.Dataset(data_vars={"dummy": (["z", "time"], np.ones((jj, ii)) * np.nan)})
 
@@ -303,15 +285,12 @@ def read_raw_rdi(file, auxillary_only=False):
     for v in varsii:
         out[v] = (["time"], radcp[v])
     # add pressure
-    out['Pressure'] = (["time"], radcp.VL['Pressure']/1000)
+    out['pressure'] = (["time"], radcp.VL['Pressure']/1000)
 
     # get 2d variables
     if auxillary_only is False:
-        for v in vars2d:
-            if radcp[v].shape[0] == ii and radcp[v].shape[1] == jj:
-                out[v] = (["z", "time"], np.transpose(radcp[v]))
-            elif radcp[v].shape[0] == jj and radcp[v].shape[1] == ii:
-                out[v] = (["z", "time"], radcp[v])
+        for v in ["vel", "cor", "amp", "pg"]:
+            out[v] = (["beam", "z", "time"], np.transpose(radcp[v]))
 
     out.coords["time"] = (["time"], adcptime)
     out.coords["z"] = (["z"], radcp.dep)

@@ -106,8 +106,8 @@ def plot_raw_adcp(adcp, figsize=(17, 20)):
     infoax.text(
         -0.2,
         0.7,
-        "instrument: {}\nping type: {}\ncoordinate system: {}".format(
-            adcp.attrs["sonar"], adcp.attrs["pingtype"], adcp.attrs["coordsystem"]
+        "instrument: {}\nping type: {}\ncoordinate system: {}\nbin size: {}".format(
+            adcp.attrs["sonar"], adcp.attrs["pingtype"], adcp.attrs["coordsystem"], adcp.attrs["cellsize"]
         ),
         transform=infoax.transAxes,
     )

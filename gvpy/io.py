@@ -308,6 +308,7 @@ def read_raw_rdi(file, auxillary_only=False):
     out.attrs["sonar"] = radcp.sonar.sonar
     out.attrs["coordsystem"] = radcp.trans.coordsystem
     out.attrs["pingtype"] = radcp.pingtype
+    out.attrs["cellsize"] = radcp.CellSize
 
     return out
 

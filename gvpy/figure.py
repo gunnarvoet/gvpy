@@ -407,6 +407,22 @@ def add_cax(fig, width=0.01, pad=0.01):
     return cax
 
 
+def ydecrease(ax=None):
+    """
+    Set decreasing yaxis as often desired when plotting a quantity
+    against pressure or depth.
+
+    Parameters
+    ----------
+    ax : axis handle
+        Handle to axis (optional).
+    """
+    if ax is None:
+        ax = plt.gca()
+    ylims = ax.get_ylim()
+    ax.set_ylim(bottom=np.amax(ylims), top=np.amin(ylims))
+
+
 def ysym(ax=None):
     """
     Set ylim symmetric around zero based on current axis limits
@@ -414,7 +430,7 @@ def ysym(ax=None):
     Parameters
     ----------
     ax : axis handle
-        Handle to axis.
+        Handle to axis (optional).
     """
     if ax is None:
         ax = plt.gca()

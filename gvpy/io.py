@@ -7,15 +7,13 @@
 from __future__ import print_function, division
 import numpy as np
 import xarray as xr
-from gvpy.gvimport import mtlb2datetime
 from seabird.cnv import fCNV
-from datetime import datetime, timedelta
+import datetime as dt
 import gsw
 import pandas as pd
 from pycurrents.adcp.rdiraw import Multiread
 import scipy.io as spio
 from munch import munchify
-
 
 
 def loadmat(filename, onevar=False):
@@ -67,6 +65,16 @@ def loadmat(filename, onevar=False):
     data = spio.loadmat(filename, struct_as_record=False, squeeze_me=True)
     out = _check_keys(data)
 
+    # Check if there is only one variable in the dataset. If so, directly
+    # return only this variable as munchified dataset.
+    if not onevar:
+        dk = list(out.keys())
+        actual_keys = [k for k in dk if k[:2] != '__']
+        if len(actual_keys) == 1:
+            print('found only one variable, returning munchified data structure')
+        return munchify(out[actual_keys[0]])
+
+    # for legacy, keep the option in here as well.
     if onevar:
         # let's check if there is only one variable in there and return it
         kk = list(out.keys())
@@ -86,12 +94,26 @@ def loadmat(filename, onevar=False):
 
 def mtlb2datetime(matlab_datenum, strip_microseconds=False,
                   strip_seconds=False):
-    '''
-    mtlb2datetime(matlab_datenum):
+    """
     Convert Matlab datenum format to python datetime.
     This version also works for vector input and strips
     milliseconds if desired.
-    '''
+
+    Parameters
+    ----------
+    matlab_datenum : float or np.array
+        Matlab time vector.
+    strip_microseconds : bool
+        Get rid of microseconds (optional)
+    strip_seconds : bool
+        Get rid of seconds (optional)
+
+    Returns
+    -------
+    t : np.datetime64
+        Time in numpy's datetime64 format.
+    """
+    
     if np.size(matlab_datenum) == 1:
         day = dt.datetime.fromordinal(int(matlab_datenum))
         dayfrac = dt.timedelta(days=matlab_datenum % 1) - dt.timedelta(days=366)
@@ -309,8 +331,8 @@ def yday1_to_datetime64(baseyear, yday):
     time : np.datetime64
         Time in numpy datetime64 format
     """
-    base = datetime(baseyear, 1, 1, 0, 0, 0)
-    time = [base + timedelta(days=ti) for ti in yday - 1]
+    base = dt.datetime(baseyear, 1, 1, 0, 0, 0)
+    time = [base + dt.timedelta(days=ti) for ti in yday - 1]
     # convert to numpy datetime64
     time64 = np.array([np.datetime64(ti, "ms") for ti in time])
     return time64
@@ -332,8 +354,8 @@ def yday0_to_datetime64(baseyear, yday):
     time : np.datetime64
         Time in numpy datetime64 format
     """
-    base = datetime(baseyear, 1, 1, 0, 0, 0)
-    time = [base + timedelta(days=ti) for ti in yday]
+    base = dt.datetime(baseyear, 1, 1, 0, 0, 0)
+    time = [base + dt.timedelta(days=ti) for ti in yday]
     # convert to numpy datetime64
     time64 = np.array([np.datetime64(ti, "ms") for ti in time])
     return time64

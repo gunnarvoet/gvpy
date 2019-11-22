@@ -200,7 +200,7 @@ def yday1_to_datetime64(baseyear, yday):
     base = datetime(baseyear, 1, 1, 0, 0, 0)
     time = [base + timedelta(days=ti) for ti in yday - 1]
     # convert to numpy datetime64
-    time64 = [np.datetime64(ti, "ms") for ti in time]
+    time64 = np.array([np.datetime64(ti, "ms") for ti in time])
     return time64
 
 
@@ -223,7 +223,7 @@ def yday0_to_datetime64(baseyear, yday):
     base = datetime(baseyear, 1, 1, 0, 0, 0)
     time = [base + timedelta(days=ti) for ti in yday]
     # convert to numpy datetime64
-    time64 = [np.datetime64(ti, "ms") for ti in time]
+    time64 = np.array([np.datetime64(ti, "ms") for ti in time])
     return time64
 
 
@@ -312,7 +312,7 @@ def read_raw_rdi(file, auxillary_only=False):
     return out
 
 
-def read_raw_rdi_uh(file):
+def read_raw_rdi_uh(file, auxillary_only=False):
     """
     Wrapper for UH's pycurrents.adcp.rdiraw.Multiread
 
@@ -329,20 +329,28 @@ def read_raw_rdi_uh(file):
 
     m = Multiread(file, "wh")
 
-    if "BottomTrack" in m.available_varnames:
-        radcp = m.read(
-            varlist=[
-                "Velocity",
-                "PercentGood",
-                "Intensity",
-                "Correlation",
-                "BottomTrack",
-            ]
-        )
+    if auxillary_only:
+        radcp = m.read(varlist=["FixedLeader"])
     else:
-        radcp = m.read(varlist=["Velocity", "PercentGood", "Intensity", "Correlation"])
+        if "BottomTrack" in m.available_varnames:
+            radcp = m.read(
+                varlist=[
+                    "Velocity",
+                    "PercentGood",
+                    "Intensity",
+                    "Correlation",
+                    "BottomTrack",
+                ]
+            )
+        else:
+            radcp = m.read(varlist=["Velocity", "PercentGood", "Intensity", "Correlation"])
+    
     # convert time
     adcptime = yday0_to_datetime64(radcp.yearbase, radcp.dday)
     radcp.time = adcptime
+
+    # pressure and temperature
+    radcp.pressure = radcp.VL['Pressure'] / 1000.0
+    radcp.temperature = radcp.VL['Temperature'] / 100.0
 
     return radcp

@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 '''Module gvpy.gvimport for importing data to python, mostly ®Matlab stuff
 for now.
+
+Keeping this module only for legacy reasons, code moved over to gvpy.io.
 '''
 
 import scipy.io as spio

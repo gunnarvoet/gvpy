@@ -13,6 +13,116 @@ from datetime import datetime, timedelta
 import gsw
 import pandas as pd
 from pycurrents.adcp.rdiraw import Multiread
+import scipy.io as spio
+from munch import munchify
+
+
+
+def loadmat(filename, onevar=False):
+    """
+    Load Matlab .mat files.
+
+    Parameters
+    ----------
+    filename : str
+        Path to .mat file
+    onevar : bool
+        Set to true if there is only one variable in the mat file.
+
+    Returns
+    -------
+    out : dict (Munch)
+        Data in a munchified dictionary.
+    """
+
+    def _check_keys(dict):
+        '''
+        checks if entries in dictionary are mat-objects. If yes
+        todict is called to change them to nested dictionaries
+        '''
+        for key in dict:
+            ni = np.size(dict[key])
+            if ni <= 1:
+                if isinstance(dict[key], spio.matlab.mio5_params.mat_struct):
+                    dict[key] = _todict(dict[key])
+            else:
+                for i in range(0, ni):
+                    if isinstance(dict[key][i], spio.matlab.mio5_params.mat_struct):
+                        dict[key][i] = _todict(dict[key][i])
+        return dict
+
+    def _todict(matobj):
+        '''
+        A recursive function which constructs from matobjects nested dictionaries
+        '''
+        dict = {}
+        for strg in matobj._fieldnames:
+            elem = matobj.__dict__[strg]
+            if isinstance(elem, spio.matlab.mio5_params.mat_struct):
+                dict[strg] = _todict(elem)
+            else:
+                dict[strg] = elem
+        return dict
+
+    data = spio.loadmat(filename, struct_as_record=False, squeeze_me=True)
+    out = _check_keys(data)
+
+    if onevar:
+        # let's check if there is only one variable in there and return it
+        kk = list(out.keys())
+        outvars = []
+        for k in kk:
+            if k[:2] != '__':
+                outvars.append(k)
+        if len(outvars) == 1:
+            print('returning munchified data structure')
+            return munchify(out[outvars[0]])
+        else:
+            print('found more than one var...')
+            return out
+    else:
+        return out
+
+
+def mtlb2datetime(matlab_datenum, strip_microseconds=False,
+                  strip_seconds=False):
+    '''
+    mtlb2datetime(matlab_datenum):
+    Convert Matlab datenum format to python datetime.
+    This version also works for vector input and strips
+    milliseconds if desired.
+    '''
+    if np.size(matlab_datenum) == 1:
+        day = dt.datetime.fromordinal(int(matlab_datenum))
+        dayfrac = dt.timedelta(days=matlab_datenum % 1) - dt.timedelta(days=366)
+        t1 = day + dayfrac
+        if strip_microseconds and strip_seconds:
+            t1 = dt.datetime.replace(t1, microsecond=0, second=0)
+        elif strip_microseconds:
+            t1 = dt.datetime.replace(t1, microsecond=0)
+
+    else:
+        t1 = np.ones_like(matlab_datenum) * np.nan
+        t1 = t1.tolist()
+        nonan = np.isfinite(matlab_datenum)
+        md = matlab_datenum[nonan]
+        day = [dt.datetime.fromordinal(int(tval)) for tval in md]
+        dayfrac = [dt.timedelta(days=tval % 1) - dt.timedelta(days=366) for tval in md]
+        tt = [day1 + dayfrac1 for day1, dayfrac1 in zip(day, dayfrac)]
+        if strip_microseconds and strip_seconds:
+            tt = [dt.datetime.replace(tval, microsecond=0, second=0) for tval in tt]
+        elif strip_microseconds:
+            tt = [dt.datetime.replace(tval, microsecond=0) for tval in tt]
+        tt = [np.datetime64(ti) for ti in tt]
+        xi = np.where(nonan)[0]
+        for i, ii in enumerate(xi):
+            t1[ii] = tt[i]
+        xi = np.where(~nonan)[0]
+        for i in xi:
+            t1[i] = np.datetime64('nat')
+        t1 = np.array(t1)
+
+    return t1
 
 
 def read_sbe_cnv(file, lat=0, lon=0):
@@ -138,6 +248,8 @@ def mat2dataset(m1):
         jj = m1["z"].shape[0]
     elif "p" in k:
         jj = m1["p"].shape[0]
+    elif "P" in k:
+        jj = m1["P"].shape[0]
 
     if "lon" in k:
         if len(m1["lon"].shape) == 1:
@@ -155,7 +267,7 @@ def mat2dataset(m1):
             out[v] = (["z"], m1[v])
 
     # convert the usual suspects into variables
-    suspects = ["lon", "lat", "p", "z", "depth", "dep"]
+    suspects = ["lon", "lat", "p", "z", "depth", "dep", "P"]
     for si in suspects:
         if si in vars1d:
             out.coords[si] = out[si]

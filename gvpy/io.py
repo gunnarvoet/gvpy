@@ -310,3 +310,39 @@ def read_raw_rdi(file, auxillary_only=False):
     out.attrs["pingtype"] = radcp.pingtype
 
     return out
+
+
+def read_raw_rdi_uh(file):
+    """
+    Wrapper for UH's pycurrents.adcp.rdiraw.Multiread
+
+    Parameters
+    ----------
+    file : str or Path
+        Path to raw data file.
+
+    Returns
+    -------
+    radcp : dict (Bunch)
+        UH data structure with raw RDI data
+    """
+
+    m = Multiread(file, "wh")
+
+    if "BottomTrack" in m.available_varnames:
+        radcp = m.read(
+            varlist=[
+                "Velocity",
+                "PercentGood",
+                "Intensity",
+                "Correlation",
+                "BottomTrack",
+            ]
+        )
+    else:
+        radcp = m.read(varlist=["Velocity", "PercentGood", "Intensity", "Correlation"])
+    # convert time
+    adcptime = yday0_to_datetime64(radcp.yearbase, radcp.dday)
+    radcp.time = adcptime
+
+    return radcp

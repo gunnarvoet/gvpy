@@ -72,7 +72,12 @@ def loadmat(filename, onevar=False):
         actual_keys = [k for k in dk if k[:2] != '__']
         if len(actual_keys) == 1:
             print('found only one variable, returning munchified data structure')
-        return munchify(out[actual_keys[0]])
+            return munchify(out[actual_keys[0]])
+        else:
+            out2 = {}
+            for k in actual_keys:
+                out2[k] = out[k]
+            return munchify(out2)
 
     # for legacy, keep the option in here as well.
     if onevar:

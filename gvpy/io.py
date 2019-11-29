@@ -438,7 +438,8 @@ def read_raw_rdi(file, auxillary_only=False):
     if 'bt_vel' in radcp.keys():
         out['bt_vel'] = (["time", "beam"], radcp.bt_vel)
         out['bt_depth'] = (["time", "beam"], radcp.bt_depth)
-        out.coords["beam"] = np.array([1, 2, 3, 4])
+    out.coords["beam"] = np.array([1, 2, 3, 4])
+
 
     # drop dummy
     out = out.drop(["dummy"])

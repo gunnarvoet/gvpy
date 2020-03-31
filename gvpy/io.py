@@ -15,6 +15,7 @@ from pycurrents.adcp.rdiraw import Multiread
 import scipy.io as spio
 from munch import munchify
 import re
+from pathlib import Path
 
 
 def loadmat(filename, onevar=False):
@@ -507,6 +508,8 @@ class ANTS(object):
 
     def __init__(self, filename):
         self.filename = filename
+        if not isinstance(self.filename, Path):
+            self.filename = Path(self.filename)
 
         with open(self.filename) as f:
             content = f.readlines()
@@ -546,22 +549,25 @@ class ANTS(object):
             setattr(self, f, all_data[:, i])
 
     def _to_xarray(self):
-        # # determine which type we have, based on filename ending
-        # # .dts, .sh, .vel, .BT
-        # p = Path(self.filename)
-        # suffix = p.suffix
+        """
+        Convert ANTS class to xarray dataset.
+
+        Returns
+        -------
+        ds : xarray.Dataset
+            xarray data structure
+        """
         all_attrs = dir(self)
         cleaned_attrs = [x for x in all_attrs if x[0] != "_"]
         cdic = {ci: [] for ci in cleaned_attrs}
         ds = xr.Dataset()
 
-        dd = {}
         ck = list(cdic.keys())
         for ci in ck:
             a = getattr(self, ci)
             if isinstance(a, np.ndarray):
                 cdic.pop(ci)
-                ds[ci] = (["time"], a)
+                ds[ci] = (["n"], a)
 
         ck = list(cdic.keys())
         for ci in ck:
@@ -576,6 +582,19 @@ class ANTS(object):
             if isinstance(a, str):
                 cdic.pop(ci)
                 ds.attrs[ci] = a
+
+        # add source file name as attribute to dataset
+        ds.attrs['filename'] = self.filename
+
+        # change dim, coord based on file suffix
+        if self.filename.suffix=='.VKE':
+            ds = ds.swap_dims({'n': 'depth'})
+            ds.coords['depth'] = ds.depth
+        if self.filename.suffix=='.wprof':
+            ds = ds.swap_dims({'n': 'depth'})
+            for c in ['depth', 'hab', 'dc_depth', 'uc_depth']:
+                ds.coords[c] = ds[c]
+
         return ds
 
 

@@ -14,6 +14,7 @@ import pandas as pd
 from pycurrents.adcp.rdiraw import Multiread
 import scipy.io as spio
 from munch import munchify
+import re
 
 
 def loadmat(filename, onevar=False):

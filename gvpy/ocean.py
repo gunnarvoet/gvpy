@@ -12,6 +12,7 @@ import socket
 import xarray as xr
 import gsw
 from gvpy.misc import nearidx2
+from pathlib import Path
 
 
 def nsqfcn(s, t, p, p0, dp, lon, lat):
@@ -1175,12 +1176,52 @@ def woce_climatology(lon=None, lat=None, z=None, std=False):
            'PRES': 'p', 'TEMP': 't', 'TPOTEN': 'th', 'SALINITY': 's',
            'OXYGEN': 'o2', 'SIG0': 'sg0', 'SIG2': 'sg2', 'SIG4': 'sg4',
            'GAMMAN': 'gamma'}
-    w.rename(rnm, inplace=True)
+    w = w.rename(rnm)
     if std:
         return w, ws
     else:
         return w
 
+def woce_argo_profile(lon, lat, interp=False, load=True):
+    """
+    Extract profile at a single location from the WOCE ARGO Global Hydrographic Climatology (WAGHC).
+    Go here for more info on the dataset: https://icdc.cen.uni-hamburg.de/1/daten/ocean/waghc/
+    
+    Cite data as:
+    Gouretski, Viktor (2018). WOCE-Argo Global Hydrographic Climatology (WAGHC Version 1.0).
+    World Data Center for Climate (WDCC) at DKRZ. https://doi.org/10.1594/WDCC/WAGHC_V1.0
+
+    Parameters
+    ----------
+    lon : float
+        Longitude
+
+    lat : float
+        latitude
+        
+    interp : bool
+        Defaults to False for nearest neighbor lookup. Set to True for interpolation.
+    
+    load : bool
+        Load data into memory (default True).
+
+    Returns
+    -------
+    prf : xarray.Dataset
+        Data at provided location with coordinates depth and time.
+    """
+    woce_argo_path = Path('/Users/gunnar/Data/woce_argo_global_hydrographic_climatology')
+    paths = sorted(woce_argo_path.glob('WAGHC_BAR_*.nc'))
+    ta = xr.open_mfdataset(paths, decode_times=False, combine='by_coords')
+    if interp:
+        out = ta.interp(longitude=lon, latitude=lat)
+    else:
+        out = ta.sel(longitude=lon, latitude=lat, method='nearest')
+    if load:
+        out = out.load()
+    out.time.attrs = dict(units='month')
+    prf = out
+    return prf
 
 def lonlatstr(lon, lat):
     """

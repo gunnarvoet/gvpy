@@ -322,6 +322,25 @@ def mat2dataset(m1):
     return out
 
 
+def str_to_datetime64(timestr):
+    """
+    Convert date/time in str format to numpy's datetime64 format.
+    Makes intermediate use of pandas datetime format, their string 
+    conversion seems to be much more capable than numpy's.
+
+    Parameters
+    ----------
+    timestr : str
+        Date/time
+
+    Returns
+    -------
+    time : np.datetime64
+        Time in numpy datetime64 format
+    """
+    return pd.to_datetime(timestr).to_datetime64()
+
+
 def yday1_to_datetime64(baseyear, yday):
     """
     Convert year day (starting at yday 1) to numpy's datetime64 format.

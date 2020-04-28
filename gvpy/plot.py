@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
 from cycler import cycler
+from matplotlib.collections import LineCollection
+
 try:
     import cartopy.crs as ccrs
     from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
@@ -551,3 +553,21 @@ def cartopy_axes(ax, maxticks="auto"):
         gl.ylocator = mticker.MaxNLocator(maxticks)
     gl.xformatter = LONGITUDE_FORMATTER
     gl.yformatter = LATITUDE_FORMATTER
+
+
+def multi_line_plot(x, y, z, ax, **kwargs):
+    # see also here: https://matplotlib.org/examples/pylab_examples/multicolored_line.html
+    norm = plt.Normalize(y.min(), y.max())
+    segments = []
+    zz = []
+    for i, zi in enumerate(y):
+        points = np.array([x, z[i, :]]).transpose()
+        segments.append(points)
+        zz.append(zi)
+    segments = np.array(segments)
+    lc = LineCollection(segments, cmap='Greys', norm=norm)
+    lc.set_array(np.array(zz))
+    lc.set_linewidth(1)
+    lc.set_alpha(0.5)
+    line = ax.add_collection(lc)
+    return line

@@ -1,5 +1,5 @@
-pythonlib
-=========
+gvpy
+====
 
 Library of python modules for data analysis and visualization. To import
 ```
@@ -15,4 +15,9 @@ python setup.py install
 To install in developer mode
 ```
 python setup.py develop
+```
+
+or using pip:
+```
+pip install -e .
 ```

@@ -411,7 +411,7 @@ class ANTS(object):
 
         test = []
         for c in content:
-            if c[0] is "#":
+            if c[0] == "#":
                 if p_error.match(c):
                     print("error")
                 elif p_param.match(c):

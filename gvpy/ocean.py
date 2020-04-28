@@ -809,7 +809,7 @@ def smith_sandwell(lon='all', lat='all', subsample=0, verbose=0, r15=0):
         print('Loading bathymetry...')
     b = xr.open_dataarray(nc_file, chunks=1000)
     b['lon'] = np.mod((b.lon+180), 360)-180
-    if lon is not 'all':
+    if lon != 'all':
         # for only one point
         if np.ma.size(lon) == 1 and np.ma.size(lat) == 1:
             lonmask = nearidx2(b.lon.values, lon)

@@ -5,26 +5,26 @@ Library of python modules for data analysis and visualization. Use with caution 
 
 To install in regular mode:
 
-```
-python setup.py install
-```
+.. highlight:: shell
+    
+    python setup.py install
 
 To install in developer mode
 
-```
-python setup.py develop
-```
+.. highlight:: shell
+
+    python setup.py develop
 
 or using pip:
 
-```
-pip install -e .
-```
+.. highlight:: shell
+
+    pip install -e .
 
 To import run:
 
-```
-import gvpy as gv
-```
+.. highlight:: python
+
+    import gvpy as gv
 
 This will provide several submodules under `gv`.

@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''Module gvpy.ocean with oceanography related functions
+'''Module gvpy.ocean with oceanography related functions'''
 
-'''
-
-import numpy as np
-from scipy.signal import filtfilt
-from scipy.interpolate import interp1d, NearestNDInterpolator
-from scipy import interpolate
 import socket
-import xarray as xr
-import gsw
-from gvpy.misc import nearidx2
 from pathlib import Path
+
+import gsw
+import numpy as np
+import xarray as xr
+from scipy import interpolate
+from scipy.interpolate import NearestNDInterpolator, interp1d
+from scipy.signal import filtfilt
+
+from gvpy.misc import nearidx2
 
 
 def nsqfcn(s, t, p, p0, dp, lon, lat):

@@ -1,21 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Module gvpy.io with in/out functions
-
 """
 
-from __future__ import print_function, division
-import numpy as np
-import xarray as xr
-from seabird.cnv import fCNV
+from __future__ import division, print_function
+
 import datetime as dt
-import gsw
-import pandas as pd
-from pycurrents.adcp.rdiraw import Multiread
-import scipy.io as spio
-from munch import munchify
 import re
 from pathlib import Path
+
+import gsw
+import numpy as np
+import pandas as pd
+import scipy.io as spio
+import xarray as xr
+from munch import munchify
+from seabird.cnv import fCNV
 
 
 def loadmat(filename, onevar=False):
@@ -36,10 +36,10 @@ def loadmat(filename, onevar=False):
     """
 
     def _check_keys(dict):
-        '''
+        """
         checks if entries in dictionary are mat-objects. If yes
         todict is called to change them to nested dictionaries
-        '''
+        """
         for key in dict:
             ni = np.size(dict[key])
             if ni <= 1:
@@ -52,9 +52,9 @@ def loadmat(filename, onevar=False):
         return dict
 
     def _todict(matobj):
-        '''
+        """
         A recursive function which constructs from matobjects nested dictionaries
-        '''
+        """
         dict = {}
         for strg in matobj._fieldnames:
             elem = matobj.__dict__[strg]
@@ -71,9 +71,9 @@ def loadmat(filename, onevar=False):
     # return only this variable as munchified dataset.
     if not onevar:
         dk = list(out.keys())
-        actual_keys = [k for k in dk if k[:2] != '__']
+        actual_keys = [k for k in dk if k[:2] != "__"]
         if len(actual_keys) == 1:
-            print('found only one variable, returning munchified data structure')
+            print("found only one variable, returning munchified data structure")
             return munchify(out[actual_keys[0]])
         else:
             out2 = {}
@@ -87,20 +87,19 @@ def loadmat(filename, onevar=False):
         kk = list(out.keys())
         outvars = []
         for k in kk:
-            if k[:2] != '__':
+            if k[:2] != "__":
                 outvars.append(k)
         if len(outvars) == 1:
-            print('returning munchified data structure')
+            print("returning munchified data structure")
             return munchify(out[outvars[0]])
         else:
-            print('found more than one var...')
+            print("found more than one var...")
             return out
     else:
         return out
 
 
-def mtlb2datetime(matlab_datenum, strip_microseconds=False,
-                  strip_seconds=False):
+def mtlb2datetime(matlab_datenum, strip_microseconds=False, strip_seconds=False):
     """
     Convert Matlab datenum format to python datetime.
     This version also works for vector input and strips
@@ -120,7 +119,7 @@ def mtlb2datetime(matlab_datenum, strip_microseconds=False,
     t : np.datetime64
         Time in numpy's datetime64 format.
     """
-    
+
     if np.size(matlab_datenum) == 1:
         day = dt.datetime.fromordinal(int(matlab_datenum))
         dayfrac = dt.timedelta(days=matlab_datenum % 1) - dt.timedelta(days=366)
@@ -148,7 +147,7 @@ def mtlb2datetime(matlab_datenum, strip_microseconds=False,
             t1[ii] = tt[i]
         xi = np.where(~nonan)[0]
         for i in xi:
-            t1[i] = np.datetime64('nat')
+            t1[i] = np.datetime64("nat")
         t1 = np.array(t1)
 
     return t1
@@ -387,137 +386,6 @@ def yday0_to_datetime64(baseyear, yday):
     return time64
 
 
-def read_raw_rdi(file, auxillary_only=False):
-    """
-    Read raw RDI ADCP data file and return as xarray Dataset.
-
-    Parameters
-    ----------
-    file : str or Path
-        Path to raw data file.
-    auxillary_only : bool
-        Set to True to ignore 2d fields. (default False)
-
-    Returns
-    -------
-    rdi : xarray.Dataset
-        Raw ADCP data in xarray Dataset format.
-    """
-
-    m = Multiread(file, "wh")
-
-    if auxillary_only:
-        radcp = m.read(varlist=["FixedLeader"])
-    else:
-        if "BottomTrack" in m.available_varnames:
-            radcp = m.read(
-                varlist=[
-                    "Velocity",
-                    "PercentGood",
-                    "Intensity",
-                    "Correlation",
-                    "BottomTrack",
-                ]
-            )
-        else:
-            radcp = m.read(varlist=["Velocity", "PercentGood", "Intensity", "Correlation"])
-    # convert time
-    adcptime = yday0_to_datetime64(radcp.yearbase, radcp.dday)
-
-    jj = np.squeeze(radcp.dep.shape)
-    assert radcp.nbins == jj
-    ii = np.squeeze(radcp.dday.shape)
-    assert radcp.nprofs == ii
-    varsii = [
-        "num_pings",
-        "dday",
-        "ens_num",
-        "temperature",
-        "heading",
-        "pitch",
-        "roll",
-        "XducerDepth",
-    ]
-
-    out = xr.Dataset(data_vars={"dummy": (["z", "time"], np.ones((jj, ii)) * np.nan)})
-
-    # get 1d variables
-    for v in varsii:
-        out[v] = (["time"], radcp[v])
-    # add pressure
-    out['pressure'] = (["time"], radcp.VL['Pressure']/1000)
-
-    # get 2d variables
-    if auxillary_only is False:
-        for v in ["vel", "cor", "amp", "pg"]:
-            out[v] = (["beam", "z", "time"], np.transpose(radcp[v]))
-
-    out.coords["time"] = (["time"], adcptime)
-    out.coords["z"] = (["z"], radcp.dep)
-
-    # bottom tracking
-    if 'bt_vel' in radcp.keys():
-        out['bt_vel'] = (["time", "beam"], radcp.bt_vel)
-        out['bt_depth'] = (["time", "beam"], radcp.bt_depth)
-    out.coords["beam"] = np.array([1, 2, 3, 4])
-
-
-    # drop dummy
-    out = out.drop(["dummy"])
-
-    # set a few attributes
-    out.attrs["sonar"] = radcp.sonar.sonar
-    out.attrs["coordsystem"] = radcp.trans.coordsystem
-    out.attrs["pingtype"] = radcp.pingtype
-    out.attrs["cellsize"] = radcp.CellSize
-
-    return out
-
-
-def read_raw_rdi_uh(file, auxillary_only=False):
-    """
-    Wrapper for UH's pycurrents.adcp.rdiraw.Multiread
-
-    Parameters
-    ----------
-    file : str or Path
-        Path to raw data file.
-
-    Returns
-    -------
-    radcp : dict (Bunch)
-        UH data structure with raw RDI data
-    """
-
-    m = Multiread(file, "wh")
-
-    if auxillary_only:
-        radcp = m.read(varlist=["FixedLeader"])
-    else:
-        if "BottomTrack" in m.available_varnames:
-            radcp = m.read(
-                varlist=[
-                    "Velocity",
-                    "PercentGood",
-                    "Intensity",
-                    "Correlation",
-                    "BottomTrack",
-                ]
-            )
-        else:
-            radcp = m.read(varlist=["Velocity", "PercentGood", "Intensity", "Correlation"])
-    
-    # convert time
-    adcptime = yday0_to_datetime64(radcp.yearbase, radcp.dday)
-    radcp.time = adcptime
-
-    # pressure and temperature
-    radcp.pressure = radcp.VL['Pressure'] / 1000.0
-    radcp.temperature = radcp.VL['Temperature'] / 100.0
-
-    return radcp
-
-
 class ANTS(object):
     """
     Reader for ANTS data files. These may be .vel, .bt or .sh files as
@@ -603,16 +471,17 @@ class ANTS(object):
                 ds.attrs[ci] = a
 
         # add source file name as attribute to dataset
-        ds.attrs['filename'] = self.filename
+        ds.attrs["filename"] = self.filename
 
         # change dim, coord based on file suffix
-        if self.filename.suffix=='.VKE':
-            ds = ds.swap_dims({'n': 'depth'})
-            ds.coords['depth'] = ds.depth
-        if self.filename.suffix=='.wprof':
-            ds = ds.swap_dims({'n': 'depth'})
-            for c in ['depth', 'hab', 'dc_depth', 'uc_depth']:
-                ds.coords[c] = ds[c]
+        if self.filename.suffix == ".VKE":
+            ds = ds.swap_dims({"n": "depth"})
+            ds.coords["depth"] = ds.depth
+        if self.filename.suffix == ".wprof":
+            ds = ds.swap_dims({"n": "depth"})
+            for c in ["depth", "hab", "dc_depth", "uc_depth"]:
+                if c in ds:
+                    ds.coords[c] = ds[c]
 
         return ds
 

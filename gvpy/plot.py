@@ -1,17 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Module gvpy.figure for matplotlib related stuff.
+"""Module gvpy.plot for matplotlib related stuff"""
 
-"""
-import matplotlib.ticker as ticker
-import matplotlib.pyplot as plt
+from pathlib import Path
+
 import matplotlib.dates as mdates
-from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
+import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
-import cartopy.crs as ccrs
 import numpy as np
 from cycler import cycler
-from pathlib import Path
+try:
+    import cartopy.crs as ccrs
+    from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
+except ImportError:
+    _has_cartopy = False
+else:
+    _has_cartopy = True
 
 
 def newfig(width=7.5, height=5.5, fontsize=12):
@@ -498,9 +502,9 @@ def xytickdist(ax=None, x=1, y=1):
     """
     if ax is None:
         ax = plt.gca()
-    locx = ticker.MultipleLocator(base=x)
+    locx = mticker.MultipleLocator(base=x)
     ax.xaxis.set_major_locator(locx)
-    locy = ticker.MultipleLocator(base=y)
+    locy = mticker.MultipleLocator(base=y)
     ax.yaxis.set_major_locator(locy)
 
 
@@ -526,6 +530,9 @@ def concise_date(ax=None, minticks=6, maxticks=10, **kwargs):
 
 
 def cartopy_axes(ax, maxticks="auto"):
+    """Requires cartopy."""
+    if not _has_cartopy:
+        raise ImportError("cartopy is required to do this.")
     gl = ax.gridlines(
         crs=ccrs.PlateCarree(),
         draw_labels=True,

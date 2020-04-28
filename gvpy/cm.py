@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Module gvpy.colormaps with own colormaps.
+"""Module gvpy.cm with own colormaps"""
 
-"""
-
-import numpy as np
 import matplotlib as mpl
+import numpy as np
+
 
 def ocean4jbm():
     cmap = mpl.colors.ListedColormap(np.array([

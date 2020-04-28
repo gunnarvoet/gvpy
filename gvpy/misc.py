@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''Module gvpy.misc with miscellaneous functions
+'''Module gvpy.misc with miscellaneous functions'''
 
-'''
+import ctypes
+import inspect
 
-from __future__ import print_function, division
 import numpy as np
 
 
@@ -109,3 +109,30 @@ def qpsave(filename, vars):
     f = open(filename, 'wb')
     pickle.dump(vars, f)
     f.close()
+
+
+def extract():
+    """Copies the variables of the caller up to iPython. Useful for debugging.
+
+    .. code-block:: python
+
+        def f():
+            a = 'hello world' extract()
+
+        f() # raises an error
+
+        print(xxa) # prints 'hello world'
+
+    see https://andyljones.com/posts/post-mortem-plotting.html
+    """
+
+    frames = inspect.stack()
+    caller = frames[1].frame
+    name, ls, gs = caller.f_code.co_name, caller.f_locals, caller.f_globals
+
+    ipython = [f for f in inspect.stack() if f.filename.startswith('<ipython-input')][-1].frame
+
+    ipython.f_locals.update({'xx{}'.format(k): v for k, v in gs.items() if k[:2] != '__'})
+    ipython.f_locals.update({'xx{}'.format(k): v for k, v in ls.items() if k[:2] != '__'})
+
+    ctypes.pythonapi.PyFrame_LocalsToFast(ctypes.py_object(ipython), ctypes.c_int(0))

@@ -5,3 +5,4 @@ build/
 dist/
 .cache
 **.ipynb_checkpoints
+.vscode

@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''Module gvpy.signal with functions for signal processing.
+'''Module gvpy.signal with functions for signal processing.'''
 
-'''
+from __future__ import division, print_function
 
-from __future__ import print_function, division
 import numpy as np
 from scipy.signal import butter, filtfilt
 

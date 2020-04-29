@@ -1263,9 +1263,7 @@ def woce_argo_profile(lon, lat, interp=False, load=True):
 
 
 def lonlatstr(lon, lat):
-    """
-    Generate longitude/latitude strings from position in decimal format,
-    for example
+    """Generate longitude/latitude strings from position in decimal format.
 
     Parameters
     ----------
@@ -1280,24 +1278,31 @@ def lonlatstr(lon, lat):
         Longitude string
     slat : str
         Latitude str
+        
+    Example
+    -------
+    >>> lon, lat = -168.9158, -9.7152 
+    >>> slon, slat = lonlatstr(lon, lat)
+    >>> print(slon, slat)
+    168° 54.948' W   9° 42.912' S
     """
-
     if lon > 180:
         lon = lon - 360
     if lon < 0:
         EW = "W"
     else:
         EW = "E"
-    lonmin = np.abs(lon - np.floor(lon)) * 60
-    slon = "{:3d}° {:6.3f}' {}".format(int(np.abs(np.floor(lon))), lonmin, EW)
-    slat = "dummy"
+    lon_degrees = np.trunc(lon)
+    lon_minutes = np.abs(lon - lon_degrees) * 60
+    slon = "{:3d}° {:6.3f}' {}".format(int(np.abs(lon_degrees)), lon_minutes, EW)
 
     if lat > 0:
         NS = "N"
     else:
         NS = "S"
-    latmin = np.abs(lat - np.floor(lat)) * 60
-    slat = "{:3d}° {:6.3f}' {}".format(int(np.abs(np.floor(lat))), latmin, NS)
+    lat_degrees = np.trunc(lat)
+    lat_minutes = np.abs(lat - lat_degrees) * 60
+    slat = "{:3d}° {:6.3f}' {}".format(int(np.abs(lat_degrees)), lat_minutes, NS)
 
     return slon, slat
 

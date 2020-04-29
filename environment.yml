@@ -1,0 +1,47 @@
+name: gvpy
+channels:
+  - conda-forge
+dependencies:
+  - ipympl
+  - ipdb
+  - black
+  - cartopy
+  - cmocean
+  - dask
+  - dask-core
+  - gsw
+  - ipykernel
+  - ipython
+  - ipywidgets
+  - jupyter
+  - jupyter_nbextensions_configurator
+  - jupyter_contrib_nbextensions
+  - sphinx
+  - nbsphinx
+  - sphinx_rtd_theme
+  - yaml
+  - flake8
+  - pyqt5
+  - matplotlib
+  - munch
+  - nbconvert
+  - nbformat
+  - netcdf4
+  - numpy
+  - pandas
+  - pandoc
+  - python
+  - pytest
+  - scipy
+  - tqdm
+  - xarray
+  - xgcm
+  - watchdog
+  - pip
+  - pip:
+    - pyrsktools
+    - seabird
+    - jupytext
+    - sphinxcontrib.bibtex
+    - git+https://github.com/bashtage/sphinx-material.git
+    - "-e /Users/gunnar/Projects/python/gvpy"

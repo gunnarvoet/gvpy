@@ -11,6 +11,8 @@ import numpy as np
 from cycler import cycler
 from matplotlib.collections import LineCollection
 
+from . import cm
+
 try:
     import cartopy.crs as ccrs
     from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
@@ -154,14 +156,15 @@ def axstyle(ax=None, fontsize=12, nospine=False):
 
     # Change the axis title to off-black
     ax.title.set_color(almost_black)
+    ax.title.set_size(fontsize + 1)
 
     # turn grid on
     ax.grid(
         b=True,
         which="major",
         axis="both",
-        color="0.7",
-        linewidth=0.5,
+        color="0.5",
+        linewidth=0.25,
         linestyle="-",
         alpha=0.8,
     )
@@ -555,7 +558,25 @@ def cartopy_axes(ax, maxticks="auto"):
     gl.yformatter = LATITUDE_FORMATTER
 
 
-def multi_line_plot(x, y, z, ax, **kwargs):
+def multi_line(x, y, z, ax, **kwargs):
+    """
+    Plot multiple lines with color mapping.
+
+    Parameters
+    ----------
+    x : array-like
+        x-vector
+    y : array-like
+        Data mapped to color
+    z : array-like
+        Data
+    ax : axis
+        Axis
+    Returns
+    -------
+    line : mpl.linecollection.LineCollection
+        Lines
+    """
     # see also here: https://matplotlib.org/examples/pylab_examples/multicolored_line.html
     norm = plt.Normalize(y.min(), y.max())
     segments = []
@@ -565,9 +586,10 @@ def multi_line_plot(x, y, z, ax, **kwargs):
         segments.append(points)
         zz.append(zi)
     segments = np.array(segments)
-    lc = LineCollection(segments, cmap='Greys', norm=norm)
+    lc = LineCollection(segments, cmap="Greys", norm=norm)
     lc.set_array(np.array(zz))
     lc.set_linewidth(1)
-    lc.set_alpha(0.5)
+    # lc.set_alpha(0.5)
     line = ax.add_collection(lc)
+    ax.autoscale()
     return line

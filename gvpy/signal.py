@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''Module gvpy.signal with functions for signal processing.'''
+"""Module gvpy.signal with functions for signal processing."""
 
 from __future__ import division, print_function
 
@@ -71,12 +71,12 @@ def _butter_bandpass(lowcut, highcut, fs, order=3):
     nyq = 0.5 * fs
     low = lowcut / nyq
     high = highcut / nyq
-    b, a = butter(order, [low, high], btype='band')
+    b, a = butter(order, [low, high], btype="band")
     return b, a
 
 
 def _butter_lowpass(lowcut, fs, order=3):
     nyq = 0.5 * fs
     low = lowcut / nyq
-    b, a = butter(order, low, btype='lowpass')
+    b, a = butter(order, low, btype="lowpass")
     return b, a

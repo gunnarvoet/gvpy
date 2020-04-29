@@ -4,13 +4,14 @@ __all__ = ["cm", "plot", "ocean", "misc", "signal", "io"]
 
 __author__ = "Gunnar Voet"
 __email__ = "gvoet@ucsd.edu"
-__version__ = "0.1"
+__version__ = "0.2.0"
 
 # workaround for when whatever is defined as the default backend is not around:
 try:
     import matplotlib.pyplot as plt
 except ImportError:
     import matplotlib as mpl
-    mpl.use('Agg')
 
-from . import cm, plot, ocean, misc, signal, io
+    mpl.use("Agg")
+
+from . import cm, io, misc, ocean, plot, signal

@@ -1,0 +1,5 @@
+########
+Examples
+########
+
+* :doc:`colormaps`

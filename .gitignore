@@ -6,4 +6,3 @@ dist/
 .cache
 **.ipynb_checkpoints
 .vscode
-docs/_build/doctrees/

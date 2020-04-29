@@ -11,6 +11,7 @@ import numpy as np
 from cycler import cycler
 from matplotlib.collections import LineCollection
 
+# import cm to register colormaps defined therein
 from . import cm
 
 try:

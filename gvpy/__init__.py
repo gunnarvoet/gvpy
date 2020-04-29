@@ -1,6 +1,6 @@
 """Little collection of Gunnar's python stuff. Use at own risk."""
 
-__all__ = ["cm", "plot", "ocean", "misc", "signal", "io"]
+__all__ = ["plot", "ocean", "misc", "signal", "io"]
 
 __author__ = "Gunnar Voet"
 __email__ = "gvoet@ucsd.edu"
@@ -14,4 +14,4 @@ except ImportError:
 
     mpl.use("Agg")
 
-from . import cm, io, misc, ocean, plot, signal
+from . import io, misc, ocean, plot, signal

@@ -117,6 +117,9 @@ def qpsave(filename, vars):
 
 def extract():
     """Copies the variables of the caller up to iPython. Useful for debugging.
+    
+    Returns variables with xx prepended to their names as not to clutter the
+    workspace.
 
     .. code-block:: python
 

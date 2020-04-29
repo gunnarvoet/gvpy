@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 """Module gvpy.cm with own colormaps"""
 
-#  This script registers the "turbo" colormap to matplotlib, and the reversed version as "turbo_r"
-#  Reference:  https://ai.googleblog.com/2019/08/turbo-improved-rainbow-colormap-for.html
+#  This script registers the "turbo" colormap to matplotlib, and the reversed
+#  version as "turbo_r".
+#  Reference:
+#  https://ai.googleblog.com/2019/08/turbo-improved-rainbow-colormap-for.html
 
-# Also registers ocean colormap from John Mickett.
+# Also registers ocean colormap from John Mickett as "ocean4jbm" and
+# "ocean4jbm_r".
 
 import matplotlib.pyplot as plt
 import numpy as np

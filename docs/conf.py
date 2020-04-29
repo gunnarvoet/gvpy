@@ -123,6 +123,7 @@ html_theme_options = {
     'nav_title': 'gvpy',
     'repo_url': 'https://github.com/gunnarvoet/gvpy',
     'repo_name': 'gvpy',
+    'base_url': 'https://gunnarvoet.github.io/gvpy',
     'html_minify': False,
     'css_minify': False,
     'color_primary': 'teal',

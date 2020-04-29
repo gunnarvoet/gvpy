@@ -264,7 +264,7 @@
   <h1 id="modules-gvpy-misc--page-root">Source code for gvpy.misc</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python</span>
 <span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="sd">'''Module gvpy.misc with miscellaneous functions'''</span>
+<span class="sd">"""Module gvpy.misc with miscellaneous functions"""</span>
 
 <span class="kn">import</span> <span class="nn">ctypes</span>
 <span class="kn">import</span> <span class="nn">inspect</span>
@@ -273,38 +273,38 @@
 
 
 <div class="viewcode-block" id="near"><a class="viewcode-back" href="../../generated/gvpy.misc.near.html#gvpy.misc.near">[docs]</a><span class="k">def</span> <span class="nf">near</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
-    <span class="sd">'''</span>
+    <span class="sd">"""</span>
 <span class="sd">    Find index of value in A closest to target.</span>
 <span class="sd">    A must be sorted!</span>
-<span class="sd">    '''</span>
+<span class="sd">    """</span>
     <span class="n">idx</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
-    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">left</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">idx</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">left</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
     <span class="n">right</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
     <span class="n">idx</span> <span class="o">-=</span> <span class="n">target</span> <span class="o">-</span> <span class="n">left</span> <span class="o">&lt;</span> <span class="n">right</span> <span class="o">-</span> <span class="n">target</span>
-    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span>  <span class="s1">'returning two values'</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"returning two values"</span>
     <span class="k">return</span> <span class="n">idx</span></div>
 
 
 <div class="viewcode-block" id="nearidx"><a class="viewcode-back" href="../../generated/gvpy.misc.nearidx.html#gvpy.misc.nearidx">[docs]</a><span class="k">def</span> <span class="nf">nearidx</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-    <span class="sd">'''</span>
+    <span class="sd">"""</span>
 <span class="sd">    Find index of value in array closest to target.</span>
 <span class="sd">    No need for array to be sorted.</span>
-<span class="sd">    '''</span>
-    <span class="n">n</span> <span class="o">=</span> <span class="p">[</span><span class="nb">abs</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">array</span><span class="p">]</span>
+<span class="sd">    """</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="p">[</span><span class="nb">abs</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">array</span><span class="p">]</span>
     <span class="n">idx</span> <span class="o">=</span> <span class="n">n</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">idx</span></div>
 
 
 <div class="viewcode-block" id="nearidx2"><a class="viewcode-back" href="../../generated/gvpy.misc.nearidx2.html#gvpy.misc.nearidx2">[docs]</a><span class="k">def</span> <span class="nf">nearidx2</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-    <span class="n">idx</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="n">array</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">value</span><span class="p">))</span>
+    <span class="n">idx</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="n">array</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">value</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">idx</span></div>
 
 
 <div class="viewcode-block" id="getshape"><a class="viewcode-back" href="../../generated/gvpy.misc.getshape.html#gvpy.misc.getshape">[docs]</a><span class="k">def</span> <span class="nf">getshape</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
-    <span class="sd">'''</span>
+    <span class="sd">"""</span>
 <span class="sd">    Get dict with info on dict d</span>
-<span class="sd">    '''</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">d</span><span class="p">}</span>
     <span class="k">else</span><span class="p">:</span>
@@ -312,8 +312,9 @@
         <span class="k">return</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="cmap_div"><a class="viewcode-back" href="../../generated/gvpy.misc.cmap_div.html#gvpy.misc.cmap_div">[docs]</a><span class="k">def</span> <span class="nf">cmap_div</span><span class="p">(</span><span class="n">numcolors</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'custom_div_cmap'</span><span class="p">,</span>
-             <span class="n">mincol</span><span class="o">=</span><span class="s1">'blue'</span><span class="p">,</span> <span class="n">midcol</span><span class="o">=</span><span class="s1">'white'</span><span class="p">,</span> <span class="n">maxcol</span><span class="o">=</span><span class="s1">'red'</span><span class="p">):</span>
+<div class="viewcode-block" id="cmap_div"><a class="viewcode-back" href="../../generated/gvpy.misc.cmap_div.html#gvpy.misc.cmap_div">[docs]</a><span class="k">def</span> <span class="nf">cmap_div</span><span class="p">(</span>
+    <span class="n">numcolors</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"custom_div_cmap"</span><span class="p">,</span> <span class="n">mincol</span><span class="o">=</span><span class="s2">"blue"</span><span class="p">,</span> <span class="n">midcol</span><span class="o">=</span><span class="s2">"white"</span><span class="p">,</span> <span class="n">maxcol</span><span class="o">=</span><span class="s2">"red"</span>
+<span class="p">):</span>
     <span class="sd">""" Create a custom diverging colormap with three colors</span>
 
 <span class="sd">    Default is blue to white to red with 11 colors.  Colors can be specified</span>
@@ -322,17 +323,18 @@
 <span class="sd">    """</span>
 
     <span class="kn">from</span> <span class="nn">matplotlib.colors</span> <span class="kn">import</span> <span class="n">LinearSegmentedColormap</span>
-    <span class="n">cmap</span> <span class="o">=</span> <span class="n">LinearSegmentedColormap</span><span class="o">.</span><span class="n">from_list</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
-                                             <span class="n">colors</span><span class="o">=</span><span class="p">[</span><span class="n">mincol</span><span class="p">,</span> <span class="n">midcol</span><span class="p">,</span> <span class="n">maxcol</span><span class="p">],</span>
-                                             <span class="n">N</span><span class="o">=</span><span class="n">numcolors</span><span class="p">)</span>
+
+    <span class="n">cmap</span> <span class="o">=</span> <span class="n">LinearSegmentedColormap</span><span class="o">.</span><span class="n">from_list</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="p">[</span><span class="n">mincol</span><span class="p">,</span> <span class="n">midcol</span><span class="p">,</span> <span class="n">maxcol</span><span class="p">],</span> <span class="n">N</span><span class="o">=</span><span class="n">numcolors</span>
+    <span class="p">)</span>
     <span class="k">return</span> <span class="n">cmap</span></div>
 
 
 <span class="k">def</span> <span class="nf">jupaexit</span><span class="p">():</span>
-    <span class="sd">'''</span>
+    <span class="sd">"""</span>
 <span class="sd">    jupaexit()</span>
 <span class="sd">    Exit attached console without killing kernel</span>
-<span class="sd">    '''</span>
+<span class="sd">    """</span>
     <span class="n">exit</span><span class="p">(</span><span class="n">keep_kernel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 
@@ -351,7 +353,8 @@
 <span class="sd">        loaded variables</span>
 <span class="sd">    """</span>
     <span class="kn">import</span> <span class="nn">pickle</span>
-    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">'rb'</span><span class="p">)</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span>
     <span class="n">out</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
     <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">out</span></div>
@@ -370,7 +373,8 @@
 <span class="sd">        List with names of variables to be saved</span>
 <span class="sd">    """</span>
     <span class="kn">import</span> <span class="nn">pickle</span>
-    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">'wb'</span><span class="p">)</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span>
     <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
     <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
@@ -394,10 +398,16 @@
     <span class="n">caller</span> <span class="o">=</span> <span class="n">frames</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">frame</span>
     <span class="n">name</span><span class="p">,</span> <span class="n">ls</span><span class="p">,</span> <span class="n">gs</span> <span class="o">=</span> <span class="n">caller</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span><span class="p">,</span> <span class="n">caller</span><span class="o">.</span><span class="n">f_locals</span><span class="p">,</span> <span class="n">caller</span><span class="o">.</span><span class="n">f_globals</span>
 
-    <span class="n">ipython</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">inspect</span><span class="o">.</span><span class="n">stack</span><span class="p">()</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'&lt;ipython-input'</span><span class="p">)][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">frame</span>
+    <span class="n">ipython</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">inspect</span><span class="o">.</span><span class="n">stack</span><span class="p">()</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"&lt;ipython-input"</span><span class="p">)][</span>
+        <span class="o">-</span><span class="mi">1</span>
+    <span class="p">]</span><span class="o">.</span><span class="n">frame</span>
 
-    <span class="n">ipython</span><span class="o">.</span><span class="n">f_locals</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">'xx</span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">):</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">gs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">'__'</span><span class="p">})</span>
-    <span class="n">ipython</span><span class="o">.</span><span class="n">f_locals</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">'xx</span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">):</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">ls</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">'__'</span><span class="p">})</span>
+    <span class="n">ipython</span><span class="o">.</span><span class="n">f_locals</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+        <span class="p">{</span><span class="s2">"xx</span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">):</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">gs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"__"</span><span class="p">}</span>
+    <span class="p">)</span>
+    <span class="n">ipython</span><span class="o">.</span><span class="n">f_locals</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+        <span class="p">{</span><span class="s2">"xx</span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">):</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">ls</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"__"</span><span class="p">}</span>
+    <span class="p">)</span>
 
     <span class="n">ctypes</span><span class="o">.</span><span class="n">pythonapi</span><span class="o">.</span><span class="n">PyFrame_LocalsToFast</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">py_object</span><span class="p">(</span><span class="n">ipython</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span></div>
 </pre></div>

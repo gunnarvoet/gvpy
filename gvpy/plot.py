@@ -4,12 +4,16 @@
 
 from pathlib import Path
 
+import matplotlib as mpl
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
 from cycler import cycler
 from matplotlib.collections import LineCollection
+
+from IPython import get_ipython
+ipython = get_ipython()
 
 # import cm to register colormaps defined therein
 from . import cm
@@ -21,6 +25,75 @@ except ImportError:
     _has_cartopy = False
 else:
     _has_cartopy = True
+    
+
+def nostalgic():
+    """
+    Reading old papers and feeling nostalgic? Fear not! This will change the
+    default matplotlib settings to transport you right back several decades.
+    """
+    mpl.rcParams['font.size'] = 11
+    mpl.rcParams['font.family'] = 'Routed Gothic'
+    mpl.rcParams['mathtext.fontset'] = 'custom'
+    mpl.rcParams['mathtext.rm'] = 'Routed Gothic'
+    mpl.rcParams['mathtext.it'] = 'Routed Gothic:italic'
+    mpl.rcParams['mathtext.bf'] = 'Routed Gothic:bold'
+    mpl.rcParams['axes.titlesize'] = 'x-large'
+    
+    
+def back2future():
+    """
+    Activate matplotlib settings from the default matplotlibrc file.
+    """
+    print('Activating settings from', mpl.matplotlib_fname())
+    mpl.rc_file_defaults()
+
+    
+def switch_backend():
+    backend_list = [
+        'module://ipykernel.pylab.backend_inline',
+        'module://ipympl.backend_nbagg'
+        ]
+    current_backend = mpl.get_backend()
+    if current_backend == backend_list[0]:
+        ipython.magic("matplotlib ipympl")
+        print('switched to ipympl plots')
+    else:
+        ipython.magic("matplotlib inline")
+        print('switched to inline plots')
+
+
+def quickfig(fs=10, yi=True, w=5, h=5, fgs=None):
+    """
+    Quick single pane figure.
+    
+    Also closes all other figures for convenience.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        Figure handle
+    ax : matplotlib.axes._subplots.AxesSubplot
+        Axis handle
+    """
+    if fgs is None:
+        fgs = (w, h)
+
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=fgs,
+                           constrained_layout=True, dpi=75)
+    axstyle(ax, fontsize=fs)
+    if yi:
+        ax.invert_yaxis()
+    ax.autoscale()
+    
+    # some adjustments when using ipympl
+    current_backend = mpl.get_backend()
+    if current_backend == 'module://ipympl.backend_nbagg':
+        fig.canvas.header_visible = False
+        fig.canvas.toolbar_position = 'bottom'
+        fig.canvas.resizable = False
+    
+    return fig, ax
 
 
 def newfig(width=7.5, height=5.5, fontsize=12):
@@ -96,7 +169,7 @@ def newfig(width=7.5, height=5.5, fontsize=12):
     return fig, ax
 
 
-def axstyle(ax=None, fontsize=12, nospine=False):
+def axstyle(ax=None, fontsize=12, nospine=False, grid=True, ticks='off'):
     """
     Apply own style to axis.
 
@@ -125,10 +198,12 @@ def axstyle(ax=None, fontsize=12, nospine=False):
         for spine in more_spines_to_remove:
             ax.spines[spine].set_visible(False)
 
-    # Get rid of ticks. The position of the numbers is informative enough of
-    # the position of the value.
-    ax.xaxis.set_ticks_position("none")
-    ax.yaxis.set_ticks_position("none")
+    if ticks=='off':
+        # Get rid of ticks.
+        ax.xaxis.set_ticks_position("none")
+        ax.yaxis.set_ticks_position("none")
+    elif ticks=='in':
+        ax.tick_params(axis='both', direction='in', length=2)
 
     # For remaining spines, thin out their line and change
     # the black to a slightly off-black dark grey
@@ -143,16 +218,16 @@ def axstyle(ax=None, fontsize=12, nospine=False):
     ax.xaxis.label.set_color(almost_black)
     ax.yaxis.label.set_color(almost_black)
     ax.yaxis.label.set_size(fontsize)
+    ax.yaxis.offsetText.set_fontsize(fontsize)
     ax.xaxis.label.set_size(fontsize)
+    ax.xaxis.offsetText.set_fontsize(fontsize)
 
     # Change the labels to the off-black
     ax.tick_params(
         axis="both",
         which="major",
         labelsize=fontsize,
-        length=0,
         colors=almost_black,
-        direction="in",
     )
 
     # Change the axis title to off-black
@@ -160,16 +235,23 @@ def axstyle(ax=None, fontsize=12, nospine=False):
     ax.title.set_size(fontsize + 1)
 
     # turn grid on
-    ax.grid(
-        b=True,
-        which="major",
-        axis="both",
-        color="0.5",
-        linewidth=0.25,
-        linestyle="-",
-        alpha=0.8,
-    )
-
+    if grid:
+        ax.grid(
+            b=True,
+            which="major",
+            axis="both",
+            color="0.5",
+            linewidth=0.25,
+            linestyle="-",
+            alpha=0.8,
+        )
+    
+    # change legend fontsize (if there is one)
+    try:
+        plt.setp(ax.get_legend().get_texts(), fontsize=fontsize)
+    except AttributeError:
+        noleg = 1
+    
     return ax
 
 
@@ -285,7 +367,7 @@ def pcm(*args, **kwargs):
     return h
 
 
-def png(fname, figdir="fig", dpi=200):
+def png(fname, figdir="fig", dpi=300):
     """
     Save figure as png.
 
@@ -514,7 +596,7 @@ def xytickdist(ax=None, x=1, y=1):
     ax.yaxis.set_major_locator(locy)
 
 
-def concise_date(ax=None, minticks=6, maxticks=10, **kwargs):
+def concise_date(ax=None, minticks=3, maxticks=10, show_offset=True, **kwargs):
     """
     Better date ticks using matplotlib's ConciseDateFormatter.
 
@@ -526,13 +608,30 @@ def concise_date(ax=None, minticks=6, maxticks=10, **kwargs):
         Minimum number of ticks (optional, default 6).
     maxticks : int
         Maximum number of ticks (optional, default 10).
+    show_offset : bool, optional
+        Show offset string to the right (default True).
+        
+    Note
+    ----
+    Currently only works for x-axis
+    
+    See Also
+    --------
+    matplotlib.mdates.ConciseDateFormatter : For formatting options that
+      can be used here.
     """
     if ax is None:
         ax = plt.gca()
     locator = mdates.AutoDateLocator(minticks=minticks, maxticks=maxticks)
-    formatter = mdates.ConciseDateFormatter(locator, **kwargs)
+    formatter = mdates.ConciseDateFormatter(locator, show_offset=show_offset, **kwargs)
     ax.xaxis.set_major_locator(locator)
     ax.xaxis.set_major_formatter(formatter)
+    
+    
+def concise_date_all():
+    import matplotlib.units as munits
+    converter = mdates.ConciseDateConverter()
+    munits.registry[np.datetime64] = converter
 
 
 def cartopy_axes(ax, maxticks="auto"):
@@ -594,3 +693,7 @@ def multi_line(x, y, z, ax, **kwargs):
     line = ax.add_collection(lc)
     ax.autoscale()
     return line
+
+
+def annotate_upper_left(text, ax):
+    return ax.annotate(text, (0.02, 0.9), xycoords='axes fraction')

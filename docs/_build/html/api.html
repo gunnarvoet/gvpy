@@ -54,6 +54,8 @@
     <script src="_static/doctools.js"></script>
     <script src="_static/language_data.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="gvpy.io.loadmat" href="generated/gvpy.io.loadmat.html" />
@@ -390,16 +392,19 @@ documentation.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.io.mat2dataset.html#gvpy.io.mat2dataset" title="gvpy.io.mat2dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io.mat2dataset</span></code></a>(m1)</p></td>
 <td><p>Convert dictionary with data into xarray.Dataset</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.io.read_sbe_cnv.html#gvpy.io.read_sbe_cnv" title="gvpy.io.read_sbe_cnv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io.read_sbe_cnv</span></code></a>(file[, lat, lon])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.io.mtlb2datetime.html#gvpy.io.mtlb2datetime" title="gvpy.io.mtlb2datetime"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io.mtlb2datetime</span></code></a>(matlab_datenum[, …])</p></td>
+<td><p>Convert Matlab datenum format to python datetime.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.io.read_sbe_cnv.html#gvpy.io.read_sbe_cnv" title="gvpy.io.read_sbe_cnv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io.read_sbe_cnv</span></code></a>(file[, lat, lon])</p></td>
 <td><p>Read Seabird SBE37 .cnv file and return as xarray.Dataset.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.io.read_sadcp.html#gvpy.io.read_sadcp" title="gvpy.io.read_sadcp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io.read_sadcp</span></code></a>(ncfile)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.io.read_sadcp.html#gvpy.io.read_sadcp" title="gvpy.io.read_sadcp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io.read_sadcp</span></code></a>(ncfile)</p></td>
 <td><p>Read shipboard ADCP data file as produced by UHDAS.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.io.ANTS.html#gvpy.io.ANTS" title="gvpy.io.ANTS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io.ANTS</span></code></a>(filename)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.io.ANTS.html#gvpy.io.ANTS" title="gvpy.io.ANTS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io.ANTS</span></code></a>(filename)</p></td>
 <td><p>Reader for ANTS data files.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.io.ANTS._to_xarray.html#gvpy.io.ANTS._to_xarray" title="gvpy.io.ANTS._to_xarray"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io.ANTS._to_xarray</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.io.ANTS.to_xarray.html#gvpy.io.ANTS.to_xarray" title="gvpy.io.ANTS.to_xarray"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io.ANTS.to_xarray</span></code></a>()</p></td>
 <td><p>Convert ANTS object to xarray.Dataset.</p></td>
 </tr>
 </tbody>
@@ -432,6 +437,9 @@ documentation.</p>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.ocean.tpxo_extract.html#gvpy.ocean.tpxo_extract" title="gvpy.ocean.tpxo_extract"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ocean.tpxo_extract</span></code></a>(year, yday, lon, lat)</p></td>
 <td><p>Extract tidal velocity and height predictions from TPXO model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.ocean.wind_stress.html#gvpy.ocean.wind_stress" title="gvpy.ocean.wind_stress"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ocean.wind_stress</span></code></a>(u10, v10)</p></td>
+<td><p>Calculate wind stress from 10m winds.</p></td>
 </tr>
 </tbody>
 </table>
@@ -493,31 +501,40 @@ documentation.</p>
 <col style="width: 90%"/>
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.plot.axstyle.html#gvpy.plot.axstyle" title="gvpy.plot.axstyle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.axstyle</span></code></a>([ax, fontsize, nospine])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.plot.axstyle.html#gvpy.plot.axstyle" title="gvpy.plot.axstyle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.axstyle</span></code></a>([ax, fontsize, nospine, grid, …])</p></td>
 <td><p>Apply own style to axis.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.plot.newfigyy.html#gvpy.plot.newfigyy" title="gvpy.plot.newfigyy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.newfigyy</span></code></a>([width, height, fontsize])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.plot.nostalgic.html#gvpy.plot.nostalgic" title="gvpy.plot.nostalgic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.nostalgic</span></code></a>()</p></td>
+<td><p>Reading old papers and feeling nostalgic? Fear not! This will change the default matplotlib settings to transport you right back several decades.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.plot.back2future.html#gvpy.plot.back2future" title="gvpy.plot.back2future"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.back2future</span></code></a>()</p></td>
+<td><p>Activate matplotlib settings from the default matplotlibrc file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.plot.quickfig.html#gvpy.plot.quickfig" title="gvpy.plot.quickfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.quickfig</span></code></a>([fs, yi, w, h, fgs])</p></td>
+<td><p>Quick single pane figure.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.plot.newfigyy.html#gvpy.plot.newfigyy" title="gvpy.plot.newfigyy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.newfigyy</span></code></a>([width, height, fontsize])</p></td>
 <td><p>Create figure with own style.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.plot.add_cax.html#gvpy.plot.add_cax" title="gvpy.plot.add_cax"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.add_cax</span></code></a>(fig[, width, pad])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.plot.add_cax.html#gvpy.plot.add_cax" title="gvpy.plot.add_cax"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.add_cax</span></code></a>(fig[, width, pad])</p></td>
 <td><p>Add a colorbar axis to a row of axes (after last axis.) This axis can then be passed on to a colorbar call.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.plot.ydecrease.html#gvpy.plot.ydecrease" title="gvpy.plot.ydecrease"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.ydecrease</span></code></a>([ax])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.plot.ydecrease.html#gvpy.plot.ydecrease" title="gvpy.plot.ydecrease"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.ydecrease</span></code></a>([ax])</p></td>
 <td><p>Set decreasing yaxis as often desired when plotting a quantity against pressure or depth.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.plot.ysym.html#gvpy.plot.ysym" title="gvpy.plot.ysym"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.ysym</span></code></a>([ax])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.plot.ysym.html#gvpy.plot.ysym" title="gvpy.plot.ysym"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.ysym</span></code></a>([ax])</p></td>
 <td><p>Set ylim symmetric around zero based on current axis limits</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.plot.xsym.html#gvpy.plot.xsym" title="gvpy.plot.xsym"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.xsym</span></code></a>([ax])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.plot.xsym.html#gvpy.plot.xsym" title="gvpy.plot.xsym"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.xsym</span></code></a>([ax])</p></td>
 <td><p>Set xlim symmetric around zero based on current axis limits</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.plot.xytickdist.html#gvpy.plot.xytickdist" title="gvpy.plot.xytickdist"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.xytickdist</span></code></a>([ax, x, y])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.plot.xytickdist.html#gvpy.plot.xytickdist" title="gvpy.plot.xytickdist"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.xytickdist</span></code></a>([ax, x, y])</p></td>
 <td><p>Set distance between ticks for xaxis and yaxis</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.plot.concise_date.html#gvpy.plot.concise_date" title="gvpy.plot.concise_date"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.concise_date</span></code></a>([ax, minticks, maxticks])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.plot.concise_date.html#gvpy.plot.concise_date" title="gvpy.plot.concise_date"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.concise_date</span></code></a>([ax, minticks, maxticks, …])</p></td>
 <td><p>Better date ticks using matplotlib’s ConciseDateFormatter.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.plot.cartopy_axes.html#gvpy.plot.cartopy_axes" title="gvpy.plot.cartopy_axes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.cartopy_axes</span></code></a>(ax[, maxticks])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.plot.cartopy_axes.html#gvpy.plot.cartopy_axes" title="gvpy.plot.cartopy_axes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.cartopy_axes</span></code></a>(ax[, maxticks])</p></td>
 <td><p>Requires cartopy.</p></td>
 </tr>
 </tbody>
@@ -586,35 +603,35 @@ documentation.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.ocean.lonlatstr.html#gvpy.ocean.lonlatstr" title="gvpy.ocean.lonlatstr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ocean.lonlatstr</span></code></a>(lon, lat)</p></td>
 <td><p>Generate longitude/latitude strings from position in decimal format.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.io.mtlb2datetime.html#gvpy.io.mtlb2datetime" title="gvpy.io.mtlb2datetime"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io.mtlb2datetime</span></code></a>(matlab_datenum[, …])</p></td>
-<td><p>Convert Matlab datenum format to python datetime.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.io.str_to_datetime64.html#gvpy.io.str_to_datetime64" title="gvpy.io.str_to_datetime64"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io.str_to_datetime64</span></code></a>(timestr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.io.str_to_datetime64.html#gvpy.io.str_to_datetime64" title="gvpy.io.str_to_datetime64"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io.str_to_datetime64</span></code></a>(timestr)</p></td>
 <td><p>Convert date/time in str format to numpy’s datetime64 format.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.io.yday1_to_datetime64.html#gvpy.io.yday1_to_datetime64" title="gvpy.io.yday1_to_datetime64"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io.yday1_to_datetime64</span></code></a>(baseyear, yday)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.io.yday1_to_datetime64.html#gvpy.io.yday1_to_datetime64" title="gvpy.io.yday1_to_datetime64"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io.yday1_to_datetime64</span></code></a>(baseyear, yday)</p></td>
 <td><p>Convert year day (starting at yday 1) to numpy’s datetime64 format.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.io.yday0_to_datetime64.html#gvpy.io.yday0_to_datetime64" title="gvpy.io.yday0_to_datetime64"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io.yday0_to_datetime64</span></code></a>(baseyear, yday)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.io.yday0_to_datetime64.html#gvpy.io.yday0_to_datetime64" title="gvpy.io.yday0_to_datetime64"><code class="xref py py-obj docutils literal notranslate"><span class="pre">io.yday0_to_datetime64</span></code></a>(baseyear, yday)</p></td>
 <td><p>Convert year day (starting at yday 0) to numpy’s datetime64 format.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.misc.near.html#gvpy.misc.near" title="gvpy.misc.near"><code class="xref py py-obj docutils literal notranslate"><span class="pre">misc.near</span></code></a>(A, target)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.misc.near.html#gvpy.misc.near" title="gvpy.misc.near"><code class="xref py py-obj docutils literal notranslate"><span class="pre">misc.near</span></code></a>(A, target)</p></td>
 <td><p>Find index of value in A closest to target.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.misc.nearidx.html#gvpy.misc.nearidx" title="gvpy.misc.nearidx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">misc.nearidx</span></code></a>(array, value)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.misc.nearidx.html#gvpy.misc.nearidx" title="gvpy.misc.nearidx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">misc.nearidx</span></code></a>(array, value)</p></td>
 <td><p>Find index of value in array closest to target.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.misc.nearidx2.html#gvpy.misc.nearidx2" title="gvpy.misc.nearidx2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">misc.nearidx2</span></code></a>(array, value)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.misc.nearidx2.html#gvpy.misc.nearidx2" title="gvpy.misc.nearidx2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">misc.nearidx2</span></code></a>(array, value)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.misc.getshape.html#gvpy.misc.getshape" title="gvpy.misc.getshape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">misc.getshape</span></code></a>(d)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.misc.getshape.html#gvpy.misc.getshape" title="gvpy.misc.getshape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">misc.getshape</span></code></a>(d)</p></td>
 <td><p>Get dict with info on dict d</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.misc.qpload.html#gvpy.misc.qpload" title="gvpy.misc.qpload"><code class="xref py py-obj docutils literal notranslate"><span class="pre">misc.qpload</span></code></a>(filename)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.misc.qpload.html#gvpy.misc.qpload" title="gvpy.misc.qpload"><code class="xref py py-obj docutils literal notranslate"><span class="pre">misc.qpload</span></code></a>(filename)</p></td>
 <td><p>Quick pickle - load</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.misc.qpsave.html#gvpy.misc.qpsave" title="gvpy.misc.qpsave"><code class="xref py py-obj docutils literal notranslate"><span class="pre">misc.qpsave</span></code></a>(filename, vars)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.misc.qpsave.html#gvpy.misc.qpsave" title="gvpy.misc.qpsave"><code class="xref py py-obj docutils literal notranslate"><span class="pre">misc.qpsave</span></code></a>(filename, vars)</p></td>
 <td><p>Quick pickle - save</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.plot.switch_backend.html#gvpy.plot.switch_backend" title="gvpy.plot.switch_backend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.switch_backend</span></code></a>()</p></td>
+<td><p></p></td>
 </tr>
 </tbody>
 </table>

@@ -54,6 +54,8 @@
     <script src="../_static/doctools.js"></script>
     <script src="../_static/language_data.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="gvpy.ocean.uv2speeddir" href="gvpy.ocean.uv2speeddir.html" />
@@ -299,7 +301,32 @@
 <dl class="py function">
 <dt id="gvpy.ocean.inertial_frequency">
 <code class="sig-prename descclassname">gvpy.ocean.</code><code class="sig-name descname">inertial_frequency</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lat</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gvpy/ocean.html#inertial_frequency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gvpy.ocean.inertial_frequency" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return inertial frequency [rad/s] for a given latitude.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>lat</strong> (<em>float</em>) – Degree in latitude [deg]</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>f</strong> – Inertial frequency [rad/s]</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="gvpy.ocean.inertial_period.html#gvpy.ocean.inertial_period" title="gvpy.ocean.inertial_period"><code class="xref py py-func docutils literal notranslate"><span class="pre">inertial_period()</span></code></a></dt><dd><p>Inertial period in days</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Notes</p>
+<p>The inertial frequency or Coriolis frequency <span class="math notranslate nohighlight">\(f\)</span> is equal to twice the rotation rate <span class="math notranslate nohighlight">\(\Omega\)</span> of the Earth multiplied by the sine of the latitude <span class="math notranslate nohighlight">\(\phi\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[f = 2\omega \sin \phi\]</div>
+<p>and has units of rad/s. The rotation rate of the Earth can be approximated as <span class="math notranslate nohighlight">\(\Omega=2\pi/T\)</span> with the rotation period of the Earth <span class="math notranslate nohighlight">\(T\)</span> which is approximately one <em>sidereal day</em>: 23h, 56m, 4.1s.</p>
+<p>The inertial period in days can be calculated from <span class="math notranslate nohighlight">\(f\)</span> as <span class="math notranslate nohighlight">\(T=2\pi/f/24/3600\)</span>.</p>
+</dd></dl>
 
 
 

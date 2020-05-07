@@ -651,6 +651,54 @@ def eps_overturn2(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
     return out
 
 
+def wind_stress(u10, v10):
+    r"""
+    Calculate wind stress from 10m winds.
+
+    Parameters
+    ----------
+    u10 : array_like
+        Eastward wind component at 10m [m/s]
+    v10 : array_like
+        Northward wind component at 10m [m/s]
+
+    Returns
+    -------
+    Tx : array_like
+        Zonal wind stress [N/m^2]
+    Ty : array_like
+        Meridional wind stress [N/m^2]
+        
+    Notes
+    -----
+    Wind stress is calculated for one component as
+    
+    .. math:: \tau_x = \rho \, C_d \,  u \, \vec{u}
+
+    Non-linear drag coefficient :math:`C_d` based on [1]_, modified for low wind speeds by [2]_ .
+    
+    References
+    ----------
+    .. [1] W. G. Large & S. Pond., 1981, Open Ocean Measurements in Moderate to
+       Strong Winds, J. Phys. Oceanogr., Vol. 11, pp. 324--336.
+           
+    .. [2] K.E. Trenberth, W.G. Large & J.G. Olson, 1990, The Mean
+       Annual Cycle in Global Ocean Wind Stress, J.Phys. Oceanogr.,
+       Vol. 20, pp. 1742--1760.
+
+    """
+    rho = 1.2 # kg/m^3, air density
+    U = np.sqrt(u10**2 + v10**2) # wind speed
+    Cd = np.full_like(U, np.nan)
+    Cd[np.where(U<=1)] = 0.00218
+    Cd[np.where((U>1) & (U<=3))] = (0.62 + 1.56 / U[np.where((U>1) & (U<=3))]) * 0.001
+    Cd[np.where((U>3) & (U<10))] = 0.00114
+    Cd[np.where(U>=10)] = (0.49+0.065*U[np.where(U>=10)])*0.001
+    Tx = Cd * rho * U * u10 # N/m^2
+    Ty = Cd * rho * U * v10
+    return Tx, Ty
+
+
 def woa_get_ts(llon, llat, plot=0):
     import xarray as xr
 
@@ -1123,6 +1171,19 @@ def bathy_section(bathy, lon, lat, res=1, ext=0):
 
 
 def inertial_period(lat):
+    """
+    Return inertial period [days] for a given latitude.
+
+    Parameters
+    ----------
+    lat : float
+        Latitude [deg]
+
+    Returns
+    -------
+    omega : float
+        Inertial period [days]
+    """
     Omega = 7.292e-5
     f = 2 * Omega * np.sin(np.deg2rad(lat))
     Ti = 2 * np.pi / f
@@ -1134,7 +1195,35 @@ def inertial_period(lat):
 
 
 def inertial_frequency(lat):
-    Omega = 7.292e-5
+    r"""Return inertial frequency [rad/s] for a given latitude.
+
+    Parameters
+    ----------
+    lat : float
+        Degree in latitude [deg]
+
+    Returns
+    -------
+    f : float
+        Inertial frequency [rad/s]
+        
+    See Also
+    --------
+    inertial_period : Inertial period in days
+        
+    Notes
+    -----
+    The inertial frequency or Coriolis frequency :math:`f` is equal to twice the rotation rate :math:`\Omega` of the Earth multiplied by the sine of the latitude :math:`\phi`:
+    
+    .. math::
+    
+        f = 2\omega \sin \phi
+        
+    and has units of rad/s. The rotation rate of the Earth can be approximated as :math:`\Omega=2\pi/T` with the rotation period of the Earth :math:`T` which is approximately one *sidereal day*: 23h, 56m, 4.1s.
+    
+    The inertial period in days can be calculated from :math:`f` as :math:`T=2\pi/f/24/3600`.
+    """
+    Omega = 7.292115e-5 # [1/s] (Groten, 2004)
     f = 2 * Omega * np.sin(np.deg2rad(lat))
     return f
 

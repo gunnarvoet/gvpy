@@ -54,6 +54,8 @@
     <script src="../_static/doctools.js"></script>
     <script src="../_static/language_data.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="gvpy.plot.cartopy_axes" href="gvpy.plot.cartopy_axes.html" />
@@ -298,7 +300,7 @@
 <h1 id="generated-gvpy-plot-concise-date--page-root">gvpy.plot.concise_date<a class="headerlink" href="#generated-gvpy-plot-concise-date--page-root" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt id="gvpy.plot.concise_date">
-<code class="sig-prename descclassname">gvpy.plot.</code><code class="sig-name descname">concise_date</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">minticks</span><span class="o">=</span><span class="default_value">6</span></em>, <em class="sig-param"><span class="n">maxticks</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gvpy/plot.html#concise_date"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gvpy.plot.concise_date" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">gvpy.plot.</code><code class="sig-name descname">concise_date</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">minticks</span><span class="o">=</span><span class="default_value">3</span></em>, <em class="sig-param"><span class="n">maxticks</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">show_offset</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gvpy/plot.html#concise_date"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gvpy.plot.concise_date" title="Permalink to this definition">¶</a></dt>
 <dd><p>Better date ticks using matplotlib’s ConciseDateFormatter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -306,9 +308,21 @@
 <li><p><strong>ax</strong> (<em>axis handle</em>) – Handle to axis (optional).</p></li>
 <li><p><strong>minticks</strong> (<em>int</em>) – Minimum number of ticks (optional, default 6).</p></li>
 <li><p><strong>maxticks</strong> (<em>int</em>) – Maximum number of ticks (optional, default 10).</p></li>
+<li><p><strong>show_offset</strong> (<em>bool, optional</em>) – Show offset string to the right (default True).</p></li>
 </ul>
 </dd>
 </dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Currently only works for x-axis</p>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.mdates.ConciseDateFormatter()</span></code></dt><dd><p>For formatting options that can be used here.</p>
+</dd>
+</dl>
+</div>
 </dd></dl>
 
 

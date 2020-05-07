@@ -54,6 +54,8 @@
     <script src="../_static/doctools.js"></script>
     <script src="../_static/language_data.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="gvpy.ocean.inertial_frequency" href="gvpy.ocean.inertial_frequency.html" />
@@ -299,7 +301,19 @@
 <dl class="py function">
 <dt id="gvpy.ocean.inertial_period">
 <code class="sig-prename descclassname">gvpy.ocean.</code><code class="sig-name descname">inertial_period</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lat</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gvpy/ocean.html#inertial_period"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gvpy.ocean.inertial_period" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return inertial period [days] for a given latitude.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>lat</strong> (<em>float</em>) – Latitude [deg]</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>omega</strong> – Inertial period [days]</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
 
 
 

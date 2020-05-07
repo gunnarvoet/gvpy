@@ -14,6 +14,7 @@ gvpy.io.ANTS
    .. autosummary::
    
       ~ANTS.__init__
+      ~ANTS.to_xarray
    
    
 

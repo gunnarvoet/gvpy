@@ -15,10 +15,11 @@ I/O
 
     io.loadmat
     io.mat2dataset
+    io.mtlb2datetime
     io.read_sbe_cnv
     io.read_sadcp
     io.ANTS
-    io.ANTS._to_xarray
+    io.ANTS.to_xarray
 
 
 Ocean
@@ -35,6 +36,7 @@ Dataset Access
     ocean.smith_sandwell
     ocean.smith_sandwell_section
     ocean.tpxo_extract
+    ocean.wind_stress
 
 Calculations
 ----------------
@@ -67,6 +69,9 @@ Figures and Axes
     :toctree: generated/
 
     plot.axstyle
+    plot.nostalgic
+    plot.back2future
+    plot.quickfig
     plot.newfigyy
     plot.add_cax
     plot.ydecrease
@@ -107,7 +112,6 @@ Little Helpers
     :toctree: generated/
 
     ocean.lonlatstr
-    io.mtlb2datetime
     io.str_to_datetime64
     io.yday1_to_datetime64
     io.yday0_to_datetime64
@@ -117,6 +121,7 @@ Little Helpers
     misc.getshape
     misc.qpload
     misc.qpsave
+    plot.switch_backend
 
 Debugging
 =========

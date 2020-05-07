@@ -19,6 +19,7 @@
 #
 import os
 import sys
+import matplotlib
 
 import gvpy
 

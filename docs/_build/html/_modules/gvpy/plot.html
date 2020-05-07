@@ -54,6 +54,8 @@
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/language_data.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
   
@@ -268,12 +270,16 @@
 
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 
+<span class="kn">import</span> <span class="nn">matplotlib</span> <span class="k">as</span> <span class="nn">mpl</span>
 <span class="kn">import</span> <span class="nn">matplotlib.dates</span> <span class="k">as</span> <span class="nn">mdates</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">matplotlib.ticker</span> <span class="k">as</span> <span class="nn">mticker</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">cycler</span> <span class="kn">import</span> <span class="n">cycler</span>
 <span class="kn">from</span> <span class="nn">matplotlib.collections</span> <span class="kn">import</span> <span class="n">LineCollection</span>
+
+<span class="kn">from</span> <span class="nn">IPython</span> <span class="kn">import</span> <span class="n">get_ipython</span>
+<span class="n">ipython</span> <span class="o">=</span> <span class="n">get_ipython</span><span class="p">()</span>
 
 <span class="c1"># import cm to register colormaps defined therein</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">cm</span>
@@ -285,6 +291,75 @@
     <span class="n">_has_cartopy</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="k">else</span><span class="p">:</span>
     <span class="n">_has_cartopy</span> <span class="o">=</span> <span class="kc">True</span>
+    
+
+<div class="viewcode-block" id="nostalgic"><a class="viewcode-back" href="../../generated/gvpy.plot.nostalgic.html#gvpy.plot.nostalgic">[docs]</a><span class="k">def</span> <span class="nf">nostalgic</span><span class="p">():</span>
+    <span class="sd">"""</span>
+<span class="sd">    Reading old papers and feeling nostalgic? Fear not! This will change the</span>
+<span class="sd">    default matplotlib settings to transport you right back several decades.</span>
+<span class="sd">    """</span>
+    <span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">'font.size'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">11</span>
+    <span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">'font.family'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'Routed Gothic'</span>
+    <span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">'mathtext.fontset'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'custom'</span>
+    <span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">'mathtext.rm'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'Routed Gothic'</span>
+    <span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">'mathtext.it'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'Routed Gothic:italic'</span>
+    <span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">'mathtext.bf'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'Routed Gothic:bold'</span>
+    <span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">'axes.titlesize'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'x-large'</span></div>
+    
+    
+<div class="viewcode-block" id="back2future"><a class="viewcode-back" href="../../generated/gvpy.plot.back2future.html#gvpy.plot.back2future">[docs]</a><span class="k">def</span> <span class="nf">back2future</span><span class="p">():</span>
+    <span class="sd">"""</span>
+<span class="sd">    Activate matplotlib settings from the default matplotlibrc file.</span>
+<span class="sd">    """</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'Activating settings from'</span><span class="p">,</span> <span class="n">mpl</span><span class="o">.</span><span class="n">matplotlib_fname</span><span class="p">())</span>
+    <span class="n">mpl</span><span class="o">.</span><span class="n">rc_file_defaults</span><span class="p">()</span></div>
+
+    
+<div class="viewcode-block" id="switch_backend"><a class="viewcode-back" href="../../generated/gvpy.plot.switch_backend.html#gvpy.plot.switch_backend">[docs]</a><span class="k">def</span> <span class="nf">switch_backend</span><span class="p">():</span>
+    <span class="n">backend_list</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">'module://ipykernel.pylab.backend_inline'</span><span class="p">,</span>
+        <span class="s1">'module://ipympl.backend_nbagg'</span>
+        <span class="p">]</span>
+    <span class="n">current_backend</span> <span class="o">=</span> <span class="n">mpl</span><span class="o">.</span><span class="n">get_backend</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">current_backend</span> <span class="o">==</span> <span class="n">backend_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="n">ipython</span><span class="o">.</span><span class="n">magic</span><span class="p">(</span><span class="s2">"matplotlib ipympl"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'switched to ipympl plots'</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ipython</span><span class="o">.</span><span class="n">magic</span><span class="p">(</span><span class="s2">"matplotlib inline"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'switched to inline plots'</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="quickfig"><a class="viewcode-back" href="../../generated/gvpy.plot.quickfig.html#gvpy.plot.quickfig">[docs]</a><span class="k">def</span> <span class="nf">quickfig</span><span class="p">(</span><span class="n">fs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">fgs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Quick single pane figure.</span>
+<span class="sd">    </span>
+<span class="sd">    Also closes all other figures for convenience.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fig : matplotlib.figure.Figure</span>
+<span class="sd">        Figure handle</span>
+<span class="sd">    ax : matplotlib.axes._subplots.AxesSubplot</span>
+<span class="sd">        Axis handle</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">fgs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fgs</span> <span class="o">=</span> <span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="n">fgs</span><span class="p">,</span>
+                           <span class="n">constrained_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">75</span><span class="p">)</span>
+    <span class="n">axstyle</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">yi</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">invert_yaxis</span><span class="p">()</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">autoscale</span><span class="p">()</span>
+    
+    <span class="c1"># some adjustments when using ipympl</span>
+    <span class="n">current_backend</span> <span class="o">=</span> <span class="n">mpl</span><span class="o">.</span><span class="n">get_backend</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">current_backend</span> <span class="o">==</span> <span class="s1">'module://ipympl.backend_nbagg'</span><span class="p">:</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">header_visible</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">toolbar_position</span> <span class="o">=</span> <span class="s1">'bottom'</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">resizable</span> <span class="o">=</span> <span class="kc">False</span>
+    
+    <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span></div>
 
 
 <span class="k">def</span> <span class="nf">newfig</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mf">7.5</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mf">5.5</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">):</span>
@@ -360,7 +435,7 @@
     <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span>
 
 
-<div class="viewcode-block" id="axstyle"><a class="viewcode-back" href="../../generated/gvpy.plot.axstyle.html#gvpy.plot.axstyle">[docs]</a><span class="k">def</span> <span class="nf">axstyle</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">nospine</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="axstyle"><a class="viewcode-back" href="../../generated/gvpy.plot.axstyle.html#gvpy.plot.axstyle">[docs]</a><span class="k">def</span> <span class="nf">axstyle</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">nospine</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ticks</span><span class="o">=</span><span class="s1">'off'</span><span class="p">):</span>
     <span class="sd">"""</span>
 <span class="sd">    Apply own style to axis.</span>
 
@@ -389,10 +464,12 @@
         <span class="k">for</span> <span class="n">spine</span> <span class="ow">in</span> <span class="n">more_spines_to_remove</span><span class="p">:</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="n">spine</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
 
-    <span class="c1"># Get rid of ticks. The position of the numbers is informative enough of</span>
-    <span class="c1"># the position of the value.</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_ticks_position</span><span class="p">(</span><span class="s2">"none"</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticks_position</span><span class="p">(</span><span class="s2">"none"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ticks</span><span class="o">==</span><span class="s1">'off'</span><span class="p">:</span>
+        <span class="c1"># Get rid of ticks.</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_ticks_position</span><span class="p">(</span><span class="s2">"none"</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticks_position</span><span class="p">(</span><span class="s2">"none"</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">ticks</span><span class="o">==</span><span class="s1">'in'</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">'both'</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s1">'in'</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
     <span class="c1"># For remaining spines, thin out their line and change</span>
     <span class="c1"># the black to a slightly off-black dark grey</span>
@@ -407,16 +484,16 @@
     <span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">almost_black</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">almost_black</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">set_size</span><span class="p">(</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">offsetText</span><span class="o">.</span><span class="n">set_fontsize</span><span class="p">(</span><span class="n">fontsize</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">set_size</span><span class="p">(</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">offsetText</span><span class="o">.</span><span class="n">set_fontsize</span><span class="p">(</span><span class="n">fontsize</span><span class="p">)</span>
 
     <span class="c1"># Change the labels to the off-black</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span>
         <span class="n">axis</span><span class="o">=</span><span class="s2">"both"</span><span class="p">,</span>
         <span class="n">which</span><span class="o">=</span><span class="s2">"major"</span><span class="p">,</span>
         <span class="n">labelsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">,</span>
-        <span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="n">colors</span><span class="o">=</span><span class="n">almost_black</span><span class="p">,</span>
-        <span class="n">direction</span><span class="o">=</span><span class="s2">"in"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="c1"># Change the axis title to off-black</span>
@@ -424,16 +501,23 @@
     <span class="n">ax</span><span class="o">.</span><span class="n">title</span><span class="o">.</span><span class="n">set_size</span><span class="p">(</span><span class="n">fontsize</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 
     <span class="c1"># turn grid on</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span>
-        <span class="n">b</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">which</span><span class="o">=</span><span class="s2">"major"</span><span class="p">,</span>
-        <span class="n">axis</span><span class="o">=</span><span class="s2">"both"</span><span class="p">,</span>
-        <span class="n">color</span><span class="o">=</span><span class="s2">"0.5"</span><span class="p">,</span>
-        <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span>
-        <span class="n">linestyle</span><span class="o">=</span><span class="s2">"-"</span><span class="p">,</span>
-        <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
-    <span class="p">)</span>
-
+    <span class="k">if</span> <span class="n">grid</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span>
+            <span class="n">b</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">which</span><span class="o">=</span><span class="s2">"major"</span><span class="p">,</span>
+            <span class="n">axis</span><span class="o">=</span><span class="s2">"both"</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="s2">"0.5"</span><span class="p">,</span>
+            <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span>
+            <span class="n">linestyle</span><span class="o">=</span><span class="s2">"-"</span><span class="p">,</span>
+            <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
+        <span class="p">)</span>
+    
+    <span class="c1"># change legend fontsize (if there is one)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">setp</span><span class="p">(</span><span class="n">ax</span><span class="o">.</span><span class="n">get_legend</span><span class="p">()</span><span class="o">.</span><span class="n">get_texts</span><span class="p">(),</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="n">noleg</span> <span class="o">=</span> <span class="mi">1</span>
+    
     <span class="k">return</span> <span class="n">ax</span></div>
 
 
@@ -549,7 +633,7 @@
     <span class="k">return</span> <span class="n">h</span></div>
 
 
-<div class="viewcode-block" id="png"><a class="viewcode-back" href="../../generated/gvpy.plot.png.html#gvpy.plot.png">[docs]</a><span class="k">def</span> <span class="nf">png</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">figdir</span><span class="o">=</span><span class="s2">"fig"</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">):</span>
+<div class="viewcode-block" id="png"><a class="viewcode-back" href="../../generated/gvpy.plot.png.html#gvpy.plot.png">[docs]</a><span class="k">def</span> <span class="nf">png</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">figdir</span><span class="o">=</span><span class="s2">"fig"</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">):</span>
     <span class="sd">"""</span>
 <span class="sd">    Save figure as png.</span>
 
@@ -778,7 +862,7 @@
     <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_major_locator</span><span class="p">(</span><span class="n">locy</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="concise_date"><a class="viewcode-back" href="../../generated/gvpy.plot.concise_date.html#gvpy.plot.concise_date">[docs]</a><span class="k">def</span> <span class="nf">concise_date</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">minticks</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">maxticks</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="concise_date"><a class="viewcode-back" href="../../generated/gvpy.plot.concise_date.html#gvpy.plot.concise_date">[docs]</a><span class="k">def</span> <span class="nf">concise_date</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">minticks</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">maxticks</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">show_offset</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">"""</span>
 <span class="sd">    Better date ticks using matplotlib's ConciseDateFormatter.</span>
 
@@ -790,13 +874,30 @@
 <span class="sd">        Minimum number of ticks (optional, default 6).</span>
 <span class="sd">    maxticks : int</span>
 <span class="sd">        Maximum number of ticks (optional, default 10).</span>
+<span class="sd">    show_offset : bool, optional</span>
+<span class="sd">        Show offset string to the right (default True).</span>
+<span class="sd">        </span>
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    Currently only works for x-axis</span>
+<span class="sd">    </span>
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    matplotlib.mdates.ConciseDateFormatter : For formatting options that</span>
+<span class="sd">      can be used here.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
     <span class="n">locator</span> <span class="o">=</span> <span class="n">mdates</span><span class="o">.</span><span class="n">AutoDateLocator</span><span class="p">(</span><span class="n">minticks</span><span class="o">=</span><span class="n">minticks</span><span class="p">,</span> <span class="n">maxticks</span><span class="o">=</span><span class="n">maxticks</span><span class="p">)</span>
-    <span class="n">formatter</span> <span class="o">=</span> <span class="n">mdates</span><span class="o">.</span><span class="n">ConciseDateFormatter</span><span class="p">(</span><span class="n">locator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">formatter</span> <span class="o">=</span> <span class="n">mdates</span><span class="o">.</span><span class="n">ConciseDateFormatter</span><span class="p">(</span><span class="n">locator</span><span class="p">,</span> <span class="n">show_offset</span><span class="o">=</span><span class="n">show_offset</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_major_locator</span><span class="p">(</span><span class="n">locator</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_major_formatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span></div>
+    
+    
+<span class="k">def</span> <span class="nf">concise_date_all</span><span class="p">():</span>
+    <span class="kn">import</span> <span class="nn">matplotlib.units</span> <span class="k">as</span> <span class="nn">munits</span>
+    <span class="n">converter</span> <span class="o">=</span> <span class="n">mdates</span><span class="o">.</span><span class="n">ConciseDateConverter</span><span class="p">()</span>
+    <span class="n">munits</span><span class="o">.</span><span class="n">registry</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">]</span> <span class="o">=</span> <span class="n">converter</span>
 
 
 <div class="viewcode-block" id="cartopy_axes"><a class="viewcode-back" href="../../generated/gvpy.plot.cartopy_axes.html#gvpy.plot.cartopy_axes">[docs]</a><span class="k">def</span> <span class="nf">cartopy_axes</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">maxticks</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">):</span>
@@ -858,6 +959,10 @@
     <span class="n">line</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">add_collection</span><span class="p">(</span><span class="n">lc</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">autoscale</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">line</span></div>
+
+
+<span class="k">def</span> <span class="nf">annotate_upper_left</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">ax</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">),</span> <span class="n">xycoords</span><span class="o">=</span><span class="s1">'axes fraction'</span><span class="p">)</span>
 </pre></div>
 
           </article>

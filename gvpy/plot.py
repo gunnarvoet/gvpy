@@ -41,13 +41,26 @@ def nostalgic():
     mpl.rcParams['axes.titlesize'] = 'x-large'
     
     
+def stix():
+    """
+    Use STIX fonts
+    """
+    mpl.rcParams['font.size'] = 11
+    mpl.rcParams['font.family'] = 'STIX Two Text'
+    mpl.rcParams['mathtext.fontset'] = 'custom'
+    mpl.rcParams['mathtext.rm'] = 'STIX Two Math'
+    mpl.rcParams['mathtext.it'] = 'STIX Two Math:italic'
+    mpl.rcParams['mathtext.bf'] = 'STIX Two Math:bold'
+    mpl.rcParams['axes.titlesize'] = 'large'
+    
+    
 def back2future():
     """
     Activate matplotlib settings from the default matplotlibrc file.
     """
     print('Activating settings from', mpl.matplotlib_fname())
     mpl.rc_file_defaults()
-
+    mpl.rcParams['axes.titlesize'] = 'medium'
     
 def switch_backend():
     backend_list = [
@@ -63,11 +76,27 @@ def switch_backend():
         print('switched to inline plots')
 
 
-def quickfig(fs=10, yi=True, w=5, h=5, fgs=None):
+def quickfig(fs=10, yi=True, w=6, h=4, fgs=None):
     """
     Quick single pane figure.
     
+    Automatically sets yaxis to be decreasing upwards so 
+    we can plot against depth.
+    
     Also closes all other figures for convenience.
+
+    Parameters
+    ----------
+    fs : int, optional
+        Fontsize (default 10)
+    yi : bool, optional
+        Increasing yaxis (default False)
+    w : float, optional
+        Figure width in inches (default 6)
+    h : float, optional
+        Figure height in inches (default 4)
+    fgs : (float, float)
+        Figure size, constructed as (w, h) if not specified here.
 
     Returns
     -------
@@ -82,7 +111,7 @@ def quickfig(fs=10, yi=True, w=5, h=5, fgs=None):
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=fgs,
                            constrained_layout=True, dpi=75)
     axstyle(ax, fontsize=fs)
-    if yi:
+    if yi is False:
         ax.invert_yaxis()
     ax.autoscale()
     

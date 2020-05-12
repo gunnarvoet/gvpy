@@ -11,6 +11,7 @@ import xarray as xr
 from scipy import interpolate
 from scipy.interpolate import NearestNDInterpolator, interp1d
 from scipy.signal import filtfilt
+import scipy
 
 from gvpy.misc import nearidx2
 
@@ -651,6 +652,186 @@ def eps_overturn2(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
     return out
 
 
+def vmodes(z, N, clat, nmodes):
+    """
+    Calculate vertical modes in a flat-bottomed ocean.
+
+    Parameters
+    ----------
+    z : float
+        Depth [m]
+    N : array_like
+        Buoyancy frequency [rad/s]
+    clat : float
+        Central latitude [deg]
+    nmodes : int
+        Number of modes to calculate
+
+    Returns
+    -------
+    Vert : array_like
+        Vertical velocity modes, normalized
+    Hori : array_like
+        Horizontal velocity modes, normalized
+    Edep : array_like
+        Equivalent depth of the mode [m] (useful for deformation radii)
+    PVel : array_like
+        Phase velocity of the mode [m/s]
+        
+    Notes
+    -----
+    Basically solves
+    .. math::
+    
+        \Phi_{zz} + \mathrm{ev} N^2 \Phi = 0
+    
+    subject to:
+      .. math::
+    
+        \Phi(-d) = 0
+    
+    .. math::
+        \Phi_z(0) - g \, \mathrm{ev} \, \Phi(0) = 0
+
+    Where \(\Phi\) is the mode function, \(\mathrm{ev}\) the eigenvalue, \(N^2\)
+    the buoyancy frequency squared and \(g\) the gravitational constant as a fcn
+    of latitude.
+    
+    ```| Originally written by Benno Blumenthal, 23 July 1981, in FORTRAN
+    | Modified for SUNS by  CC Eriksen, August 1988
+    | Translated to MatLab 4.2c J. Klymak, March 1997
+    | Ported to Python by G. Voet, May 2020```
+
+    Matlab results are in good agreement with the results from Blumenthal's
+    original code, but they are not precise. The Python translation returns
+    the Matlab results within numerical precision.
+    
+    """
+    z = -z if z[0] < 0 else z
+    z_in = z.copy()
+    N_in = N.copy()
+    nsqin = N_in**2
+
+    # pick only valid data
+    good = (N > 0) & np.isfinite(N)
+    N = N[good]
+    z = z[good]
+
+    # check if first point is at z=0
+    if z[0] > 0.01:
+        z = np.insert(z, 0, 0)
+        N = np.insert(N, 0, N[0])
+        
+    npts = z.shape[0]
+
+    nsq = N*N
+    dz = np.diff(z)
+    dz = np.insert(dz, 0, z[0])
+
+    # calculate Nbar
+    nbar = N[0]*z[1] + N[-1] * (z[-1] - z[-2])
+    diffz_ = z[2:] - z[:-2]
+    nbar = nbar + np.sum(diffz_*N[1:-1])
+    nbar = nbar / (2*z[-1])
+    nbarcy = nbar
+    nbar = nbarcy / (3600/(2*np.pi))
+    
+    # compute tridiagonal matrix with free bc
+    alat = clat * np.pi / 180
+    grav = 9.78049 * (
+        1.0 + 5.2884e-3 * (np.sin(alat)) ** 2 - 5.9e-6 * (np.sin(2 * alat)) ** 2
+    )
+    grainv = 1.0 / grav
+    
+    d = np.zeros(npts)
+    l = d.copy()
+    u = d.copy()
+    d[0] = grainv / dz[1]
+    u[1] = d[0]
+    deltaz = np.diff(z)
+
+    d[1:-1] = 2 / (nsq[1:-1] * dz[1:-1] * dz[2:])
+    l[1:-1] = 2 / (nsq[1:-1] * dz[1:-1] * (dz[2:] + dz[1:-1]))
+    u[2:] = 2 / (nsq[1:-1] * dz[2:] * (dz[2:] + dz[1:-1]))
+    u[-1] = 0
+    l[-1] = 0
+
+    offset=[-1, 0, 1]
+    v = np.array([-l[1:], d, -u[1:]])
+    M = scipy.sparse.diags(v, offset).toarray()
+
+    w = scipy.linalg.eig(M)
+    ev = np.sort(np.real(w[0]), kind='stable')
+    ev = ev[1:]
+
+    phase = -1
+    dz = dz.transpose()
+
+    nptsin = z_in.shape[0]
+    Vert = np.zeros((nptsin,nmodes))
+    Hori = np.zeros((nptsin,nmodes))
+    PVel = np.zeros(nmodes)
+    Edep = np.zeros(nmodes)
+
+    for imode in range(nmodes):
+        # switch phase for each mode
+        phase = -phase
+        dz = np.zeros(npts)
+        dz[-1] = 0
+        i = npts-2
+        dz[i] = 1
+        imax = npts-2
+        for i2 in range(imax):
+            dz[i-1] = -((ev[imode] - d[i]) * dz[i] + u[i+1] * dz[i+1]) / l[i]
+            i = i-1
+        sum_ = nsq[0] * dz[0] * dz[0] * z_in[1]
+        difz_ = z[2:npts] - z[:npts-2]
+        sum_ = sum_ + np.sum(nsq[1:npts-1] * dz[1:npts-1] * dz[1:npts-1] * difz_)
+        sum_ = sum_ * 0.5 + grav * dz[0] * dz[0]
+        a = z[npts-1] / (ev[imode] * sum_)
+        a = np.sqrt(np.absolute(a))
+        a = phase * a * np.sign(ev[imode])
+        dz = dz * a
+
+        # interpolate/extrapolate onto original z grid
+        dz = interp1d(z, dz)(z_in)
+        
+        edepth = grainv / ev[imode]
+        phasev = np.sqrt(np.absolute(1 / ev[imode]))
+        const = nbar / phasev
+        phasev = phasev * np.sign(ev[imode])
+
+        emhor = np.full_like(z_in, np.nan)
+        emver = np.full_like(z_in, np.nan)
+        # get the vertical and horizontal velocity modes
+        delta1 = z_in[1:nptsin-1] - z_in[:nptsin-2]
+        delta2 = z_in[2:nptsin] - z_in[1:nptsin-1]
+        d1sq = delta1 * delta1
+        d2sq = delta2 * delta2
+        emver[1:nptsin-1] = const * dz[1:nptsin-1]
+        emhor[1:nptsin-1] = (
+        -(d1sq * dz[2:nptsin] - d2sq * dz[:nptsin-2]
+        + (d2sq - d1sq) * dz[1:nptsin-1])
+        / (delta1 * delta2 * (delta1 + delta2))
+        )
+        emver[0] = const * dz[0]
+        emhor[0] = -(dz[1] - dz[0]) / (z_in[1] - z_in[0])
+        emver[nptsin-1] = const * dz[nptsin-1]
+        emhor[nptsin-1] = -dz[nptsin-2] /(z_in[nptsin-2] - z_in[nptsin-1])
+        
+        # put everybody in their matrices
+        Vert[0:len(emver), imode] = emver
+        Hori[0:len(emver), imode] = emhor
+        PVel[imode] = phasev
+        Edep[imode] = edepth
+        
+        # Normalize
+        Vert[:, imode] = Vert[:, imode] / np.max(np.absolute(Vert[:, imode]))
+        Hori[:, imode] = Hori[:, imode] / np.max(np.absolute(Hori[:, imode]))
+        
+    return Vert, Hori, Edep, PVel
+
+
 def wind_stress(u10, v10):
     r"""
     Calculate wind stress from 10m winds.
@@ -687,14 +868,16 @@ def wind_stress(u10, v10):
        Vol. 20, pp. 1742--1760.
 
     """
-    rho = 1.2 # kg/m^3, air density
-    U = np.sqrt(u10**2 + v10**2) # wind speed
+    rho = 1.2  # kg/m^3, air density
+    U = np.sqrt(u10 ** 2 + v10 ** 2)  # wind speed
     Cd = np.full_like(U, np.nan)
-    Cd[np.where(U<=1)] = 0.00218
-    Cd[np.where((U>1) & (U<=3))] = (0.62 + 1.56 / U[np.where((U>1) & (U<=3))]) * 0.001
-    Cd[np.where((U>3) & (U<10))] = 0.00114
-    Cd[np.where(U>=10)] = (0.49+0.065*U[np.where(U>=10)])*0.001
-    Tx = Cd * rho * U * u10 # N/m^2
+    Cd[np.where(U <= 1)] = 0.00218
+    Cd[np.where((U > 1) & (U <= 3))] = (
+        0.62 + 1.56 / U[np.where((U > 1) & (U <= 3))]
+    ) * 0.001
+    Cd[np.where((U > 3) & (U < 10))] = 0.00114
+    Cd[np.where(U >= 10)] = (0.49 + 0.065 * U[np.where(U >= 10)]) * 0.001
+    Tx = Cd * rho * U * u10  # N/m^2
     Ty = Cd * rho * U * v10
     return Tx, Ty
 
@@ -826,24 +1009,31 @@ def uv2speeddir(u, v):
     return speed, direction
 
 
-def smith_sandwell(lon="all", lat="all", subsample=0, verbose=0, r15=0):
+def smith_sandwell(lon="all", lat="all", r15=False, subsample=False):
     """Load Smith & Sandwell bathymetry
 
     Parameters
     ----------
-    lon : float, list or str
+    lon : float, list or 'all'
         Longitude range. This may either be a single point,
         a list of points, or 'all' (default). If given onne
         point, the nearest ocean depth is returned. For a
         list of locations, the are encompassing all points
         is returned. 'all' returns the whole bathymetry.
-    lat : float, list or str
+    lat : float, list or 'all'
         Latitude. Same options as lon.
+    r15 : bool, optional
+        Set to True for reading the latest 15sec bathymetry. Other
+        wise reads the 30sec bathymetry (default).
 
     Returns
     -------
     b : xarray DataArray
         Bathymetry in an xarray DataArray using dask for quick access.
+        
+    Todo
+    ----
+    Implement subsampling.
     """
     # Load Smith & Sandwell bathymetry as xarray DataArray
     hn = socket.gethostname()
@@ -852,8 +1042,6 @@ def smith_sandwell(lon="all", lat="all", subsample=0, verbose=0, r15=0):
         resolution = 15
     else:
         resolution = 30
-    if verbose:
-        print("working on: " + hn)
     if hn == "oahu":
         nc_file = "/Users/gunnar/Data/bathymetry/smith_sandwell/topo{}.grd".format(
             resolution
@@ -867,20 +1055,21 @@ def smith_sandwell(lon="all", lat="all", subsample=0, verbose=0, r15=0):
             resolution
         )
     else:
-        print("hostname not recognized, assuming we are on oahu for now")
+        # lets hope this works
         nc_file = "/Users/gunnar/Data/bathymetry/smith_sandwell/topo{}.grd".format(
             resolution
         )
-    if verbose:
-        print("Loading bathymetry...")
     b = xr.open_dataarray(nc_file, chunks=1000)
     b["lon"] = np.mod((b.lon + 180), 360) - 180
-    if lon != "all":
+    if type(lon) == str and lon != "all":
+        print("returning whole dataset")
+    else:
         # for only one point
         if np.ma.size(lon) == 1 and np.ma.size(lat) == 1:
-            lonmask = nearidx2(b.lon.values, lon)
-            latmask = nearidx2(b.lat.values, lat)
-            b = b.isel(lon=lonmask, lat=latmask)
+            # lonmask = nearidx2(b.lon.values, lon)
+            # latmask = nearidx2(b.lat.values, lat)
+            # b = b.isel(lon=lonmask, lat=latmask)
+            b = b.interp(dict(lon=lon, lat=lat))
         # for a range of lon/lat
         else:
             lonmask = (b.lon > np.nanmin(lon)) & (b.lon < np.nanmax(lon))
@@ -1213,17 +1402,17 @@ def inertial_frequency(lat):
         
     Notes
     -----
-    The inertial frequency or Coriolis frequency :math:`f` is equal to twice the rotation rate :math:`\Omega` of the Earth multiplied by the sine of the latitude :math:`\phi`:
+    The inertial frequency or Coriolis frequency \(f\) is equal to twice the rotation rate of \(\Omega\) of the Earth multiplied by the sine of the latitude \(\phi\):
     
     .. math::
     
         f = 2\omega \sin \phi
         
-    and has units of rad/s. The rotation rate of the Earth can be approximated as :math:`\Omega=2\pi/T` with the rotation period of the Earth :math:`T` which is approximately one *sidereal day*: 23h, 56m, 4.1s.
+    and has units of rad/s. The rotation rate of the Earth can be approximated as \(\Omega=2\pi/T\) with the rotation period of the Earth \(T\) which is approximately one *sidereal day*: 23h, 56m, 4.1s.
     
-    The inertial period in days can be calculated from :math:`f` as :math:`T=2\pi/f/24/3600`.
+    The inertial period in days can be calculated from \(f\) as \(T=2\pi/f/24/3600\).
     """
-    Omega = 7.292115e-5 # [1/s] (Groten, 2004)
+    Omega = 7.292115e-5  # [1/s] (Groten, 2004)
     f = 2 * Omega * np.sin(np.deg2rad(lat))
     return f
 
@@ -1289,7 +1478,7 @@ def woce_climatology(lon=None, lat=None, z=None, std=False):
         "ZAX": "z",
         "LON": "lon",
         "LAT": "lat",
-        "BOT_DEP": "depth",
+        "BOT_DEP": "bottom_depth",
         "PRES": "p",
         "TEMP": "t",
         "TPOTEN": "th",
@@ -1301,6 +1490,9 @@ def woce_climatology(lon=None, lat=None, z=None, std=False):
         "GAMMAN": "gamma",
     }
     w = w.rename(rnm)
+    w['depth'] = w.z.copy()
+    w['z'] = w.z * -1
+    w.z.attrs['units'] = 'm'
     if std:
         return w, ws
     else:
@@ -1310,11 +1502,6 @@ def woce_climatology(lon=None, lat=None, z=None, std=False):
 def woce_argo_profile(lon, lat, interp=False, load=True):
     """
     Extract profile at a single location from the WOCE ARGO Global Hydrographic Climatology (WAGHC).
-    Go here for more info on the dataset: https://icdc.cen.uni-hamburg.de/1/daten/ocean/waghc/
-    
-    Cite data as:
-    Gouretski, Viktor (2018). WOCE-Argo Global Hydrographic Climatology (WAGHC Version 1.0).
-    World Data Center for Climate (WDCC) at DKRZ. https://doi.org/10.1594/WDCC/WAGHC_V1.0
 
     Parameters
     ----------
@@ -1334,12 +1521,24 @@ def woce_argo_profile(lon, lat, interp=False, load=True):
     -------
     prf : xarray.Dataset
         Data at provided location with coordinates depth and time.
+        
+    Notes
+    -----
+    Go here for more info on the dataset: https://icdc.cen.uni-hamburg.de/1/daten/ocean/waghc/
+    
+    Cite data as:
+    Gouretski, Viktor (2018). WOCE-Argo Global Hydrographic Climatology (WAGHC Version 1.0).
+    World Data Center for Climate (WDCC) at DKRZ. https://doi.org/10.1594/WDCC/WAGHC_V1.0
+    
     """
     woce_argo_path = Path(
         "/Users/gunnar/Data/woce_argo_global_hydrographic_climatology"
     )
     paths = sorted(woce_argo_path.glob("WAGHC_BAR_*.nc"))
-    ta = xr.open_mfdataset(paths, decode_times=False, combine="by_coords")
+    ta = xr.open_mfdataset(paths,
+                           decode_times=False,
+                           combine="by_coords",
+                           chunks={'longitude': 60, 'latitude': 60})
     if interp:
         out = ta.interp(longitude=lon, latitude=lat)
     else:
@@ -1347,12 +1546,21 @@ def woce_argo_profile(lon, lat, interp=False, load=True):
     if load:
         out = out.load()
     out.time.attrs = dict(units="month")
-    prf = out
+    prf = out.squeeze()
+    # rename a few variables
+    newnames = dict(
+        latitude="lat", longitude="lon", temperature="t", salinity="s"
+    )
+    prf = prf.rename(newnames)
+    prf.coords['z'] = -1 * prf.depth
+    prf = prf.swap_dims({'depth': 'z'})
+    prf = prf.transpose('z', 'time')
+    prf.z.attrs['units'] = 'm'
     return prf
 
 
 def lonlatstr(lon, lat):
-    """Generate longitude/latitude strings from position in decimal format.
+    r"""Generate longitude/latitude strings from position in decimal format.
 
     Parameters
     ----------

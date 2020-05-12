@@ -277,6 +277,7 @@
 <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">interpolate</span>
 <span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">NearestNDInterpolator</span><span class="p">,</span> <span class="n">interp1d</span>
 <span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">filtfilt</span>
+<span class="kn">import</span> <span class="nn">scipy</span>
 
 <span class="kn">from</span> <span class="nn">gvpy.misc</span> <span class="kn">import</span> <span class="n">nearidx2</span>
 
@@ -917,6 +918,186 @@
     <span class="k">return</span> <span class="n">out</span>
 
 
+<span class="k">def</span> <span class="nf">vmodes</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">clat</span><span class="p">,</span> <span class="n">nmodes</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Calculate vertical modes in a flat-bottomed ocean.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    z : float</span>
+<span class="sd">        Depth [m]</span>
+<span class="sd">    N : array_like</span>
+<span class="sd">        Buoyancy frequency [rad/s]</span>
+<span class="sd">    clat : float</span>
+<span class="sd">        Central latitude [deg]</span>
+<span class="sd">    nmodes : int</span>
+<span class="sd">        Number of modes to calculate</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Vert : array_like</span>
+<span class="sd">        Vertical velocity modes, normalized</span>
+<span class="sd">    Hori : array_like</span>
+<span class="sd">        Horizontal velocity modes, normalized</span>
+<span class="sd">    Edep : array_like</span>
+<span class="sd">        Equivalent depth of the mode [m] (useful for deformation radii)</span>
+<span class="sd">    PVel : array_like</span>
+<span class="sd">        Phase velocity of the mode [m/s]</span>
+<span class="sd">        </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Basically solves</span>
+<span class="sd">    .. math::</span>
+<span class="sd">    </span>
+<span class="sd">        \Phi_{zz} + \mathrm{ev} N^2 \Phi = 0</span>
+<span class="sd">    </span>
+<span class="sd">    subject to:</span>
+<span class="sd">      .. math::</span>
+<span class="sd">    </span>
+<span class="sd">        \Phi(-d) = 0</span>
+<span class="sd">    </span>
+<span class="sd">    .. math::</span>
+<span class="sd">        \Phi_z(0) - g \, \mathrm{ev} \, \Phi(0) = 0</span>
+
+<span class="sd">    Where \(\Phi\) is the mode function, \(\mathrm{ev}\) the eigenvalue, \(N^2\)</span>
+<span class="sd">    the buoyancy frequency squared and \(g\) the gravitational constant as a fcn</span>
+<span class="sd">    of latitude.</span>
+<span class="sd">    </span>
+<span class="sd">    ```| Originally written by Benno Blumenthal, 23 July 1981, in FORTRAN</span>
+<span class="sd">    | Modified for SUNS by  CC Eriksen, August 1988</span>
+<span class="sd">    | Translated to MatLab 4.2c J. Klymak, March 1997</span>
+<span class="sd">    | Ported to Python by G. Voet, May 2020```</span>
+
+<span class="sd">    Matlab results are in good agreement with the results from Blumenthal's</span>
+<span class="sd">    original code, but they are not precise. The Python translation returns</span>
+<span class="sd">    the Matlab results within numerical precision.</span>
+<span class="sd">    </span>
+<span class="sd">    """</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="o">-</span><span class="n">z</span> <span class="k">if</span> <span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">z</span>
+    <span class="n">z_in</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">N_in</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">nsqin</span> <span class="o">=</span> <span class="n">N_in</span><span class="o">**</span><span class="mi">2</span>
+
+    <span class="c1"># pick only valid data</span>
+    <span class="n">good</span> <span class="o">=</span> <span class="p">(</span><span class="n">N</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">N</span><span class="p">[</span><span class="n">good</span><span class="p">]</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">z</span><span class="p">[</span><span class="n">good</span><span class="p">]</span>
+
+    <span class="c1"># check if first point is at z=0</span>
+    <span class="k">if</span> <span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.01</span><span class="p">:</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">N</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        
+    <span class="n">npts</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">nsq</span> <span class="o">=</span> <span class="n">N</span><span class="o">*</span><span class="n">N</span>
+    <span class="n">dz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+    <span class="n">dz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">dz</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># calculate Nbar</span>
+    <span class="n">nbar</span> <span class="o">=</span> <span class="n">N</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">z</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">N</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">z</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">z</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">diffz_</span> <span class="o">=</span> <span class="n">z</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="o">-</span> <span class="n">z</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">nbar</span> <span class="o">=</span> <span class="n">nbar</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">diffz_</span><span class="o">*</span><span class="n">N</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">nbar</span> <span class="o">=</span> <span class="n">nbar</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">z</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">nbarcy</span> <span class="o">=</span> <span class="n">nbar</span>
+    <span class="n">nbar</span> <span class="o">=</span> <span class="n">nbarcy</span> <span class="o">/</span> <span class="p">(</span><span class="mi">3600</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
+    
+    <span class="c1"># compute tridiagonal matrix with free bc</span>
+    <span class="n">alat</span> <span class="o">=</span> <span class="n">clat</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span>
+    <span class="n">grav</span> <span class="o">=</span> <span class="mf">9.78049</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="mf">1.0</span> <span class="o">+</span> <span class="mf">5.2884e-3</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">alat</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="mf">5.9e-6</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">alat</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="p">)</span>
+    <span class="n">grainv</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">grav</span>
+    
+    <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">npts</span><span class="p">)</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">grainv</span> <span class="o">/</span> <span class="n">dz</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">deltaz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+
+    <span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">nsq</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">dz</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">dz</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
+    <span class="n">l</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">nsq</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">dz</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">dz</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="o">+</span> <span class="n">dz</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">u</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">nsq</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">dz</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="o">*</span> <span class="p">(</span><span class="n">dz</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="o">+</span> <span class="n">dz</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">u</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">l</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">offset</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">l</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">d</span><span class="p">,</span> <span class="o">-</span><span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">:]])</span>
+    <span class="n">M</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">diags</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span>
+
+    <span class="n">w</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+    <span class="n">ev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">w</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">kind</span><span class="o">=</span><span class="s1">'stable'</span><span class="p">)</span>
+    <span class="n">ev</span> <span class="o">=</span> <span class="n">ev</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+
+    <span class="n">phase</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="n">dz</span> <span class="o">=</span> <span class="n">dz</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+
+    <span class="n">nptsin</span> <span class="o">=</span> <span class="n">z_in</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">Vert</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nptsin</span><span class="p">,</span><span class="n">nmodes</span><span class="p">))</span>
+    <span class="n">Hori</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nptsin</span><span class="p">,</span><span class="n">nmodes</span><span class="p">))</span>
+    <span class="n">PVel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nmodes</span><span class="p">)</span>
+    <span class="n">Edep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nmodes</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">imode</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nmodes</span><span class="p">):</span>
+        <span class="c1"># switch phase for each mode</span>
+        <span class="n">phase</span> <span class="o">=</span> <span class="o">-</span><span class="n">phase</span>
+        <span class="n">dz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">npts</span><span class="p">)</span>
+        <span class="n">dz</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">npts</span><span class="o">-</span><span class="mi">2</span>
+        <span class="n">dz</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">imax</span> <span class="o">=</span> <span class="n">npts</span><span class="o">-</span><span class="mi">2</span>
+        <span class="k">for</span> <span class="n">i2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">imax</span><span class="p">):</span>
+            <span class="n">dz</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="p">((</span><span class="n">ev</span><span class="p">[</span><span class="n">imode</span><span class="p">]</span> <span class="o">-</span> <span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span> <span class="n">dz</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">dz</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">l</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">i</span><span class="o">-</span><span class="mi">1</span>
+        <span class="n">sum_</span> <span class="o">=</span> <span class="n">nsq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">dz</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">dz</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">z_in</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">difz_</span> <span class="o">=</span> <span class="n">z</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="n">npts</span><span class="p">]</span> <span class="o">-</span> <span class="n">z</span><span class="p">[:</span><span class="n">npts</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">sum_</span> <span class="o">=</span> <span class="n">sum_</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">nsq</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">npts</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">dz</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">npts</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">dz</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">npts</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">difz_</span><span class="p">)</span>
+        <span class="n">sum_</span> <span class="o">=</span> <span class="n">sum_</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="n">grav</span> <span class="o">*</span> <span class="n">dz</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">dz</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">z</span><span class="p">[</span><span class="n">npts</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">ev</span><span class="p">[</span><span class="n">imode</span><span class="p">]</span> <span class="o">*</span> <span class="n">sum_</span><span class="p">)</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">a</span><span class="p">))</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">phase</span> <span class="o">*</span> <span class="n">a</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">ev</span><span class="p">[</span><span class="n">imode</span><span class="p">])</span>
+        <span class="n">dz</span> <span class="o">=</span> <span class="n">dz</span> <span class="o">*</span> <span class="n">a</span>
+
+        <span class="c1"># interpolate/extrapolate onto original z grid</span>
+        <span class="n">dz</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">dz</span><span class="p">)(</span><span class="n">z_in</span><span class="p">)</span>
+        
+        <span class="n">edepth</span> <span class="o">=</span> <span class="n">grainv</span> <span class="o">/</span> <span class="n">ev</span><span class="p">[</span><span class="n">imode</span><span class="p">]</span>
+        <span class="n">phasev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">ev</span><span class="p">[</span><span class="n">imode</span><span class="p">]))</span>
+        <span class="n">const</span> <span class="o">=</span> <span class="n">nbar</span> <span class="o">/</span> <span class="n">phasev</span>
+        <span class="n">phasev</span> <span class="o">=</span> <span class="n">phasev</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">ev</span><span class="p">[</span><span class="n">imode</span><span class="p">])</span>
+
+        <span class="n">emhor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">z_in</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+        <span class="n">emver</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">z_in</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+        <span class="c1"># get the vertical and horizontal velocity modes</span>
+        <span class="n">delta1</span> <span class="o">=</span> <span class="n">z_in</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">nptsin</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">z_in</span><span class="p">[:</span><span class="n">nptsin</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">delta2</span> <span class="o">=</span> <span class="n">z_in</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="n">nptsin</span><span class="p">]</span> <span class="o">-</span> <span class="n">z_in</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">nptsin</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">d1sq</span> <span class="o">=</span> <span class="n">delta1</span> <span class="o">*</span> <span class="n">delta1</span>
+        <span class="n">d2sq</span> <span class="o">=</span> <span class="n">delta2</span> <span class="o">*</span> <span class="n">delta2</span>
+        <span class="n">emver</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">nptsin</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">const</span> <span class="o">*</span> <span class="n">dz</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">nptsin</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">emhor</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">nptsin</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="o">-</span><span class="p">(</span><span class="n">d1sq</span> <span class="o">*</span> <span class="n">dz</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="n">nptsin</span><span class="p">]</span> <span class="o">-</span> <span class="n">d2sq</span> <span class="o">*</span> <span class="n">dz</span><span class="p">[:</span><span class="n">nptsin</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+        <span class="o">+</span> <span class="p">(</span><span class="n">d2sq</span> <span class="o">-</span> <span class="n">d1sq</span><span class="p">)</span> <span class="o">*</span> <span class="n">dz</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">nptsin</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="o">/</span> <span class="p">(</span><span class="n">delta1</span> <span class="o">*</span> <span class="n">delta2</span> <span class="o">*</span> <span class="p">(</span><span class="n">delta1</span> <span class="o">+</span> <span class="n">delta2</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="n">emver</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">const</span> <span class="o">*</span> <span class="n">dz</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">emhor</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">dz</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">dz</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">z_in</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">z_in</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">emver</span><span class="p">[</span><span class="n">nptsin</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">const</span> <span class="o">*</span> <span class="n">dz</span><span class="p">[</span><span class="n">nptsin</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">emhor</span><span class="p">[</span><span class="n">nptsin</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">dz</span><span class="p">[</span><span class="n">nptsin</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span><span class="p">(</span><span class="n">z_in</span><span class="p">[</span><span class="n">nptsin</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">z_in</span><span class="p">[</span><span class="n">nptsin</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        
+        <span class="c1"># put everybody in their matrices</span>
+        <span class="n">Vert</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">emver</span><span class="p">),</span> <span class="n">imode</span><span class="p">]</span> <span class="o">=</span> <span class="n">emver</span>
+        <span class="n">Hori</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">emver</span><span class="p">),</span> <span class="n">imode</span><span class="p">]</span> <span class="o">=</span> <span class="n">emhor</span>
+        <span class="n">PVel</span><span class="p">[</span><span class="n">imode</span><span class="p">]</span> <span class="o">=</span> <span class="n">phasev</span>
+        <span class="n">Edep</span><span class="p">[</span><span class="n">imode</span><span class="p">]</span> <span class="o">=</span> <span class="n">edepth</span>
+        
+        <span class="c1"># Normalize</span>
+        <span class="n">Vert</span><span class="p">[:,</span> <span class="n">imode</span><span class="p">]</span> <span class="o">=</span> <span class="n">Vert</span><span class="p">[:,</span> <span class="n">imode</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">Vert</span><span class="p">[:,</span> <span class="n">imode</span><span class="p">]))</span>
+        <span class="n">Hori</span><span class="p">[:,</span> <span class="n">imode</span><span class="p">]</span> <span class="o">=</span> <span class="n">Hori</span><span class="p">[:,</span> <span class="n">imode</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">Hori</span><span class="p">[:,</span> <span class="n">imode</span><span class="p">]))</span>
+        
+    <span class="k">return</span> <span class="n">Vert</span><span class="p">,</span> <span class="n">Hori</span><span class="p">,</span> <span class="n">Edep</span><span class="p">,</span> <span class="n">PVel</span>
+
+
 <div class="viewcode-block" id="wind_stress"><a class="viewcode-back" href="../../generated/gvpy.ocean.wind_stress.html#gvpy.ocean.wind_stress">[docs]</a><span class="k">def</span> <span class="nf">wind_stress</span><span class="p">(</span><span class="n">u10</span><span class="p">,</span> <span class="n">v10</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">"""</span>
 <span class="sd">    Calculate wind stress from 10m winds.</span>
@@ -953,14 +1134,16 @@
 <span class="sd">       Vol. 20, pp. 1742--1760.</span>
 
 <span class="sd">    """</span>
-    <span class="n">rho</span> <span class="o">=</span> <span class="mf">1.2</span> <span class="c1"># kg/m^3, air density</span>
-    <span class="n">U</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">u10</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">v10</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># wind speed</span>
+    <span class="n">rho</span> <span class="o">=</span> <span class="mf">1.2</span>  <span class="c1"># kg/m^3, air density</span>
+    <span class="n">U</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">u10</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">v10</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># wind speed</span>
     <span class="n">Cd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
-    <span class="n">Cd</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">U</span><span class="o">&lt;=</span><span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.00218</span>
-    <span class="n">Cd</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">U</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">U</span><span class="o">&lt;=</span><span class="mi">3</span><span class="p">))]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.62</span> <span class="o">+</span> <span class="mf">1.56</span> <span class="o">/</span> <span class="n">U</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">U</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">U</span><span class="o">&lt;=</span><span class="mi">3</span><span class="p">))])</span> <span class="o">*</span> <span class="mf">0.001</span>
-    <span class="n">Cd</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">U</span><span class="o">&gt;</span><span class="mi">3</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">U</span><span class="o">&lt;</span><span class="mi">10</span><span class="p">))]</span> <span class="o">=</span> <span class="mf">0.00114</span>
-    <span class="n">Cd</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">U</span><span class="o">&gt;=</span><span class="mi">10</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.49</span><span class="o">+</span><span class="mf">0.065</span><span class="o">*</span><span class="n">U</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">U</span><span class="o">&gt;=</span><span class="mi">10</span><span class="p">)])</span><span class="o">*</span><span class="mf">0.001</span>
-    <span class="n">Tx</span> <span class="o">=</span> <span class="n">Cd</span> <span class="o">*</span> <span class="n">rho</span> <span class="o">*</span> <span class="n">U</span> <span class="o">*</span> <span class="n">u10</span> <span class="c1"># N/m^2</span>
+    <span class="n">Cd</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">U</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.00218</span>
+    <span class="n">Cd</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">U</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">U</span> <span class="o">&lt;=</span> <span class="mi">3</span><span class="p">))]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="mf">0.62</span> <span class="o">+</span> <span class="mf">1.56</span> <span class="o">/</span> <span class="n">U</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">U</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">U</span> <span class="o">&lt;=</span> <span class="mi">3</span><span class="p">))]</span>
+    <span class="p">)</span> <span class="o">*</span> <span class="mf">0.001</span>
+    <span class="n">Cd</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">U</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">U</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">))]</span> <span class="o">=</span> <span class="mf">0.00114</span>
+    <span class="n">Cd</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">U</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.49</span> <span class="o">+</span> <span class="mf">0.065</span> <span class="o">*</span> <span class="n">U</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">U</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">)])</span> <span class="o">*</span> <span class="mf">0.001</span>
+    <span class="n">Tx</span> <span class="o">=</span> <span class="n">Cd</span> <span class="o">*</span> <span class="n">rho</span> <span class="o">*</span> <span class="n">U</span> <span class="o">*</span> <span class="n">u10</span>  <span class="c1"># N/m^2</span>
     <span class="n">Ty</span> <span class="o">=</span> <span class="n">Cd</span> <span class="o">*</span> <span class="n">rho</span> <span class="o">*</span> <span class="n">U</span> <span class="o">*</span> <span class="n">v10</span>
     <span class="k">return</span> <span class="n">Tx</span><span class="p">,</span> <span class="n">Ty</span></div>
 
@@ -1092,24 +1275,31 @@
     <span class="k">return</span> <span class="n">speed</span><span class="p">,</span> <span class="n">direction</span></div>
 
 
-<div class="viewcode-block" id="smith_sandwell"><a class="viewcode-back" href="../../generated/gvpy.ocean.smith_sandwell.html#gvpy.ocean.smith_sandwell">[docs]</a><span class="k">def</span> <span class="nf">smith_sandwell</span><span class="p">(</span><span class="n">lon</span><span class="o">=</span><span class="s2">"all"</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="s2">"all"</span><span class="p">,</span> <span class="n">subsample</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">r15</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="smith_sandwell"><a class="viewcode-back" href="../../generated/gvpy.ocean.smith_sandwell.html#gvpy.ocean.smith_sandwell">[docs]</a><span class="k">def</span> <span class="nf">smith_sandwell</span><span class="p">(</span><span class="n">lon</span><span class="o">=</span><span class="s2">"all"</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="s2">"all"</span><span class="p">,</span> <span class="n">r15</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">subsample</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">"""Load Smith &amp; Sandwell bathymetry</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    lon : float, list or str</span>
+<span class="sd">    lon : float, list or 'all'</span>
 <span class="sd">        Longitude range. This may either be a single point,</span>
 <span class="sd">        a list of points, or 'all' (default). If given onne</span>
 <span class="sd">        point, the nearest ocean depth is returned. For a</span>
 <span class="sd">        list of locations, the are encompassing all points</span>
 <span class="sd">        is returned. 'all' returns the whole bathymetry.</span>
-<span class="sd">    lat : float, list or str</span>
+<span class="sd">    lat : float, list or 'all'</span>
 <span class="sd">        Latitude. Same options as lon.</span>
+<span class="sd">    r15 : bool, optional</span>
+<span class="sd">        Set to True for reading the latest 15sec bathymetry. Other</span>
+<span class="sd">        wise reads the 30sec bathymetry (default).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    b : xarray DataArray</span>
 <span class="sd">        Bathymetry in an xarray DataArray using dask for quick access.</span>
+<span class="sd">        </span>
+<span class="sd">    Todo</span>
+<span class="sd">    ----</span>
+<span class="sd">    Implement subsampling.</span>
 <span class="sd">    """</span>
     <span class="c1"># Load Smith &amp; Sandwell bathymetry as xarray DataArray</span>
     <span class="n">hn</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">()</span>
@@ -1118,8 +1308,6 @@
         <span class="n">resolution</span> <span class="o">=</span> <span class="mi">15</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">resolution</span> <span class="o">=</span> <span class="mi">30</span>
-    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">"working on: "</span> <span class="o">+</span> <span class="n">hn</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">hn</span> <span class="o">==</span> <span class="s2">"oahu"</span><span class="p">:</span>
         <span class="n">nc_file</span> <span class="o">=</span> <span class="s2">"/Users/gunnar/Data/bathymetry/smith_sandwell/topo</span><span class="si">{}</span><span class="s2">.grd"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
             <span class="n">resolution</span>
@@ -1133,20 +1321,21 @@
             <span class="n">resolution</span>
         <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">"hostname not recognized, assuming we are on oahu for now"</span><span class="p">)</span>
+        <span class="c1"># lets hope this works</span>
         <span class="n">nc_file</span> <span class="o">=</span> <span class="s2">"/Users/gunnar/Data/bathymetry/smith_sandwell/topo</span><span class="si">{}</span><span class="s2">.grd"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
             <span class="n">resolution</span>
         <span class="p">)</span>
-    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">"Loading bathymetry..."</span><span class="p">)</span>
     <span class="n">b</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataarray</span><span class="p">(</span><span class="n">nc_file</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
     <span class="n">b</span><span class="p">[</span><span class="s2">"lon"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">((</span><span class="n">b</span><span class="o">.</span><span class="n">lon</span> <span class="o">+</span> <span class="mi">180</span><span class="p">),</span> <span class="mi">360</span><span class="p">)</span> <span class="o">-</span> <span class="mi">180</span>
-    <span class="k">if</span> <span class="n">lon</span> <span class="o">!=</span> <span class="s2">"all"</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">lon</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span> <span class="ow">and</span> <span class="n">lon</span> <span class="o">!=</span> <span class="s2">"all"</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"returning whole dataset"</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
         <span class="c1"># for only one point</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">lon</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">lonmask</span> <span class="o">=</span> <span class="n">nearidx2</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">lon</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span>
-            <span class="n">latmask</span> <span class="o">=</span> <span class="n">nearidx2</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">lat</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">lat</span><span class="p">)</span>
-            <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">lon</span><span class="o">=</span><span class="n">lonmask</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="n">latmask</span><span class="p">)</span>
+            <span class="c1"># lonmask = nearidx2(b.lon.values, lon)</span>
+            <span class="c1"># latmask = nearidx2(b.lat.values, lat)</span>
+            <span class="c1"># b = b.isel(lon=lonmask, lat=latmask)</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">lon</span><span class="o">=</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="n">lat</span><span class="p">))</span>
         <span class="c1"># for a range of lon/lat</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">lonmask</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">lon</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">lon</span><span class="p">))</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">lon</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">lon</span><span class="p">))</span>
@@ -1479,17 +1668,17 @@
 <span class="sd">        </span>
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    The inertial frequency or Coriolis frequency :math:`f` is equal to twice the rotation rate :math:`\Omega` of the Earth multiplied by the sine of the latitude :math:`\phi`:</span>
+<span class="sd">    The inertial frequency or Coriolis frequency \(f\) is equal to twice the rotation rate of \(\Omega\) of the Earth multiplied by the sine of the latitude \(\phi\):</span>
 <span class="sd">    </span>
 <span class="sd">    .. math::</span>
 <span class="sd">    </span>
 <span class="sd">        f = 2\omega \sin \phi</span>
 <span class="sd">        </span>
-<span class="sd">    and has units of rad/s. The rotation rate of the Earth can be approximated as :math:`\Omega=2\pi/T` with the rotation period of the Earth :math:`T` which is approximately one *sidereal day*: 23h, 56m, 4.1s.</span>
+<span class="sd">    and has units of rad/s. The rotation rate of the Earth can be approximated as \(\Omega=2\pi/T\) with the rotation period of the Earth \(T\) which is approximately one *sidereal day*: 23h, 56m, 4.1s.</span>
 <span class="sd">    </span>
-<span class="sd">    The inertial period in days can be calculated from :math:`f` as :math:`T=2\pi/f/24/3600`.</span>
+<span class="sd">    The inertial period in days can be calculated from \(f\) as \(T=2\pi/f/24/3600\).</span>
 <span class="sd">    """</span>
-    <span class="n">Omega</span> <span class="o">=</span> <span class="mf">7.292115e-5</span> <span class="c1"># [1/s] (Groten, 2004)</span>
+    <span class="n">Omega</span> <span class="o">=</span> <span class="mf">7.292115e-5</span>  <span class="c1"># [1/s] (Groten, 2004)</span>
     <span class="n">f</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">Omega</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">lat</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">f</span></div>
 
@@ -1555,7 +1744,7 @@
         <span class="s2">"ZAX"</span><span class="p">:</span> <span class="s2">"z"</span><span class="p">,</span>
         <span class="s2">"LON"</span><span class="p">:</span> <span class="s2">"lon"</span><span class="p">,</span>
         <span class="s2">"LAT"</span><span class="p">:</span> <span class="s2">"lat"</span><span class="p">,</span>
-        <span class="s2">"BOT_DEP"</span><span class="p">:</span> <span class="s2">"depth"</span><span class="p">,</span>
+        <span class="s2">"BOT_DEP"</span><span class="p">:</span> <span class="s2">"bottom_depth"</span><span class="p">,</span>
         <span class="s2">"PRES"</span><span class="p">:</span> <span class="s2">"p"</span><span class="p">,</span>
         <span class="s2">"TEMP"</span><span class="p">:</span> <span class="s2">"t"</span><span class="p">,</span>
         <span class="s2">"TPOTEN"</span><span class="p">:</span> <span class="s2">"th"</span><span class="p">,</span>
@@ -1567,6 +1756,9 @@
         <span class="s2">"GAMMAN"</span><span class="p">:</span> <span class="s2">"gamma"</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="n">w</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">rnm</span><span class="p">)</span>
+    <span class="n">w</span><span class="p">[</span><span class="s1">'depth'</span><span class="p">]</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">z</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">w</span><span class="p">[</span><span class="s1">'z'</span><span class="p">]</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">z</span> <span class="o">*</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="n">w</span><span class="o">.</span><span class="n">z</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">'units'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'m'</span>
     <span class="k">if</span> <span class="n">std</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">w</span><span class="p">,</span> <span class="n">ws</span>
     <span class="k">else</span><span class="p">:</span>
@@ -1576,11 +1768,6 @@
 <div class="viewcode-block" id="woce_argo_profile"><a class="viewcode-back" href="../../generated/gvpy.ocean.woce_argo_profile.html#gvpy.ocean.woce_argo_profile">[docs]</a><span class="k">def</span> <span class="nf">woce_argo_profile</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">interp</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">load</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">"""</span>
 <span class="sd">    Extract profile at a single location from the WOCE ARGO Global Hydrographic Climatology (WAGHC).</span>
-<span class="sd">    Go here for more info on the dataset: https://icdc.cen.uni-hamburg.de/1/daten/ocean/waghc/</span>
-<span class="sd">    </span>
-<span class="sd">    Cite data as:</span>
-<span class="sd">    Gouretski, Viktor (2018). WOCE-Argo Global Hydrographic Climatology (WAGHC Version 1.0).</span>
-<span class="sd">    World Data Center for Climate (WDCC) at DKRZ. https://doi.org/10.1594/WDCC/WAGHC_V1.0</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1600,12 +1787,24 @@
 <span class="sd">    -------</span>
 <span class="sd">    prf : xarray.Dataset</span>
 <span class="sd">        Data at provided location with coordinates depth and time.</span>
+<span class="sd">        </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Go here for more info on the dataset: https://icdc.cen.uni-hamburg.de/1/daten/ocean/waghc/</span>
+<span class="sd">    </span>
+<span class="sd">    Cite data as:</span>
+<span class="sd">    Gouretski, Viktor (2018). WOCE-Argo Global Hydrographic Climatology (WAGHC Version 1.0).</span>
+<span class="sd">    World Data Center for Climate (WDCC) at DKRZ. https://doi.org/10.1594/WDCC/WAGHC_V1.0</span>
+<span class="sd">    </span>
 <span class="sd">    """</span>
     <span class="n">woce_argo_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span>
         <span class="s2">"/Users/gunnar/Data/woce_argo_global_hydrographic_climatology"</span>
     <span class="p">)</span>
     <span class="n">paths</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">woce_argo_path</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"WAGHC_BAR_*.nc"</span><span class="p">))</span>
-    <span class="n">ta</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_mfdataset</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span> <span class="n">decode_times</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">combine</span><span class="o">=</span><span class="s2">"by_coords"</span><span class="p">)</span>
+    <span class="n">ta</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_mfdataset</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span>
+                           <span class="n">decode_times</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                           <span class="n">combine</span><span class="o">=</span><span class="s2">"by_coords"</span><span class="p">,</span>
+                           <span class="n">chunks</span><span class="o">=</span><span class="p">{</span><span class="s1">'longitude'</span><span class="p">:</span> <span class="mi">60</span><span class="p">,</span> <span class="s1">'latitude'</span><span class="p">:</span> <span class="mi">60</span><span class="p">})</span>
     <span class="k">if</span> <span class="n">interp</span><span class="p">:</span>
         <span class="n">out</span> <span class="o">=</span> <span class="n">ta</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">longitude</span><span class="o">=</span><span class="n">lon</span><span class="p">,</span> <span class="n">latitude</span><span class="o">=</span><span class="n">lat</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -1613,12 +1812,21 @@
     <span class="k">if</span> <span class="n">load</span><span class="p">:</span>
         <span class="n">out</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
     <span class="n">out</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">"month"</span><span class="p">)</span>
-    <span class="n">prf</span> <span class="o">=</span> <span class="n">out</span>
+    <span class="n">prf</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+    <span class="c1"># rename a few variables</span>
+    <span class="n">newnames</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">latitude</span><span class="o">=</span><span class="s2">"lat"</span><span class="p">,</span> <span class="n">longitude</span><span class="o">=</span><span class="s2">"lon"</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="s2">"t"</span><span class="p">,</span> <span class="n">salinity</span><span class="o">=</span><span class="s2">"s"</span>
+    <span class="p">)</span>
+    <span class="n">prf</span> <span class="o">=</span> <span class="n">prf</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">newnames</span><span class="p">)</span>
+    <span class="n">prf</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s1">'z'</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">prf</span><span class="o">.</span><span class="n">depth</span>
+    <span class="n">prf</span> <span class="o">=</span> <span class="n">prf</span><span class="o">.</span><span class="n">swap_dims</span><span class="p">({</span><span class="s1">'depth'</span><span class="p">:</span> <span class="s1">'z'</span><span class="p">})</span>
+    <span class="n">prf</span> <span class="o">=</span> <span class="n">prf</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="s1">'z'</span><span class="p">,</span> <span class="s1">'time'</span><span class="p">)</span>
+    <span class="n">prf</span><span class="o">.</span><span class="n">z</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">'units'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'m'</span>
     <span class="k">return</span> <span class="n">prf</span></div>
 
 
 <div class="viewcode-block" id="lonlatstr"><a class="viewcode-back" href="../../generated/gvpy.ocean.lonlatstr.html#gvpy.ocean.lonlatstr">[docs]</a><span class="k">def</span> <span class="nf">lonlatstr</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">):</span>
-    <span class="sd">"""Generate longitude/latitude strings from position in decimal format.</span>
+    <span class="sa">r</span><span class="sd">"""Generate longitude/latitude strings from position in decimal format.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>

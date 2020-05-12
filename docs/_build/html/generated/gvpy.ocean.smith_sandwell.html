@@ -300,17 +300,19 @@
 <h1 id="generated-gvpy-ocean-smith-sandwell--page-root">gvpy.ocean.smith_sandwell<a class="headerlink" href="#generated-gvpy-ocean-smith-sandwell--page-root" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt id="gvpy.ocean.smith_sandwell">
-<code class="sig-prename descclassname">gvpy.ocean.</code><code class="sig-name descname">smith_sandwell</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lon</span><span class="o">=</span><span class="default_value">'all'</span></em>, <em class="sig-param"><span class="n">lat</span><span class="o">=</span><span class="default_value">'all'</span></em>, <em class="sig-param"><span class="n">subsample</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">r15</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gvpy/ocean.html#smith_sandwell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gvpy.ocean.smith_sandwell" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">gvpy.ocean.</code><code class="sig-name descname">smith_sandwell</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lon</span><span class="o">=</span><span class="default_value">'all'</span></em>, <em class="sig-param"><span class="n">lat</span><span class="o">=</span><span class="default_value">'all'</span></em>, <em class="sig-param"><span class="n">r15</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">subsample</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gvpy/ocean.html#smith_sandwell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gvpy.ocean.smith_sandwell" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load Smith &amp; Sandwell bathymetry</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>lon</strong> (<em>float, list or str</em>) – Longitude range. This may either be a single point,
+<li><p><strong>lon</strong> (<em>float, list or ‘all’</em>) – Longitude range. This may either be a single point,
 a list of points, or ‘all’ (default). If given onne
 point, the nearest ocean depth is returned. For a
 list of locations, the are encompassing all points
 is returned. ‘all’ returns the whole bathymetry.</p></li>
-<li><p><strong>lat</strong> (<em>float, list or str</em>) – Latitude. Same options as lon.</p></li>
+<li><p><strong>lat</strong> (<em>float, list or ‘all’</em>) – Latitude. Same options as lon.</p></li>
+<li><p><strong>r15</strong> (<em>bool, optional</em>) – Set to True for reading the latest 15sec bathymetry. Other
+wise reads the 30sec bathymetry (default).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -320,6 +322,10 @@ is returned. ‘all’ returns the whole bathymetry.</p></li>
 <dd class="field-odd"><p>xarray DataArray</p>
 </dd>
 </dl>
+<div class="admonition-todo admonition" id="id1">
+<p class="admonition-title">Todo</p>
+<p>Implement subsampling.</p>
+</div>
 </dd></dl>
 
 

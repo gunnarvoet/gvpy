@@ -300,12 +300,23 @@
 <h1 id="generated-gvpy-plot-quickfig--page-root">gvpy.plot.quickfig<a class="headerlink" href="#generated-gvpy-plot-quickfig--page-root" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt id="gvpy.plot.quickfig">
-<code class="sig-prename descclassname">gvpy.plot.</code><code class="sig-name descname">quickfig</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fs</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">yi</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">w</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">h</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">fgs</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gvpy/plot.html#quickfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gvpy.plot.quickfig" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">gvpy.plot.</code><code class="sig-name descname">quickfig</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fs</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">yi</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">w</span><span class="o">=</span><span class="default_value">6</span></em>, <em class="sig-param"><span class="n">h</span><span class="o">=</span><span class="default_value">4</span></em>, <em class="sig-param"><span class="n">fgs</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gvpy/plot.html#quickfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gvpy.plot.quickfig" title="Permalink to this definition">¶</a></dt>
 <dd><p>Quick single pane figure.</p>
+<p>Automatically sets yaxis to be decreasing upwards so
+we can plot against depth.</p>
 <p>Also closes all other figures for convenience.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><ul class="simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fs</strong> (<em>int, optional</em>) – Fontsize (default 10)</p></li>
+<li><p><strong>yi</strong> (<em>bool, optional</em>) – Increasing yaxis (default False)</p></li>
+<li><p><strong>w</strong> (<em>float, optional</em>) – Figure width in inches (default 6)</p></li>
+<li><p><strong>h</strong> (<em>float, optional</em>) – Figure height in inches (default 4)</p></li>
+<li><p><strong>fgs</strong> (<em>(float, float)</em>) – Figure size, constructed as (w, h) if not specified here.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
 <li><p><strong>fig</strong> (<em>matplotlib.figure.Figure</em>) – Figure handle</p></li>
 <li><p><strong>ax</strong> (<em>matplotlib.axes._subplots.AxesSubplot</em>) – Axis handle</p></li>
 </ul>

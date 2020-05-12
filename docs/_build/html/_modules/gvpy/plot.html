@@ -307,13 +307,26 @@
     <span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">'axes.titlesize'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'x-large'</span></div>
     
     
+<span class="k">def</span> <span class="nf">stix</span><span class="p">():</span>
+    <span class="sd">"""</span>
+<span class="sd">    Use STIX fonts</span>
+<span class="sd">    """</span>
+    <span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">'font.size'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">11</span>
+    <span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">'font.family'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'STIX Two Text'</span>
+    <span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">'mathtext.fontset'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'custom'</span>
+    <span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">'mathtext.rm'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'STIX Two Math'</span>
+    <span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">'mathtext.it'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'STIX Two Math:italic'</span>
+    <span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">'mathtext.bf'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'STIX Two Math:bold'</span>
+    <span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">'axes.titlesize'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'large'</span>
+    
+    
 <div class="viewcode-block" id="back2future"><a class="viewcode-back" href="../../generated/gvpy.plot.back2future.html#gvpy.plot.back2future">[docs]</a><span class="k">def</span> <span class="nf">back2future</span><span class="p">():</span>
     <span class="sd">"""</span>
 <span class="sd">    Activate matplotlib settings from the default matplotlibrc file.</span>
 <span class="sd">    """</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">'Activating settings from'</span><span class="p">,</span> <span class="n">mpl</span><span class="o">.</span><span class="n">matplotlib_fname</span><span class="p">())</span>
-    <span class="n">mpl</span><span class="o">.</span><span class="n">rc_file_defaults</span><span class="p">()</span></div>
-
+    <span class="n">mpl</span><span class="o">.</span><span class="n">rc_file_defaults</span><span class="p">()</span>
+    <span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">'axes.titlesize'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'medium'</span></div>
     
 <div class="viewcode-block" id="switch_backend"><a class="viewcode-back" href="../../generated/gvpy.plot.switch_backend.html#gvpy.plot.switch_backend">[docs]</a><span class="k">def</span> <span class="nf">switch_backend</span><span class="p">():</span>
     <span class="n">backend_list</span> <span class="o">=</span> <span class="p">[</span>
@@ -329,11 +342,27 @@
         <span class="nb">print</span><span class="p">(</span><span class="s1">'switched to inline plots'</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="quickfig"><a class="viewcode-back" href="../../generated/gvpy.plot.quickfig.html#gvpy.plot.quickfig">[docs]</a><span class="k">def</span> <span class="nf">quickfig</span><span class="p">(</span><span class="n">fs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">fgs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="quickfig"><a class="viewcode-back" href="../../generated/gvpy.plot.quickfig.html#gvpy.plot.quickfig">[docs]</a><span class="k">def</span> <span class="nf">quickfig</span><span class="p">(</span><span class="n">fs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">yi</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">fgs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">"""</span>
 <span class="sd">    Quick single pane figure.</span>
 <span class="sd">    </span>
+<span class="sd">    Automatically sets yaxis to be decreasing upwards so </span>
+<span class="sd">    we can plot against depth.</span>
+<span class="sd">    </span>
 <span class="sd">    Also closes all other figures for convenience.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fs : int, optional</span>
+<span class="sd">        Fontsize (default 10)</span>
+<span class="sd">    yi : bool, optional</span>
+<span class="sd">        Increasing yaxis (default False)</span>
+<span class="sd">    w : float, optional</span>
+<span class="sd">        Figure width in inches (default 6)</span>
+<span class="sd">    h : float, optional</span>
+<span class="sd">        Figure height in inches (default 4)</span>
+<span class="sd">    fgs : (float, float)</span>
+<span class="sd">        Figure size, constructed as (w, h) if not specified here.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -348,7 +377,7 @@
     <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="n">fgs</span><span class="p">,</span>
                            <span class="n">constrained_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">75</span><span class="p">)</span>
     <span class="n">axstyle</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fs</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">yi</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">yi</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">invert_yaxis</span><span class="p">()</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">autoscale</span><span class="p">()</span>
     

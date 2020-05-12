@@ -429,7 +429,7 @@ documentation.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.ocean.woce_argo_profile.html#gvpy.ocean.woce_argo_profile" title="gvpy.ocean.woce_argo_profile"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ocean.woce_argo_profile</span></code></a>(lon, lat[, interp, load])</p></td>
 <td><p>Extract profile at a single location from the WOCE ARGO Global Hydrographic Climatology (WAGHC).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.ocean.smith_sandwell.html#gvpy.ocean.smith_sandwell" title="gvpy.ocean.smith_sandwell"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ocean.smith_sandwell</span></code></a>([lon, lat, subsample, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.ocean.smith_sandwell.html#gvpy.ocean.smith_sandwell" title="gvpy.ocean.smith_sandwell"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ocean.smith_sandwell</span></code></a>([lon, lat, r15, subsample])</p></td>
 <td><p>Load Smith &amp; Sandwell bathymetry</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.ocean.smith_sandwell_section.html#gvpy.ocean.smith_sandwell_section" title="gvpy.ocean.smith_sandwell_section"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ocean.smith_sandwell_section</span></code></a>(lon, lat[, …])</p></td>
@@ -458,16 +458,19 @@ documentation.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.ocean.tzfcn.html#gvpy.ocean.tzfcn" title="gvpy.ocean.tzfcn"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ocean.tzfcn</span></code></a>(CT, z, z0, dz)</p></td>
 <td><p>Calculate vertical temperature gradient for profile of conservative temperature and depth.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.ocean.bathy_section.html#gvpy.ocean.bathy_section" title="gvpy.ocean.bathy_section"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ocean.bathy_section</span></code></a>(bathy, lon, lat[, res, ext])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.ocean.vmodes.html#gvpy.ocean.vmodes" title="gvpy.ocean.vmodes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ocean.vmodes</span></code></a>(z, N, clat, nmodes)</p></td>
+<td><p>Calculate vertical modes in a flat-bottomed ocean.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.ocean.bathy_section.html#gvpy.ocean.bathy_section" title="gvpy.ocean.bathy_section"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ocean.bathy_section</span></code></a>(bathy, lon, lat[, res, ext])</p></td>
 <td><p>Extract bathymetry along pathway defined by lon/lat coordinates.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.ocean.inertial_period.html#gvpy.ocean.inertial_period" title="gvpy.ocean.inertial_period"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ocean.inertial_period</span></code></a>(lat)</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.ocean.inertial_period.html#gvpy.ocean.inertial_period" title="gvpy.ocean.inertial_period"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ocean.inertial_period</span></code></a>(lat)</p></td>
+<td><p>Return inertial period [days] for a given latitude.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.ocean.inertial_frequency.html#gvpy.ocean.inertial_frequency" title="gvpy.ocean.inertial_frequency"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ocean.inertial_frequency</span></code></a>(lat)</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.ocean.inertial_frequency.html#gvpy.ocean.inertial_frequency" title="gvpy.ocean.inertial_frequency"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ocean.inertial_frequency</span></code></a>(lat)</p></td>
+<td><p>Return inertial frequency [rad/s] for a given latitude.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/gvpy.ocean.uv2speeddir.html#gvpy.ocean.uv2speeddir" title="gvpy.ocean.uv2speeddir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ocean.uv2speeddir</span></code></a>(u, v)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/gvpy.ocean.uv2speeddir.html#gvpy.ocean.uv2speeddir" title="gvpy.ocean.uv2speeddir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ocean.uv2speeddir</span></code></a>(u, v)</p></td>
 <td><p>Convert velocity from u,v to speed and direction</p></td>
 </tr>
 </tbody>

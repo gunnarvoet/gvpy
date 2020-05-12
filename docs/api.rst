@@ -45,6 +45,7 @@ Calculations
 
     ocean.nsqfcn
     ocean.tzfcn
+    ocean.vmodes
     ocean.bathy_section
     ocean.inertial_period
     ocean.inertial_frequency

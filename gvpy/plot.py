@@ -13,6 +13,7 @@ from cycler import cycler
 from matplotlib.collections import LineCollection
 
 from IPython import get_ipython
+
 ipython = get_ipython()
 
 # import cm to register colormaps defined therein
@@ -25,55 +26,56 @@ except ImportError:
     _has_cartopy = False
 else:
     _has_cartopy = True
-    
+
 
 def nostalgic():
     """
     Reading old papers and feeling nostalgic? Fear not! This will change the
     default matplotlib settings to transport you right back several decades.
     """
-    mpl.rcParams['font.size'] = 11
-    mpl.rcParams['font.family'] = 'Routed Gothic'
-    mpl.rcParams['mathtext.fontset'] = 'custom'
-    mpl.rcParams['mathtext.rm'] = 'Routed Gothic'
-    mpl.rcParams['mathtext.it'] = 'Routed Gothic:italic'
-    mpl.rcParams['mathtext.bf'] = 'Routed Gothic:bold'
-    mpl.rcParams['axes.titlesize'] = 'x-large'
-    
-    
+    mpl.rcParams["font.size"] = 11
+    mpl.rcParams["font.family"] = "Routed Gothic"
+    mpl.rcParams["mathtext.fontset"] = "custom"
+    mpl.rcParams["mathtext.rm"] = "Routed Gothic"
+    mpl.rcParams["mathtext.it"] = "Routed Gothic:italic"
+    mpl.rcParams["mathtext.bf"] = "Routed Gothic:bold"
+    mpl.rcParams["axes.titlesize"] = "x-large"
+
+
 def stix():
     """
     Use STIX fonts
     """
-    mpl.rcParams['font.size'] = 11
-    mpl.rcParams['font.family'] = 'STIX Two Text'
-    mpl.rcParams['mathtext.fontset'] = 'custom'
-    mpl.rcParams['mathtext.rm'] = 'STIX Two Math'
-    mpl.rcParams['mathtext.it'] = 'STIX Two Math:italic'
-    mpl.rcParams['mathtext.bf'] = 'STIX Two Math:bold'
-    mpl.rcParams['axes.titlesize'] = 'large'
-    
-    
+    mpl.rcParams["font.size"] = 11
+    mpl.rcParams["font.family"] = "STIX Two Text"
+    mpl.rcParams["mathtext.fontset"] = "custom"
+    mpl.rcParams["mathtext.rm"] = "STIX Two Math"
+    mpl.rcParams["mathtext.it"] = "STIX Two Math:italic"
+    mpl.rcParams["mathtext.bf"] = "STIX Two Math:bold"
+    mpl.rcParams["axes.titlesize"] = "large"
+
+
 def back2future():
     """
     Activate matplotlib settings from the default matplotlibrc file.
     """
-    print('Activating settings from', mpl.matplotlib_fname())
+    print("Activating settings from", mpl.matplotlib_fname())
     mpl.rc_file_defaults()
-    mpl.rcParams['axes.titlesize'] = 'medium'
-    
+    mpl.rcParams["axes.titlesize"] = "medium"
+
+
 def switch_backend():
     backend_list = [
-        'module://ipykernel.pylab.backend_inline',
-        'module://ipympl.backend_nbagg'
-        ]
+        "module://ipykernel.pylab.backend_inline",
+        "module://ipympl.backend_nbagg",
+    ]
     current_backend = mpl.get_backend()
     if current_backend == backend_list[0]:
         ipython.magic("matplotlib ipympl")
-        print('switched to ipympl plots')
+        print("switched to ipympl plots")
     else:
         ipython.magic("matplotlib inline")
-        print('switched to inline plots')
+        print("switched to inline plots")
 
 
 def quickfig(fs=10, yi=True, w=6, h=4, fgs=None):
@@ -108,20 +110,21 @@ def quickfig(fs=10, yi=True, w=6, h=4, fgs=None):
     if fgs is None:
         fgs = (w, h)
 
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=fgs,
-                           constrained_layout=True, dpi=75)
+    fig, ax = plt.subplots(
+        nrows=1, ncols=1, figsize=fgs, constrained_layout=True, dpi=75
+    )
     axstyle(ax, fontsize=fs)
     if yi is False:
         ax.invert_yaxis()
     ax.autoscale()
-    
+
     # some adjustments when using ipympl
     current_backend = mpl.get_backend()
-    if current_backend == 'module://ipympl.backend_nbagg':
+    if current_backend == "module://ipympl.backend_nbagg":
         fig.canvas.header_visible = False
-        fig.canvas.toolbar_position = 'bottom'
+        fig.canvas.toolbar_position = "bottom"
         fig.canvas.resizable = False
-    
+
     return fig, ax
 
 
@@ -198,7 +201,7 @@ def newfig(width=7.5, height=5.5, fontsize=12):
     return fig, ax
 
 
-def axstyle(ax=None, fontsize=12, nospine=False, grid=True, ticks='off'):
+def axstyle(ax=None, fontsize=12, nospine=False, grid=True, ticks="off"):
     """
     Apply own style to axis.
 
@@ -227,12 +230,12 @@ def axstyle(ax=None, fontsize=12, nospine=False, grid=True, ticks='off'):
         for spine in more_spines_to_remove:
             ax.spines[spine].set_visible(False)
 
-    if ticks=='off':
+    if ticks == "off":
         # Get rid of ticks.
         ax.xaxis.set_ticks_position("none")
         ax.yaxis.set_ticks_position("none")
-    elif ticks=='in':
-        ax.tick_params(axis='both', direction='in', length=2)
+    elif ticks == "in":
+        ax.tick_params(axis="both", direction="in", length=2)
 
     # For remaining spines, thin out their line and change
     # the black to a slightly off-black dark grey
@@ -253,10 +256,7 @@ def axstyle(ax=None, fontsize=12, nospine=False, grid=True, ticks='off'):
 
     # Change the labels to the off-black
     ax.tick_params(
-        axis="both",
-        which="major",
-        labelsize=fontsize,
-        colors=almost_black,
+        axis="both", which="major", labelsize=fontsize, colors=almost_black,
     )
 
     # Change the axis title to off-black
@@ -274,13 +274,13 @@ def axstyle(ax=None, fontsize=12, nospine=False, grid=True, ticks='off'):
             linestyle="-",
             alpha=0.8,
         )
-    
+
     # change legend fontsize (if there is one)
     try:
         plt.setp(ax.get_legend().get_texts(), fontsize=fontsize)
     except AttributeError:
         noleg = 1
-    
+
     return ax
 
 
@@ -655,10 +655,11 @@ def concise_date(ax=None, minticks=3, maxticks=10, show_offset=True, **kwargs):
     formatter = mdates.ConciseDateFormatter(locator, show_offset=show_offset, **kwargs)
     ax.xaxis.set_major_locator(locator)
     ax.xaxis.set_major_formatter(formatter)
-    
-    
+
+
 def concise_date_all():
     import matplotlib.units as munits
+
     converter = mdates.ConciseDateConverter()
     munits.registry[np.datetime64] = converter
 
@@ -725,4 +726,4 @@ def multi_line(x, y, z, ax, **kwargs):
 
 
 def annotate_upper_left(text, ax):
-    return ax.annotate(text, (0.02, 0.9), xycoords='axes fraction')
+    return ax.annotate(text, (0.02, 0.9), xycoords="axes fraction")

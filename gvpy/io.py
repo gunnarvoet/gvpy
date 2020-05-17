@@ -469,7 +469,7 @@ class ANTS(object):
         all_data = np.vstack(test)
         for i, f in enumerate(fieldnames):
             setattr(self, f, all_data[:, i])
-            
+
     def to_xarray(self):
         """
         Convert ANTS object to xarray.Dataset.

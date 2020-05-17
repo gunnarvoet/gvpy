@@ -681,7 +681,7 @@ def vmodes(z, N, clat, nmodes):
     Notes
     -----
     Basically solves
-    .. math::
+      .. math::
     
         \Phi_{zz} + \mathrm{ev} N^2 \Phi = 0
     
@@ -697,10 +697,10 @@ def vmodes(z, N, clat, nmodes):
     the buoyancy frequency squared and \(g\) the gravitational constant as a fcn
     of latitude.
     
-    ```| Originally written by Benno Blumenthal, 23 July 1981, in FORTRAN
+    `| Originally written by Benno Blumenthal, 23 July 1981, in FORTRAN
     | Modified for SUNS by  CC Eriksen, August 1988
     | Translated to MatLab 4.2c J. Klymak, March 1997
-    | Ported to Python by G. Voet, May 2020```
+    | Ported from sw_vmodes.m to Python by G. Voet, May 2020`
 
     Matlab results are in good agreement with the results from Blumenthal's
     original code, but they are not precise. The Python translation returns
@@ -710,7 +710,7 @@ def vmodes(z, N, clat, nmodes):
     z = -z if z[0] < 0 else z
     z_in = z.copy()
     N_in = N.copy()
-    nsqin = N_in**2
+    nsqin = N_in ** 2
 
     # pick only valid data
     good = (N > 0) & np.isfinite(N)
@@ -721,28 +721,28 @@ def vmodes(z, N, clat, nmodes):
     if z[0] > 0.01:
         z = np.insert(z, 0, 0)
         N = np.insert(N, 0, N[0])
-        
+
     npts = z.shape[0]
 
-    nsq = N*N
+    nsq = N * N
     dz = np.diff(z)
     dz = np.insert(dz, 0, z[0])
 
     # calculate Nbar
-    nbar = N[0]*z[1] + N[-1] * (z[-1] - z[-2])
+    nbar = N[0] * z[1] + N[-1] * (z[-1] - z[-2])
     diffz_ = z[2:] - z[:-2]
-    nbar = nbar + np.sum(diffz_*N[1:-1])
-    nbar = nbar / (2*z[-1])
+    nbar = nbar + np.sum(diffz_ * N[1:-1])
+    nbar = nbar / (2 * z[-1])
     nbarcy = nbar
-    nbar = nbarcy / (3600/(2*np.pi))
-    
+    nbar = nbarcy / (3600 / (2 * np.pi))
+
     # compute tridiagonal matrix with free bc
     alat = clat * np.pi / 180
     grav = 9.78049 * (
         1.0 + 5.2884e-3 * (np.sin(alat)) ** 2 - 5.9e-6 * (np.sin(2 * alat)) ** 2
     )
     grainv = 1.0 / grav
-    
+
     d = np.zeros(npts)
     l = d.copy()
     u = d.copy()
@@ -756,20 +756,20 @@ def vmodes(z, N, clat, nmodes):
     u[-1] = 0
     l[-1] = 0
 
-    offset=[-1, 0, 1]
+    offset = [-1, 0, 1]
     v = np.array([-l[1:], d, -u[1:]])
     M = scipy.sparse.diags(v, offset).toarray()
 
     w = scipy.linalg.eig(M)
-    ev = np.sort(np.real(w[0]), kind='stable')
+    ev = np.sort(np.real(w[0]), kind="stable")
     ev = ev[1:]
 
     phase = -1
     dz = dz.transpose()
 
     nptsin = z_in.shape[0]
-    Vert = np.zeros((nptsin,nmodes))
-    Hori = np.zeros((nptsin,nmodes))
+    Vert = np.zeros((nptsin, nmodes))
+    Hori = np.zeros((nptsin, nmodes))
     PVel = np.zeros(nmodes)
     Edep = np.zeros(nmodes)
 
@@ -778,24 +778,26 @@ def vmodes(z, N, clat, nmodes):
         phase = -phase
         dz = np.zeros(npts)
         dz[-1] = 0
-        i = npts-2
+        i = npts - 2
         dz[i] = 1
-        imax = npts-2
+        imax = npts - 2
         for i2 in range(imax):
-            dz[i-1] = -((ev[imode] - d[i]) * dz[i] + u[i+1] * dz[i+1]) / l[i]
-            i = i-1
+            dz[i - 1] = -((ev[imode] - d[i]) * dz[i] + u[i + 1] * dz[i + 1]) / l[i]
+            i = i - 1
         sum_ = nsq[0] * dz[0] * dz[0] * z_in[1]
-        difz_ = z[2:npts] - z[:npts-2]
-        sum_ = sum_ + np.sum(nsq[1:npts-1] * dz[1:npts-1] * dz[1:npts-1] * difz_)
+        difz_ = z[2:npts] - z[: npts - 2]
+        sum_ = sum_ + np.sum(
+            nsq[1 : npts - 1] * dz[1 : npts - 1] * dz[1 : npts - 1] * difz_
+        )
         sum_ = sum_ * 0.5 + grav * dz[0] * dz[0]
-        a = z[npts-1] / (ev[imode] * sum_)
+        a = z[npts - 1] / (ev[imode] * sum_)
         a = np.sqrt(np.absolute(a))
         a = phase * a * np.sign(ev[imode])
         dz = dz * a
 
         # interpolate/extrapolate onto original z grid
         dz = interp1d(z, dz)(z_in)
-        
+
         edepth = grainv / ev[imode]
         phasev = np.sqrt(np.absolute(1 / ev[imode]))
         const = nbar / phasev
@@ -804,31 +806,31 @@ def vmodes(z, N, clat, nmodes):
         emhor = np.full_like(z_in, np.nan)
         emver = np.full_like(z_in, np.nan)
         # get the vertical and horizontal velocity modes
-        delta1 = z_in[1:nptsin-1] - z_in[:nptsin-2]
-        delta2 = z_in[2:nptsin] - z_in[1:nptsin-1]
+        delta1 = z_in[1 : nptsin - 1] - z_in[: nptsin - 2]
+        delta2 = z_in[2:nptsin] - z_in[1 : nptsin - 1]
         d1sq = delta1 * delta1
         d2sq = delta2 * delta2
-        emver[1:nptsin-1] = const * dz[1:nptsin-1]
-        emhor[1:nptsin-1] = (
-        -(d1sq * dz[2:nptsin] - d2sq * dz[:nptsin-2]
-        + (d2sq - d1sq) * dz[1:nptsin-1])
-        / (delta1 * delta2 * (delta1 + delta2))
-        )
+        emver[1 : nptsin - 1] = const * dz[1 : nptsin - 1]
+        emhor[1 : nptsin - 1] = -(
+            d1sq * dz[2:nptsin]
+            - d2sq * dz[: nptsin - 2]
+            + (d2sq - d1sq) * dz[1 : nptsin - 1]
+        ) / (delta1 * delta2 * (delta1 + delta2))
         emver[0] = const * dz[0]
         emhor[0] = -(dz[1] - dz[0]) / (z_in[1] - z_in[0])
-        emver[nptsin-1] = const * dz[nptsin-1]
-        emhor[nptsin-1] = -dz[nptsin-2] /(z_in[nptsin-2] - z_in[nptsin-1])
-        
+        emver[nptsin - 1] = const * dz[nptsin - 1]
+        emhor[nptsin - 1] = -dz[nptsin - 2] / (z_in[nptsin - 2] - z_in[nptsin - 1])
+
         # put everybody in their matrices
-        Vert[0:len(emver), imode] = emver
-        Hori[0:len(emver), imode] = emhor
+        Vert[0 : len(emver), imode] = emver
+        Hori[0 : len(emver), imode] = emhor
         PVel[imode] = phasev
         Edep[imode] = edepth
-        
+
         # Normalize
         Vert[:, imode] = Vert[:, imode] / np.max(np.absolute(Vert[:, imode]))
         Hori[:, imode] = Hori[:, imode] / np.max(np.absolute(Hori[:, imode]))
-        
+
     return Vert, Hori, Edep, PVel
 
 
@@ -1490,9 +1492,7 @@ def woce_climatology(lon=None, lat=None, z=None, std=False):
         "GAMMAN": "gamma",
     }
     w = w.rename(rnm)
-    w['depth'] = w.z.copy()
-    w['z'] = w.z * -1
-    w.z.attrs['units'] = 'm'
+    w.z.attrs["units"] = "m"
     if std:
         return w, ws
     else:
@@ -1535,10 +1535,12 @@ def woce_argo_profile(lon, lat, interp=False, load=True):
         "/Users/gunnar/Data/woce_argo_global_hydrographic_climatology"
     )
     paths = sorted(woce_argo_path.glob("WAGHC_BAR_*.nc"))
-    ta = xr.open_mfdataset(paths,
-                           decode_times=False,
-                           combine="by_coords",
-                           chunks={'longitude': 60, 'latitude': 60})
+    ta = xr.open_mfdataset(
+        paths,
+        decode_times=False,
+        combine="by_coords",
+        chunks={"longitude": 60, "latitude": 60},
+    )
     if interp:
         out = ta.interp(longitude=lon, latitude=lat)
     else:
@@ -1549,14 +1551,20 @@ def woce_argo_profile(lon, lat, interp=False, load=True):
     prf = out.squeeze()
     # rename a few variables
     newnames = dict(
-        latitude="lat", longitude="lon", temperature="t", salinity="s"
+        latitude="lat", longitude="lon", temperature="t", salinity="s", depth="z",
     )
     prf = prf.rename(newnames)
-    prf.coords['z'] = -1 * prf.depth
-    prf = prf.swap_dims({'depth': 'z'})
-    prf = prf.transpose('z', 'time')
-    prf.z.attrs['units'] = 'm'
+    prf.z.attrs["units"] = "m"
     return prf
+
+
+def argo_mld_climatology():
+    datadir = Path("/Users/gunnar/Data/argo_mld_climatology/")
+    amld = datadir / "Argo_mixedlayers_monthlyclim_12112019.nc"
+    a = xr.open_dataset(amld)
+    newnames = dict(iLAT="lat", iLON="lon", iMONTH="month")
+    a = a.swap_dims(newnames)
+    return a
 
 
 def lonlatstr(lon, lat):

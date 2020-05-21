@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Module gvpy.plot for matplotlib related stuff"""
+"""Anything plotting related (mostly matplotlib) lives here."""
 
 from pathlib import Path
 
@@ -11,6 +11,7 @@ import matplotlib.ticker as mticker
 import numpy as np
 from cycler import cycler
 from matplotlib.collections import LineCollection
+from matplotlib.colors import LinearSegmentedColormap
 
 from IPython import get_ipython
 
@@ -65,6 +66,9 @@ def back2future():
 
 
 def switch_backend():
+    """
+    Use to switch between regular inline and ipympl backend.
+    """
     backend_list = [
         "module://ipykernel.pylab.backend_inline",
         "module://ipympl.backend_nbagg",
@@ -727,3 +731,28 @@ def multi_line(x, y, z, ax, **kwargs):
 
 def annotate_upper_left(text, ax):
     return ax.annotate(text, (0.02, 0.9), xycoords="axes fraction")
+
+
+def cmap_partial(cmap_name, min, max):
+    """
+    Extract part of a colormap.
+
+    Parameters
+    ----------
+    cmap_name : str
+        Colormap name
+    min : float
+        Minimum in the range [0, 1]
+    max : float
+        Maximum in the range [0, 1]
+
+    Returns
+    -------
+    cmap : matplotlib.colors.LinearSegmentedColormap
+        Colormap
+    """
+    interval = np.linspace(min, max)
+    tmp = plt.cm.get_cmap(cmap_name)
+    colors = tmp(interval)
+    cmap = LinearSegmentedColormap.from_list('name', colors)
+    return cmap

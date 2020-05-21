@@ -1,5 +1,15 @@
 # -*- coding: utf-8 -*-
-"""Module gvpy.cm with own colormaps"""
+"""Registers the following colormaps in matplotlib:
+
+- ocean4jbm
+- ocean4jbm_r
+- [turbo](https://ai.googleblog.com/2019/08/turbo-improved-rainbow-colormap-for.html)
+- [turbo_r](https://ai.googleblog.com/2019/08/turbo-improved-rainbow-colormap-for.html)
+
+Thanks to [John Mickett](http://apl.uw.edu/people/profile.php?last_name=Mickett&first_name=John) for `ocean4jbm`!
+
+
+"""
 
 #  This script registers the "turbo" colormap to matplotlib, and the reversed
 #  version as "turbo_r".
@@ -380,6 +390,19 @@ turbo_colormap_data = np.array(
 
 
 def RGBToPyCmap(rgbdata):
+    """
+    Convert an array of RGB to Matplotlib colormap.
+
+    Parameters
+    ----------
+    rgbdata : array-like
+        Nx3 array with RGB data.
+
+    Returns
+    -------
+    dict
+        Colors in Matplotlib format.
+    """
     nsteps = rgbdata.shape[0]
     stepaxis = np.linspace(0, 1, nsteps)
 

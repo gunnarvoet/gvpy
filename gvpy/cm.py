@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-"""Registers the following colormaps in matplotlib:
+"""Registers a number of colormaps in Matplotlib.
+
+The following colormaps are added:
 
 - ocean4jbm
 - ocean4jbm_r

@@ -329,6 +329,35 @@ def newfigyy(width=7.5, height=5.5, fontsize=12):
     return fig, ax1, ax2
 
 
+def vstep(x, y, ax=None, *args):
+    """
+    Plot vertical steps.
+
+    Parameters
+    ----------
+    x : array-like
+        1-D sequence of x positions
+    y : array-like
+        1-D sequence of y positions. It is assumed, but not checked, that it is uniformly increasing.
+
+    Returns
+    -------
+    lines : list
+        List of `matplotlib.lines.Line2D` objects representing the plotted data.
+    """
+    if ax is None:
+        ax = plt.gca()
+    dy = np.diff(y)
+    dy1 = np.insert(dy, 0, dy[0])
+    dy2 = np.append(dy, dy[-1])
+    y1 = y-dy1/2
+    y2 = y+dy2/2
+    Y = np.vstack([y1, y2]).transpose().flatten()
+    X = np.vstack([x, x]).transpose().flatten()
+    lines = ax.plot(X, Y, *args)
+    return lines
+
+
 def pcm(*args, **kwargs):
     """
     Wrapper for matplotlib's pcolormesh, blanking out nan's and

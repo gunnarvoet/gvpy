@@ -329,7 +329,7 @@ def newfigyy(width=7.5, height=5.5, fontsize=12):
     return fig, ax1, ax2
 
 
-def vstep(x, y, ax=None, *args):
+def vstep(x, y, ax=None, *args, **kwargs):
     """
     Plot vertical steps.
 
@@ -354,7 +354,7 @@ def vstep(x, y, ax=None, *args):
     y2 = y+dy2/2
     Y = np.vstack([y1, y2]).transpose().flatten()
     X = np.vstack([x, x]).transpose().flatten()
-    lines = ax.plot(X, Y, *args)
+    lines = ax.plot(X, Y, *args, **kwargs)
     return lines
 
 

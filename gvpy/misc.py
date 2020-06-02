@@ -115,10 +115,10 @@ def qpsave(filename, vars):
     f.close()
 
 
-def extract():
+def extract(prepend='xx'):
     """Copies the variables of the caller up to iPython. Useful for debugging.
     
-    Returns variables with xx prepended to their names as not to clutter the
+    By default returns variables with xx prepended to their names as not to clutter the
     workspace.
 
     .. code-block:: python
@@ -142,10 +142,10 @@ def extract():
     ].frame
 
     ipython.f_locals.update(
-        {"xx{}".format(k): v for k, v in gs.items() if k[:2] != "__"}
+        {"{}{}".format(prepend, k): v for k, v in gs.items() if k[:2] != "__"}
     )
     ipython.f_locals.update(
-        {"xx{}".format(k): v for k, v in ls.items() if k[:2] != "__"}
+        {"{}{}".format(prepend, k): v for k, v in ls.items() if k[:2] != "__"}
     )
 
     ctypes.pythonapi.PyFrame_LocalsToFast(ctypes.py_object(ipython), ctypes.c_int(0))

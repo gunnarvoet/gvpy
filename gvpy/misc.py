@@ -116,20 +116,30 @@ def qpsave(filename, vars):
 
 
 def extract(prepend='xx'):
-    """Copies the variables of the caller up to iPython. Useful for debugging.
+    """Copies the variables of the caller up to iPython. Useful when in
+    debugging mode.
+
+    Parameters
+    ----------
+    prepend : str, optional
+        String to prepend to each variable name. Defaults to 'xx'.
     
     By default returns variables with xx prepended to their names as not to clutter the
     workspace.
 
-    .. code-block:: python
-
+    Example
+    -------
         def f():
-            a = 'hello world' extract()
+            a = 'hello world'
+            assert 1 == 0
+            extract()
 
         f() # raises an error
 
         print(xxa) # prints 'hello world'
 
+    Notes
+    -----
     see https://andyljones.com/posts/post-mortem-plotting.html
     """
 

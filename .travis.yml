@@ -7,7 +7,7 @@ python:
 
 install:
   - pip install numpy scipy matplotlib gsw munch pdoc
-  - pip install -e .
+  - pip install .
 
 script:
   - mkdir docs

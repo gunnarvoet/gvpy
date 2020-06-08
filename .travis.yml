@@ -10,7 +10,7 @@ install:
 script:
   - rm -rf docs
   - mkdir docs
-  - pdoc --html --force gvpy
+  - pdoc --html --force --config latex_math=True gvpy
   - mv ./html/gvpy/*.html ./docs/
   - rm -rf ./html
 

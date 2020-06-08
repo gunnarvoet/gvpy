@@ -3,8 +3,6 @@
 """Module gvpy.io with in/out functions
 """
 
-from __future__ import division, print_function
-
 import datetime as dt
 import re
 from pathlib import Path

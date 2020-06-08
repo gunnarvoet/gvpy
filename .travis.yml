@@ -1,0 +1,23 @@
+---
+dist: bionic
+language: python
+python:
+  - "3.5"
+  - "3.8"
+
+install:
+  - pip3 install numpy scipy matplotlib gsw munch pdoc
+  - pip3 install -e .
+
+script:
+  - mkdir docs
+  - pdoc --html -o ./docs --force gvpy
+  - mv ./docs/gvpy/*.html ./docs/
+  - rm -rf ./docs/gvpy
+
+deploy:
+  - provider: script
+    script: bash deploy.sh
+    skip_cleanup: true
+    on:
+      branch: master # or master if you are using the two-repository approach

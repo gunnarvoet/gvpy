@@ -350,8 +350,8 @@ def vstep(x, y, ax=None, *args, **kwargs):
     dy = np.diff(y)
     dy1 = np.insert(dy, 0, dy[0])
     dy2 = np.append(dy, dy[-1])
-    y1 = y-dy1/2
-    y2 = y+dy2/2
+    y1 = y - dy1 / 2
+    y2 = y + dy2 / 2
     Y = np.vstack([y1, y2]).transpose().flatten()
     X = np.vstack([x, x]).transpose().flatten()
     lines = ax.plot(X, Y, *args, **kwargs)
@@ -783,5 +783,5 @@ def cmap_partial(cmap_name, min, max):
     interval = np.linspace(min, max)
     tmp = plt.cm.get_cmap(cmap_name)
     colors = tmp(interval)
-    cmap = LinearSegmentedColormap.from_list('name', colors)
+    cmap = LinearSegmentedColormap.from_list("name", colors)
     return cmap

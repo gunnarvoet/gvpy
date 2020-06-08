@@ -27,7 +27,7 @@ def nearidx(array, value):
     Find index of value in array closest to target.
     No need for array to be sorted.
     """
-    n = [abs(i - value) for i in array]
+    n = [np.abs(i - value) for i in array]
     idx = n.index(min(n))
     return idx
 
@@ -149,3 +149,24 @@ def extract(prepend='xx'):
     )
 
     ctypes.pythonapi.PyFrame_LocalsToFast(ctypes.py_object(ipython), ctypes.c_int(0))
+
+
+def latex_float(f):
+    """Print float as string formatted for use in latex.
+
+    Parameters
+    ----------
+    f : float
+        Float to be formatted.
+
+    Returns
+    -------
+    str
+    """
+
+    float_str = "{0:1.0e}".format(f)
+    if "e" in float_str:
+        base, exponent = float_str.split("e")
+        return r"{0} \times 10^{{{1}}}".format(base, int(exponent))
+    else:
+        return float_str

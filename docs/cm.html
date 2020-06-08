@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.7.2" />
+<title>gvpy.cm API documentation</title>
+<meta name="description" content="Registers a number of colormaps in Matplotlib …" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>gvpy.cm</code></h1>
+</header>
+<section id="section-intro">
+<p>Registers a number of colormaps in Matplotlib.</p>
+<p>The following colormaps are added:</p>
+<ul>
+<li>ocean4jbm</li>
+<li>ocean4jbm_r</li>
+<li><a href="https://ai.googleblog.com/2019/08/turbo-improved-rainbow-colormap-for.html">turbo</a></li>
+<li><a href="https://ai.googleblog.com/2019/08/turbo-improved-rainbow-colormap-for.html">turbo_r</a></li>
+</ul>
+<p>Thanks to <a href="http://apl.uw.edu/people/profile.php?last_name=Mickett&amp;first_name=John">John Mickett</a> for <code>ocean4jbm</code>!</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># -*- coding: utf-8 -*-
+&#34;&#34;&#34;Registers a number of colormaps in Matplotlib.
+
+The following colormaps are added:
+
+- ocean4jbm
+- ocean4jbm_r
+- [turbo](https://ai.googleblog.com/2019/08/turbo-improved-rainbow-colormap-for.html)
+- [turbo_r](https://ai.googleblog.com/2019/08/turbo-improved-rainbow-colormap-for.html)
+
+Thanks to [John Mickett](http://apl.uw.edu/people/profile.php?last_name=Mickett&amp;first_name=John) for `ocean4jbm`!
+
+
+&#34;&#34;&#34;
+
+#  This script registers the &#34;turbo&#34; colormap to matplotlib, and the reversed
+#  version as &#34;turbo_r&#34;.
+#  Reference:
+#  https://ai.googleblog.com/2019/08/turbo-improved-rainbow-colormap-for.html
+
+# Also registers ocean colormap from John Mickett as &#34;ocean4jbm&#34; and
+# &#34;ocean4jbm_r&#34;.
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+ocean4jbm = np.array(
+    [
+        [0.19532446362340, 0.13796378116395, 0.15719499584055],
+        [0.19923095289586, 0.14112254081445, 0.16238593878581],
+        [0.20313744216833, 0.14430433496405, 0.16755384723197],
+        [0.20704393144080, 0.14747625718546, 0.17273162760631],
+        [0.21095042071327, 0.15062843555050, 0.17792915183702],
+        [0.21485690998574, 0.15379377648646, 0.18311351349682],
+        [0.21876339925820, 0.15697557063605, 0.18828142194298],
+        [0.22266988853067, 0.16014091157201, 0.19346578360278],
+        [0.22657637780314, 0.16329308993705, 0.19866330783349],
+        [0.23048286707561, 0.17274355848413, 0.21077118179371],
+        [0.23438935634808, 0.18534317212223, 0.22633423061868],
+        [0.23829584562054, 0.19794278576033, 0.24189727944366],
+        [0.24220233489301, 0.21054239939843, 0.25746032826864],
+        [0.24610882416548, 0.22316833817836, 0.27302337709361],
+        [0.25001531343795, 0.23579756760102, 0.28858642591859],
+        [0.25392180271042, 0.24839718123912, 0.30414947474356],
+        [0.25782829198288, 0.26099679487722, 0.31971252356854],
+        [0.26173478125535, 0.27359640851532, 0.33527557239352],
+        [0.26564127052782, 0.28619602215342, 0.35083862121849],
+        [0.26954775980029, 0.29879563579152, 0.36640167004347],
+        [0.27345424907276, 0.31139524942962, 0.38196471886844],
+        [0.27736073834522, 0.32399486306772, 0.39752776769342],
+        [0.28126722761769, 0.33659447670582, 0.41310397908931],
+        [0.28517371689016, 0.34919409034392, 0.42869664369884],
+        [0.28908020616263, 0.36179370398202, 0.44427285509473],
+        [0.29298669543510, 0.37439331762012, 0.45983590391970],
+        [0.29689318470756, 0.38701267511459, 0.47539895274468],
+        [0.30079967398003, 0.39964190453724, 0.49096200156966],
+        [0.30470616325250, 0.41224809946080, 0.50652505039463],
+        [0.30861265252497, 0.42484771309890, 0.52208809921961],
+        [0.31251914179744, 0.43744732673700, 0.53765114804458],
+        [0.31642563106990, 0.45004694037510, 0.55321419686956],
+        [0.32033212034237, 0.46264655401320, 0.56877724569453],
+        [0.32423860961484, 0.47524616765130, 0.58434029451951],
+        [0.32814509888731, 0.48784578128940, 0.59990334334449],
+        [0.33205158815977, 0.50044539492750, 0.61151103961000],
+        [0.33595807743224, 0.51304500856560, 0.60927500191740],
+        [0.33986456670471, 0.52564462220370, 0.60703896422479],
+        [0.34377105597718, 0.53824423584180, 0.60480292653219],
+        [0.35138939024721, 0.54889578898472, 0.60258005141050],
+        [0.36364753076420, 0.55711226650868, 0.60037362950245],
+        [0.37590567128119, 0.56531229081899, 0.59815075438076],
+        [0.38816381179818, 0.57349915255839, 0.59591471668816],
+        [0.40042195231517, 0.58168601429779, 0.59367867899556],
+        [0.41268009283216, 0.58987287603719, 0.59144264130296],
+        [0.42493823334915, 0.59808277227568, 0.58920660361035],
+        [0.43719637386613, 0.60629924979964, 0.58697056591775],
+        [0.44945451438312, 0.61448940218177, 0.58473452822515],
+        [0.46171265490011, 0.62267626392117, 0.58249849053255],
+        [0.47397079541710, 0.63086312566056, 0.58026245283994],
+        [0.48623222657682, 0.63905327804269, 0.57802970579007],
+        [0.49851998287836, 0.64726975556665, 0.57582328388202],
+        [0.51080115789445, 0.65547965180514, 0.57361028068852],
+        [0.52305929841144, 0.66366651354454, 0.57137424299591],
+        [0.53531743892843, 0.67185337528394, 0.56913820530331],
+        [0.54757557944542, 0.68004023702334, 0.56690216761071],
+        [0.55983371996241, 0.68824026133365, 0.56466612991810],
+        [0.57209186047940, 0.69645673885761, 0.56243009222550],
+        [0.58435000099638, 0.70465676316792, 0.56019405453290],
+        [0.59660814151337, 0.71284362490732, 0.55795801684030],
+        [0.60886628203036, 0.72103048664672, 0.55572197914769],
+        [0.62112442254735, 0.72921734838612, 0.55348594145509],
+        [0.63338256306434, 0.73742724462462, 0.55127293826159],
+        [0.64564070358133, 0.74564372214857, 0.54906651635354],
+        [0.65789884409832, 0.75383387453070, 0.54683376930366],
+        [0.67015698461531, 0.76202073627010, 0.54459773161106],
+        [0.68241512513230, 0.77023721379405, 0.54236169391846],
+        [0.69467326564929, 0.77845040067528, 0.54012565622586],
+        [0.70693140616627, 0.78663726241468, 0.53788961853325],
+        [0.71871569413038, 0.79482412415408, 0.53751608462489],
+        [0.72884149815941, 0.80301098589347, 0.54366131396136],
+        [0.73897717411662, 0.81120771956106, 0.54980654329784],
+        [0.74913259393020, 0.81942419708501, 0.55595177263431],
+        [0.75927485117287, 0.82565312640105, 0.56209700197078],
+        [0.76940065520190, 0.82939762045719, 0.56824223130726],
+        [0.77952645923092, 0.83314211451334, 0.57438746064373],
+        [0.78965226325995, 0.83688660856948, 0.58053268998020],
+        [0.79977806728897, 0.84063110262562, 0.58667791931668],
+        [0.80990387131800, 0.84437559668177, 0.59282314865315],
+        [0.82002967534703, 0.84814312523701, 0.59894534349052],
+        [0.83015547937605, 0.85191723507771, 0.60506095704244],
+        [0.84030760854691, 0.85566501977658, 0.61120289573619],
+        [0.85046302836049, 0.85940951383272, 0.61734812507266],
+        [0.86058883238951, 0.86315400788887, 0.62349335440913],
+        [0.87071463641854, 0.86689850194501, 0.62963858374561],
+        [0.88084044044757, 0.87064299600115, 0.63578381308208],
+        [0.89096624447659, 0.87439407134275, 0.64192904241855],
+        [0.90109204850562, 0.87816818118345, 0.64807427175503],
+        [0.91121785253464, 0.88193241909596, 0.65421950109150],
+        [0.92134365656367, 0.88567691315211, 0.66036473042797],
+        [0.93146946059270, 0.88942140720825, 0.66650995976445],
+        [0.94159526462172, 0.89316590126439, 0.67265518910092],
+        [0.95173752186439, 0.89691039532054, 0.67878396522375],
+        [0.96189294167797, 0.90065488937668, 0.68489957877567],
+        [0.96890342621721, 0.90441912728919, 0.69103493618396],
+        [0.97512274097377, 0.90819323712989, 0.69718016552043],
+        [0.98134205573033, 0.91194431247149, 0.70332539485691],
+        [0.98756137048688, 0.91568880652764, 0.70947062419338],
+        [0.99378068524344, 0.91943330058378, 0.71561585352985],
+    ]
+)
+
+
+turbo_colormap_data = np.array(
+    [
+        [0.18995, 0.07176, 0.23217],
+        [0.19483, 0.08339, 0.26149],
+        [0.19956, 0.09498, 0.29024],
+        [0.20415, 0.10652, 0.31844],
+        [0.20860, 0.11802, 0.34607],
+        [0.21291, 0.12947, 0.37314],
+        [0.21708, 0.14087, 0.39964],
+        [0.22111, 0.15223, 0.42558],
+        [0.22500, 0.16354, 0.45096],
+        [0.22875, 0.17481, 0.47578],
+        [0.23236, 0.18603, 0.50004],
+        [0.23582, 0.19720, 0.52373],
+        [0.23915, 0.20833, 0.54686],
+        [0.24234, 0.21941, 0.56942],
+        [0.24539, 0.23044, 0.59142],
+        [0.24830, 0.24143, 0.61286],
+        [0.25107, 0.25237, 0.63374],
+        [0.25369, 0.26327, 0.65406],
+        [0.25618, 0.27412, 0.67381],
+        [0.25853, 0.28492, 0.69300],
+        [0.26074, 0.29568, 0.71162],
+        [0.26280, 0.30639, 0.72968],
+        [0.26473, 0.31706, 0.74718],
+        [0.26652, 0.32768, 0.76412],
+        [0.26816, 0.33825, 0.78050],
+        [0.26967, 0.34878, 0.79631],
+        [0.27103, 0.35926, 0.81156],
+        [0.27226, 0.36970, 0.82624],
+        [0.27334, 0.38008, 0.84037],
+        [0.27429, 0.39043, 0.85393],
+        [0.27509, 0.40072, 0.86692],
+        [0.27576, 0.41097, 0.87936],
+        [0.27628, 0.42118, 0.89123],
+        [0.27667, 0.43134, 0.90254],
+        [0.27691, 0.44145, 0.91328],
+        [0.27701, 0.45152, 0.92347],
+        [0.27698, 0.46153, 0.93309],
+        [0.27680, 0.47151, 0.94214],
+        [0.27648, 0.48144, 0.95064],
+        [0.27603, 0.49132, 0.95857],
+        [0.27543, 0.50115, 0.96594],
+        [0.27469, 0.51094, 0.97275],
+        [0.27381, 0.52069, 0.97899],
+        [0.27273, 0.53040, 0.98461],
+        [0.27106, 0.54015, 0.98930],
+        [0.26878, 0.54995, 0.99303],
+        [0.26592, 0.55979, 0.99583],
+        [0.26252, 0.56967, 0.99773],
+        [0.25862, 0.57958, 0.99876],
+        [0.25425, 0.58950, 0.99896],
+        [0.24946, 0.59943, 0.99835],
+        [0.24427, 0.60937, 0.99697],
+        [0.23874, 0.61931, 0.99485],
+        [0.23288, 0.62923, 0.99202],
+        [0.22676, 0.63913, 0.98851],
+        [0.22039, 0.64901, 0.98436],
+        [0.21382, 0.65886, 0.97959],
+        [0.20708, 0.66866, 0.97423],
+        [0.20021, 0.67842, 0.96833],
+        [0.19326, 0.68812, 0.96190],
+        [0.18625, 0.69775, 0.95498],
+        [0.17923, 0.70732, 0.94761],
+        [0.17223, 0.71680, 0.93981],
+        [0.16529, 0.72620, 0.93161],
+        [0.15844, 0.73551, 0.92305],
+        [0.15173, 0.74472, 0.91416],
+        [0.14519, 0.75381, 0.90496],
+        [0.13886, 0.76279, 0.89550],
+        [0.13278, 0.77165, 0.88580],
+        [0.12698, 0.78037, 0.87590],
+        [0.12151, 0.78896, 0.86581],
+        [0.11639, 0.79740, 0.85559],
+        [0.11167, 0.80569, 0.84525],
+        [0.10738, 0.81381, 0.83484],
+        [0.10357, 0.82177, 0.82437],
+        [0.10026, 0.82955, 0.81389],
+        [0.09750, 0.83714, 0.80342],
+        [0.09532, 0.84455, 0.79299],
+        [0.09377, 0.85175, 0.78264],
+        [0.09287, 0.85875, 0.77240],
+        [0.09267, 0.86554, 0.76230],
+        [0.09320, 0.87211, 0.75237],
+        [0.09451, 0.87844, 0.74265],
+        [0.09662, 0.88454, 0.73316],
+        [0.09958, 0.89040, 0.72393],
+        [0.10342, 0.89600, 0.71500],
+        [0.10815, 0.90142, 0.70599],
+        [0.11374, 0.90673, 0.69651],
+        [0.12014, 0.91193, 0.68660],
+        [0.12733, 0.91701, 0.67627],
+        [0.13526, 0.92197, 0.66556],
+        [0.14391, 0.92680, 0.65448],
+        [0.15323, 0.93151, 0.64308],
+        [0.16319, 0.93609, 0.63137],
+        [0.17377, 0.94053, 0.61938],
+        [0.18491, 0.94484, 0.60713],
+        [0.19659, 0.94901, 0.59466],
+        [0.20877, 0.95304, 0.58199],
+        [0.22142, 0.95692, 0.56914],
+        [0.23449, 0.96065, 0.55614],
+        [0.24797, 0.96423, 0.54303],
+        [0.26180, 0.96765, 0.52981],
+        [0.27597, 0.97092, 0.51653],
+        [0.29042, 0.97403, 0.50321],
+        [0.30513, 0.97697, 0.48987],
+        [0.32006, 0.97974, 0.47654],
+        [0.33517, 0.98234, 0.46325],
+        [0.35043, 0.98477, 0.45002],
+        [0.36581, 0.98702, 0.43688],
+        [0.38127, 0.98909, 0.42386],
+        [0.39678, 0.99098, 0.41098],
+        [0.41229, 0.99268, 0.39826],
+        [0.42778, 0.99419, 0.38575],
+        [0.44321, 0.99551, 0.37345],
+        [0.45854, 0.99663, 0.36140],
+        [0.47375, 0.99755, 0.34963],
+        [0.48879, 0.99828, 0.33816],
+        [0.50362, 0.99879, 0.32701],
+        [0.51822, 0.99910, 0.31622],
+        [0.53255, 0.99919, 0.30581],
+        [0.54658, 0.99907, 0.29581],
+        [0.56026, 0.99873, 0.28623],
+        [0.57357, 0.99817, 0.27712],
+        [0.58646, 0.99739, 0.26849],
+        [0.59891, 0.99638, 0.26038],
+        [0.61088, 0.99514, 0.25280],
+        [0.62233, 0.99366, 0.24579],
+        [0.63323, 0.99195, 0.23937],
+        [0.64362, 0.98999, 0.23356],
+        [0.65394, 0.98775, 0.22835],
+        [0.66428, 0.98524, 0.22370],
+        [0.67462, 0.98246, 0.21960],
+        [0.68494, 0.97941, 0.21602],
+        [0.69525, 0.97610, 0.21294],
+        [0.70553, 0.97255, 0.21032],
+        [0.71577, 0.96875, 0.20815],
+        [0.72596, 0.96470, 0.20640],
+        [0.73610, 0.96043, 0.20504],
+        [0.74617, 0.95593, 0.20406],
+        [0.75617, 0.95121, 0.20343],
+        [0.76608, 0.94627, 0.20311],
+        [0.77591, 0.94113, 0.20310],
+        [0.78563, 0.93579, 0.20336],
+        [0.79524, 0.93025, 0.20386],
+        [0.80473, 0.92452, 0.20459],
+        [0.81410, 0.91861, 0.20552],
+        [0.82333, 0.91253, 0.20663],
+        [0.83241, 0.90627, 0.20788],
+        [0.84133, 0.89986, 0.20926],
+        [0.85010, 0.89328, 0.21074],
+        [0.85868, 0.88655, 0.21230],
+        [0.86709, 0.87968, 0.21391],
+        [0.87530, 0.87267, 0.21555],
+        [0.88331, 0.86553, 0.21719],
+        [0.89112, 0.85826, 0.21880],
+        [0.89870, 0.85087, 0.22038],
+        [0.90605, 0.84337, 0.22188],
+        [0.91317, 0.83576, 0.22328],
+        [0.92004, 0.82806, 0.22456],
+        [0.92666, 0.82025, 0.22570],
+        [0.93301, 0.81236, 0.22667],
+        [0.93909, 0.80439, 0.22744],
+        [0.94489, 0.79634, 0.22800],
+        [0.95039, 0.78823, 0.22831],
+        [0.95560, 0.78005, 0.22836],
+        [0.96049, 0.77181, 0.22811],
+        [0.96507, 0.76352, 0.22754],
+        [0.96931, 0.75519, 0.22663],
+        [0.97323, 0.74682, 0.22536],
+        [0.97679, 0.73842, 0.22369],
+        [0.98000, 0.73000, 0.22161],
+        [0.98289, 0.72140, 0.21918],
+        [0.98549, 0.71250, 0.21650],
+        [0.98781, 0.70330, 0.21358],
+        [0.98986, 0.69382, 0.21043],
+        [0.99163, 0.68408, 0.20706],
+        [0.99314, 0.67408, 0.20348],
+        [0.99438, 0.66386, 0.19971],
+        [0.99535, 0.65341, 0.19577],
+        [0.99607, 0.64277, 0.19165],
+        [0.99654, 0.63193, 0.18738],
+        [0.99675, 0.62093, 0.18297],
+        [0.99672, 0.60977, 0.17842],
+        [0.99644, 0.59846, 0.17376],
+        [0.99593, 0.58703, 0.16899],
+        [0.99517, 0.57549, 0.16412],
+        [0.99419, 0.56386, 0.15918],
+        [0.99297, 0.55214, 0.15417],
+        [0.99153, 0.54036, 0.14910],
+        [0.98987, 0.52854, 0.14398],
+        [0.98799, 0.51667, 0.13883],
+        [0.98590, 0.50479, 0.13367],
+        [0.98360, 0.49291, 0.12849],
+        [0.98108, 0.48104, 0.12332],
+        [0.97837, 0.46920, 0.11817],
+        [0.97545, 0.45740, 0.11305],
+        [0.97234, 0.44565, 0.10797],
+        [0.96904, 0.43399, 0.10294],
+        [0.96555, 0.42241, 0.09798],
+        [0.96187, 0.41093, 0.09310],
+        [0.95801, 0.39958, 0.08831],
+        [0.95398, 0.38836, 0.08362],
+        [0.94977, 0.37729, 0.07905],
+        [0.94538, 0.36638, 0.07461],
+        [0.94084, 0.35566, 0.07031],
+        [0.93612, 0.34513, 0.06616],
+        [0.93125, 0.33482, 0.06218],
+        [0.92623, 0.32473, 0.05837],
+        [0.92105, 0.31489, 0.05475],
+        [0.91572, 0.30530, 0.05134],
+        [0.91024, 0.29599, 0.04814],
+        [0.90463, 0.28696, 0.04516],
+        [0.89888, 0.27824, 0.04243],
+        [0.89298, 0.26981, 0.03993],
+        [0.88691, 0.26152, 0.03753],
+        [0.88066, 0.25334, 0.03521],
+        [0.87422, 0.24526, 0.03297],
+        [0.86760, 0.23730, 0.03082],
+        [0.86079, 0.22945, 0.02875],
+        [0.85380, 0.22170, 0.02677],
+        [0.84662, 0.21407, 0.02487],
+        [0.83926, 0.20654, 0.02305],
+        [0.83172, 0.19912, 0.02131],
+        [0.82399, 0.19182, 0.01966],
+        [0.81608, 0.18462, 0.01809],
+        [0.80799, 0.17753, 0.01660],
+        [0.79971, 0.17055, 0.01520],
+        [0.79125, 0.16368, 0.01387],
+        [0.78260, 0.15693, 0.01264],
+        [0.77377, 0.15028, 0.01148],
+        [0.76476, 0.14374, 0.01041],
+        [0.75556, 0.13731, 0.00942],
+        [0.74617, 0.13098, 0.00851],
+        [0.73661, 0.12477, 0.00769],
+        [0.72686, 0.11867, 0.00695],
+        [0.71692, 0.11268, 0.00629],
+        [0.70680, 0.10680, 0.00571],
+        [0.69650, 0.10102, 0.00522],
+        [0.68602, 0.09536, 0.00481],
+        [0.67535, 0.08980, 0.00449],
+        [0.66449, 0.08436, 0.00424],
+        [0.65345, 0.07902, 0.00408],
+        [0.64223, 0.07380, 0.00401],
+        [0.63082, 0.06868, 0.00401],
+        [0.61923, 0.06367, 0.00410],
+        [0.60746, 0.05878, 0.00427],
+        [0.59550, 0.05399, 0.00453],
+        [0.58336, 0.04931, 0.00486],
+        [0.57103, 0.04474, 0.00529],
+        [0.55852, 0.04028, 0.00579],
+        [0.54583, 0.03593, 0.00638],
+        [0.53295, 0.03169, 0.00705],
+        [0.51989, 0.02756, 0.00780],
+        [0.50664, 0.02354, 0.00863],
+        [0.49321, 0.01963, 0.00955],
+        [0.47960, 0.01583, 0.01055],
+    ]
+)
+
+
+def RGBToPyCmap(rgbdata):
+    &#34;&#34;&#34;
+    Convert an array of RGB to Matplotlib colormap.
+
+    Parameters
+    ----------
+    rgbdata : array-like
+        Nx3 array with RGB data.
+
+    Returns
+    -------
+    dict
+        Colors in Matplotlib format.
+    &#34;&#34;&#34;
+    nsteps = rgbdata.shape[0]
+    stepaxis = np.linspace(0, 1, nsteps)
+
+    rdata = []
+    gdata = []
+    bdata = []
+    for istep in range(nsteps):
+        r = rgbdata[istep, 0]
+        g = rgbdata[istep, 1]
+        b = rgbdata[istep, 2]
+        rdata.append((stepaxis[istep], r, r))
+        gdata.append((stepaxis[istep], g, g))
+        bdata.append((stepaxis[istep], b, b))
+
+    mpl_data = {&#34;red&#34;: rdata, &#34;green&#34;: gdata, &#34;blue&#34;: bdata}
+
+    return mpl_data
+
+
+mpl_data = RGBToPyCmap(turbo_colormap_data)
+plt.register_cmap(name=&#34;turbo&#34;, data=mpl_data, lut=turbo_colormap_data.shape[0])
+
+mpl_data_r = RGBToPyCmap(turbo_colormap_data[::-1, :])
+plt.register_cmap(name=&#34;turbo_r&#34;, data=mpl_data_r, lut=turbo_colormap_data.shape[0])
+
+mpl_data = RGBToPyCmap(ocean4jbm)
+plt.register_cmap(name=&#34;ocean4jbm&#34;, data=mpl_data, lut=ocean4jbm.shape[0])
+
+mpl_data_r = RGBToPyCmap(ocean4jbm[::-1, :])
+plt.register_cmap(name=&#34;ocean4jbm_r&#34;, data=mpl_data_r, lut=ocean4jbm.shape[0])
+
+if __name__ == &#34;__main__&#34;:
+
+    XX, YY = np.meshgrid(np.linspace(0, 1, 100), np.linspace(0, 1, 100))
+    ZZ = np.sqrt(XX ** 2 + YY ** 2)
+
+    plt.figure()
+    plt.imshow(ZZ, cmap=&#34;turbo&#34;)
+    plt.colorbar()
+
+    plt.figure()
+    plt.imshow(ZZ, cmap=&#34;turbo_r&#34;)
+    plt.colorbar()
+
+    plt.figure()
+    plt.imshow(ZZ, cmap=&#34;ocean4jbm&#34;)
+    plt.colorbar()
+
+    plt.figure()
+    plt.imshow(ZZ, cmap=&#34;ocean4jbm_r&#34;)
+    plt.colorbar()
+
+    plt.show()</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="gvpy.cm.RGBToPyCmap"><code class="name flex">
+<span>def <span class="ident">RGBToPyCmap</span></span>(<span>rgbdata)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Convert an array of RGB to Matplotlib colormap.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>rgbdata</code></strong> :&ensp;<code>array</code>-<code>like</code></dt>
+<dd>Nx3 array with RGB data.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>dict</code></dt>
+<dd>Colors in Matplotlib format.</dd>
+</dl></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def RGBToPyCmap(rgbdata):
+    &#34;&#34;&#34;
+    Convert an array of RGB to Matplotlib colormap.
+
+    Parameters
+    ----------
+    rgbdata : array-like
+        Nx3 array with RGB data.
+
+    Returns
+    -------
+    dict
+        Colors in Matplotlib format.
+    &#34;&#34;&#34;
+    nsteps = rgbdata.shape[0]
+    stepaxis = np.linspace(0, 1, nsteps)
+
+    rdata = []
+    gdata = []
+    bdata = []
+    for istep in range(nsteps):
+        r = rgbdata[istep, 0]
+        g = rgbdata[istep, 1]
+        b = rgbdata[istep, 2]
+        rdata.append((stepaxis[istep], r, r))
+        gdata.append((stepaxis[istep], g, g))
+        bdata.append((stepaxis[istep], b, b))
+
+    mpl_data = {&#34;red&#34;: rdata, &#34;green&#34;: gdata, &#34;blue&#34;: bdata}
+
+    return mpl_data</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="gvpy" href="index.html">gvpy</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="gvpy.cm.RGBToPyCmap" href="#gvpy.cm.RGBToPyCmap">RGBToPyCmap</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.2</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

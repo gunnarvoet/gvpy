@@ -1397,11 +1397,11 @@ def inertial_frequency(lat):
     -------
     f : float
         Inertial frequency [rad/s]
-        
+
     See Also
     --------
     inertial_period : Inertial period in days
-        
+    
     Notes
     -----
     The inertial frequency or Coriolis frequency \(f\) is equal to twice the rotation rate of \(\Omega\) of the Earth multiplied by the sine of the latitude \(\phi\):

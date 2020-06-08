@@ -6,8 +6,8 @@ python:
   - "3.8"
 
 install:
-  - pip3 install numpy scipy matplotlib gsw munch pdoc
-  - pip3 install -e .
+  - pip install numpy scipy matplotlib gsw munch pdoc
+  - pip install -e .
 
 script:
   - mkdir docs

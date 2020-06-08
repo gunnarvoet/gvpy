@@ -16,8 +16,10 @@ script:
   - rm -rf ./docs/gvpy
 
 deploy:
-  - provider: script
-    script: bash deploy.sh
+  - provider: pages
     skip_cleanup: true
+    github_token: $GITHUB_TOKEN
+    local_dir: docs
+    target_branch: gh-pages
     on:
-      branch: master # or master if you are using the two-repository approach
+      branch: master

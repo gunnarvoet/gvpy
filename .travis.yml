@@ -2,7 +2,6 @@
 dist: bionic
 language: python
 python:
-  - "3.5"
   - "3.8"
 
 install:
@@ -10,8 +9,9 @@ install:
   - pip install .
 
 script:
+  - rm -rf docs
   - mkdir docs
-  - pdoc --html -o ./docs --force gvpy
+  - pdoc --html -o './docs' --force gvpy
   - mv ./docs/gvpy/*.html ./docs/
   - rm -rf ./docs/gvpy
 

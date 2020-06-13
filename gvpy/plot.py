@@ -762,6 +762,18 @@ def annotate_upper_left(text, ax):
     return ax.annotate(text, (0.02, 0.9), xycoords="axes fraction")
 
 
+def annotate_corner(text, ax, quadrant=1, fw='bold', fs=10, addx=0, addy=0, col='k'):
+    if quadrant == 1:
+        loc = (0.02+addx, 0.9+addy)
+    if quadrant == 2:
+        loc = (0.02+addx, 0.1+addy)
+    if quadrant == 3:
+        loc = (0.9+addx, 0.1+addy)
+    if quadrant == 4:
+        loc = (0.9+addx, 0.9+addy)
+    return ax.annotate(text, loc, xycoords="axes fraction", fontweight=fw, fontsize=fs, color=col)
+
+
 def cmap_partial(cmap_name, min, max):
     """
     Extract part of a colormap.

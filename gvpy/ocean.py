@@ -653,7 +653,7 @@ def eps_overturn2(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
 
 
 def vmodes(z, N, clat, nmodes):
-    """
+    r"""
     Calculate vertical modes in a flat-bottomed ocean.
 
     Parameters

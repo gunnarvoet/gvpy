@@ -437,7 +437,7 @@ class ANTS(object):
 
         p_error = re.compile("^#ANTS#ERROR#")
         p_param = re.compile("^#ANTS#PARAMS#")
-        p_values = re.compile("([\w\.]+){([^}]*)}")
+        p_values = re.compile(r"([\w\.]+){([^}]*)}")
         p_check_fields = re.compile("^#ANTS#FIELDS#")
         p_fields = re.compile("{([^}]*)}")
         p_data = re.compile("([^ \t]+)")

@@ -12,6 +12,7 @@ import numpy as np
 from cycler import cycler
 from matplotlib.collections import LineCollection
 from matplotlib.colors import LinearSegmentedColormap
+import string
 
 from IPython import get_ipython
 
@@ -205,7 +206,7 @@ def newfig(width=7.5, height=5.5, fontsize=12):
     return fig, ax
 
 
-def axstyle(ax=None, fontsize=12, nospine=False, grid=True, ticks="off"):
+def axstyle(ax=None, fontsize=12, nospine=False, grid=True, ticks="off", ticklength=2):
     """
     Apply own style to axis.
 
@@ -239,7 +240,7 @@ def axstyle(ax=None, fontsize=12, nospine=False, grid=True, ticks="off"):
         ax.xaxis.set_ticks_position("none")
         ax.yaxis.set_ticks_position("none")
     elif ticks == "in":
-        ax.tick_params(axis="both", direction="in", length=2)
+        ax.tick_params(axis="both", direction="in", length=ticklength)
 
     # For remaining spines, thin out their line and change
     # the black to a slightly off-black dark grey
@@ -772,6 +773,42 @@ def annotate_corner(text, ax, quadrant=1, fw='bold', fs=10, addx=0, addy=0, col=
     if quadrant == 4:
         loc = (0.9+addx, 0.9+addy)
     return ax.annotate(text, loc, xycoords="axes fraction", fontweight=fw, fontsize=fs, color=col)
+
+
+def subplotlabel(ax, color='k', fs=10, fw='bold', bg='w', bga=1, x=0, y=0.96):
+    """Add alphabetic subplot labels to an array of axes.
+
+    Parameters
+    ----------
+    ax : np.array
+        Array with axis instances.
+    color : str, optional
+        Font color. Default black.
+    fs : int, optional
+        Font size. Default 10.
+    fw : str, optional
+        Font weight. Default bold.
+    bg : str, optional
+        Background color
+    bga : float [0...1], optional
+        Background alpha (transparency). Default 1 (not transparent).
+    x : float, optional
+        x-position (in axis units). Default 0.
+    y : float, optional
+        y-position (in axis units). Default 0.96.
+
+    Returns
+    -------
+    list
+        List of matplotlib.Annotation objects.
+    """
+    out = []
+    atoz = string.ascii_lowercase
+    n = len(ax.flatten())
+    sublabelspecs = dict(xycoords='axes fraction', color=color, fontweight=fw, fontsize=fs,
+                bbox=dict(facecolor=bg, edgecolor='none', alpha=bga, boxstyle='circle,pad=0.1'))
+    for axi, letter in zip(ax.flatten(), atoz[:n]):
+        out.append(axi.annotate(letter, (x, y), **sublabelspecs))
 
 
 def cmap_partial(cmap_name, min, max):

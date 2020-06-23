@@ -1033,9 +1033,10 @@ def smith_sandwell(lon="all", lat="all", r15=False, subsample=False):
     b : xarray DataArray
         Bathymetry in an xarray DataArray using dask for quick access.
         
-    Todo
-    ----
-    Implement subsampling.
+    Notes
+    -----
+    Returns a lazily evaluated dask array. Run b.load() to load data into
+    memory.
     """
     # Load Smith & Sandwell bathymetry as xarray DataArray
     hn = socket.gethostname()
@@ -1063,7 +1064,7 @@ def smith_sandwell(lon="all", lat="all", r15=False, subsample=False):
         )
     b = xr.open_dataarray(nc_file, chunks=1000)
     b["lon"] = np.mod((b.lon + 180), 360) - 180
-    if type(lon) == str and lon != "all":
+    if lon == "all":
         print("returning whole dataset")
     else:
         # for only one point
@@ -1077,6 +1078,11 @@ def smith_sandwell(lon="all", lat="all", r15=False, subsample=False):
             lonmask = (b.lon > np.nanmin(lon)) & (b.lon < np.nanmax(lon))
             latmask = (b.lat > np.nanmin(lat)) & (b.lat < np.nanmax(lat))
             b = b.isel(lon=lonmask, lat=latmask)
+    # Transforming lon from 0:360 to -180:180 mean we also have to sort the
+    # dataset by the new coordinate.
+    b = b.sortby('lon')
+    if subsample:
+        b = b.coarsen({'lon': subsample, 'lat': subsample}).mean()
     return b
 
 

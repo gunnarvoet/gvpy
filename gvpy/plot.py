@@ -766,13 +766,17 @@ def annotate_upper_left(text, ax):
 def annotate_corner(text, ax, quadrant=1, fw='bold', fs=10, addx=0, addy=0, col='k'):
     if quadrant == 1:
         loc = (0.02+addx, 0.9+addy)
+        ha = 'left'
     if quadrant == 2:
         loc = (0.02+addx, 0.1+addy)
+        ha = 'left'
     if quadrant == 3:
-        loc = (0.9+addx, 0.1+addy)
+        loc = (0.98+addx, 0.1+addy)
+        ha = 'right'
     if quadrant == 4:
-        loc = (0.9+addx, 0.9+addy)
-    return ax.annotate(text, loc, xycoords="axes fraction", fontweight=fw, fontsize=fs, color=col)
+        loc = (0.98+addx, 0.9+addy)
+        ha = 'right'
+    return ax.annotate(text, loc, xycoords="axes fraction", fontweight=fw, fontsize=fs, color=col, ha=ha)
 
 
 def subplotlabel(ax, color='k', fs=10, fw='bold', bg='w', bga=1, x=0, y=0.96):

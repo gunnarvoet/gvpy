@@ -47,12 +47,29 @@ class HillShade:
             Smooth topography.
         smoothbumps : array-like
             Hill shades, based on `matplotlib.colors.LightSource`.
+        kmap4 : matplotlib.colors.Colormap
+            Black colormap with alpha channels for plotting hill shading.
+        extent : `tuple`
+            Extent in lon and lat. Only if coordinates are provided. Helpful
+            for plotting.
 
         Notes
         -----
-        With inspiration from this notebook:
-
+        With inspiration from this notebook:\n
         https://github.com/agile-geoscience/notebooks/blob/master/Colourmaps.ipynb
+
+        The hill shading can be added on top of the topography like this:
+        ```python
+        hs = HillShade(topo, lon, lat) 
+        ax.imshow(
+            hs.smoothbumps,
+            extent=hs.topo_extent,
+            cmap=hs.kmap4,
+            alpha=0.5,
+            zorder=10,
+        )
+        ```
+        See code in `HillShade.plot_topo` for details.
         """
 
         self.topo = topo

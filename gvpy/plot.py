@@ -34,6 +34,11 @@ def nostalgic():
     """
     Reading old papers and feeling nostalgic? Fear not! This will change the
     default matplotlib settings to transport you right back several decades.
+
+    Notes
+    -----
+    Depends on Routed Gothic Font:
+    https://webonastick.com/fonts/routed-gothic/
     """
     mpl.rcParams["font.size"] = 11
     mpl.rcParams["font.family"] = "Routed Gothic"

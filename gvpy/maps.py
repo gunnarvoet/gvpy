@@ -23,7 +23,7 @@ else:
 
 
 class HillShade:
-    def __init__(self, topo, lon=None, lat=None, smoothtopo=5, shading=0.2):
+    def __init__(self, topo, lon=None, lat=None, smoothtopo=5, shading_factor=0.2):
         """Generate parameters for hill shading for an elevation model.
 
         Parameters
@@ -34,10 +34,24 @@ class HillShade:
             Longitude.
         lat : array-like, optional
             Latitude
+        smoothtopo : float, optional
+            Smoothing factor for topography when calculating hillshading.
+            Defaults to 5.
+        shading_factor : float, optional
+            Factor for hill shading. Less hill shading for a smaller factor.
+            Defaults to 0.2.
+        
+        Attributes
+        ----------
+        smoothbtopo : array-like
+            Smooth topography.
+        smoothbumps : array-like
+            Hill shades, based on `matplotlib.colors.LightSource`.
 
         Notes
         -----
         With inspiration from this notebook:
+
         https://github.com/agile-geoscience/notebooks/blob/master/Colourmaps.ipynb
         """
 
@@ -51,12 +65,14 @@ class HillShade:
                 self.lat.max(),
                 self.lat.min(),
             )
-        self.kmap = self.make_colormap([(0, 0, 0)])
-        self.kmap4 = self.add_alpha(self.kmap)
-        self.smoothbtopo = self.smooth_topo(sigma=smoothtopo)
-        self.smoothbumps = self.generate_hill_shade(self.smoothbtopo, root=shading)
+        self.kmap = self._make_colormap([(0, 0, 0)])
+        self.kmap4 = self._add_alpha(self.kmap)
+        self.smoothbtopo = self._smooth_topo(sigma=smoothtopo)
+        self.smoothbumps = self._generate_hill_shade(
+            self.smoothbtopo, root=shading_factor
+        )
 
-    def make_colormap(self, seq):
+    def _make_colormap(self, seq):
         """
         Converts a sequence of RGB tuples containing floats in the interval (0,1).
         For some reason LinearSegmentedColormap cannot take an alpha channel,
@@ -73,7 +89,7 @@ class HillShade:
                 cdict["blue"].append([item, b1, b2])
         return LinearSegmentedColormap("CustomMap", cdict)
 
-    def add_alpha(self, cmap, alpha=None):
+    def _add_alpha(self, cmap, alpha=None):
         """
         Adds an alpha channel (opacity) to a colourmap. Uses a ramp by default.
         Pass an array of 256 values to use that. 0 = transparent; 1 = opaque.
@@ -84,14 +100,14 @@ class HillShade:
         cmap4[:, -1] = alpha
         return ListedColormap(cmap4)
 
-    def smooth_topo(self, sigma=2):
+    def _smooth_topo(self, sigma=2):
         """
         Smoothes topography using a gaussian filter in 2D.
         """
         stopo = ndimage.gaussian_filter(self.topo, sigma=(sigma, sigma), order=0)
         return stopo
 
-    def generate_hill_shade(self, topo, root=1, azdeg=275, altdeg=145):
+    def _generate_hill_shade(self, topo, root=1, azdeg=275, altdeg=145):
         """
         Generate image with hill shading.
         """
@@ -100,6 +116,15 @@ class HillShade:
         return bumps
 
     def plot_topo(self, ax, cmap="Blues"):
+        """Plot topography with hill shading.
+
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes
+            Axis instance for plotting.
+        cmap : str or matplotlib.colors.Colormap, optional
+            Colormap for plotting. Defaults to "Blues".
+        """
         mindepth = np.min(self.topo)
         maxdepth = np.max(self.topo)
         h = ax.contourf(

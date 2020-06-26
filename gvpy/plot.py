@@ -843,3 +843,19 @@ def cmap_partial(cmap_name, min, max):
     colors = tmp(interval)
     cmap = LinearSegmentedColormap.from_list("name", colors)
     return cmap
+
+
+def get_max_zorder(ax):
+    """Get highest zorder of all elements in an Axis instance.
+
+    Parameters
+    ----------
+    ax : matplotlib.axes.Axis
+        Axis
+
+    Returns
+    -------
+    int
+        Maximum zorder
+    """
+    return max([_.zorder for _ in ax.get_children()])

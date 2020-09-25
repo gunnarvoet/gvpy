@@ -16,7 +16,7 @@ from munch import munchify
 from seabird.cnv import fCNV
 
 
-def loadmat(filename, onevar=False):
+def loadmat(filename, onevar=False, verbose=False):
     """
     Load Matlab .mat files and return as dictionary with .dot-access.
 
@@ -71,7 +71,8 @@ def loadmat(filename, onevar=False):
         dk = list(out.keys())
         actual_keys = [k for k in dk if k[:2] != "__"]
         if len(actual_keys) == 1:
-            print("found only one variable, returning munchified data structure")
+            if verbose:
+                print("found only one variable, returning munchified data structure")
             return munchify(out[actual_keys[0]])
         else:
             out2 = {}
@@ -88,10 +89,12 @@ def loadmat(filename, onevar=False):
             if k[:2] != "__":
                 outvars.append(k)
         if len(outvars) == 1:
-            print("returning munchified data structure")
+            if verbose:
+                print("returning munchified data structure")
             return munchify(out[outvars[0]])
         else:
-            print("found more than one var...")
+            if verbose:
+                print("found more than one var...")
             return out
     else:
         return out

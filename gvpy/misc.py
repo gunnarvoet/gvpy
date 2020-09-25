@@ -161,20 +161,22 @@ def extract(prepend='xx'):
     ctypes.pythonapi.PyFrame_LocalsToFast(ctypes.py_object(ipython), ctypes.c_int(0))
 
 
-def latex_float(f):
+def latex_float(f, decimals=0):
     """Print float as string formatted for use in latex.
 
     Parameters
     ----------
     f : float
         Float to be formatted.
+    decimals : int, optional
+        Number of decimals to show. Default 0.
 
     Returns
     -------
     str
     """
-
-    float_str = "{0:1.0e}".format(f)
+    fmt = "{{:1.{decimals}e}}".format(decimals=decimals)
+    float_str = fmt.format(f)
     if "e" in float_str:
         base, exponent = float_str.split("e")
         return r"{0} \times 10^{{{1}}}".format(base, int(exponent))

@@ -715,8 +715,8 @@ def cartopy_axes(ax, maxticks="auto"):
         alpha=0.5,
         linestyle="-",
     )
-    gl.xlabels_top = False
-    gl.ylabels_right = False
+    gl.top_labels = False
+    gl.right_labels = False
     if maxticks == "auto":
         gl.xlocator = mticker.AutoLocator()
         gl.ylocator = mticker.AutoLocator()

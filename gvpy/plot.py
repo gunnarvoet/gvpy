@@ -435,7 +435,7 @@ def pcm(*args, **kwargs):
     return h
 
 
-def png(fname, figdir="fig", dpi=300):
+def png(fname, figdir="fig", dpi=300, verbose=True):
     """
     Save figure as png.
 
@@ -455,9 +455,11 @@ def png(fname, figdir="fig", dpi=300):
     # see if we already have a figure directory
     savedir = cwd.joinpath(figdir)
     if savedir.exists() and savedir.is_dir():
-        print("saving to {}/".format(figdir))
+        if verbose:
+            print("saving to {}/".format(figdir))
     else:
-        print("creating figure directory at {}/".format(savedir))
+        if verbose:
+            print("creating figure directory at {}/".format(savedir))
         savedir.mkdir()
     fname = fname + ".png"
     plt.savefig(savedir.joinpath(fname), dpi=dpi, bbox_inches="tight")

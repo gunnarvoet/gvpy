@@ -533,6 +533,38 @@ class ANTS(object):
         return ds
 
 
+def results_to_latex(res, file):
+    """
+    Write dictionary with results to a latex file.
+
+    In your latex document, use \include{FileName} to read the document
+    and then call variables as for e.g. \OverallResult. Note that the file needs
+    to be in the same directory as the main tex document.
+
+    Parameters
+    ----------
+    res : dict
+        Dictionary with results as values and new latex variables as keys.
+    file : Path object
+        Path to latex file to be generated.
+    """
+
+    def newcommand(name, val):
+        """Format name and val into latex command"""
+        fmt = '\\newcommand{{\\{name}}}[0]{{{action}}}'
+        cmd = fmt.format(name=name, action=val)
+        print(cmd)
+        return cmd + '\n'
+
+    cmds = []
+    for key, values in res.items():
+        cmds+=newcommand(key, values)
+
+    with open(file, 'a') as fh:
+        for cmd in cmds:
+            fh.write(cmd)
+
+
 def _is_number(s):
     """
     Check if string can be converted to a float.

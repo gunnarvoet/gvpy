@@ -23,6 +23,7 @@ Thanks to [John Mickett](http://apl.uw.edu/people/profile.php?last_name=Mickett&
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.colors import LinearSegmentedColormap
 
 ocean4jbm = np.array(
     [
@@ -425,16 +426,16 @@ def RGBToPyCmap(rgbdata):
 
 
 mpl_data = RGBToPyCmap(turbo_colormap_data)
-plt.register_cmap(name="turbo", data=mpl_data, lut=turbo_colormap_data.shape[0])
+plt.register_cmap(cmap=LinearSegmentedColormap("turbo", mpl_data, turbo_colormap_data.shape[0]))
 
 mpl_data_r = RGBToPyCmap(turbo_colormap_data[::-1, :])
-plt.register_cmap(name="turbo_r", data=mpl_data_r, lut=turbo_colormap_data.shape[0])
+plt.register_cmap(cmap=LinearSegmentedColormap("turbo_r", mpl_data_r, turbo_colormap_data.shape[0]))
 
 mpl_data = RGBToPyCmap(ocean4jbm)
-plt.register_cmap(name="ocean4jbm", data=mpl_data, lut=ocean4jbm.shape[0])
+plt.register_cmap(cmap=LinearSegmentedColormap("ocean4jbm", mpl_data, ocean4jbm.shape[0]))
 
 mpl_data_r = RGBToPyCmap(ocean4jbm[::-1, :])
-plt.register_cmap(name="ocean4jbm_r", data=mpl_data_r, lut=ocean4jbm.shape[0])
+plt.register_cmap(cmap=LinearSegmentedColormap("ocean4jbm_r", mpl_data_r, ocean4jbm.shape[0]))
 
 if __name__ == "__main__":
 

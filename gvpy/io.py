@@ -534,11 +534,10 @@ class ANTS(object):
 
 
 def results_to_latex(res, file):
-    """
-    Write dictionary with results to a latex file.
+    """Write dictionary with results to a latex file.
 
-    In your latex document, use \include{FileName} to read the document
-    and then call variables as for e.g. \OverallResult. Note that the file needs
+    In your latex document, use \\include{FileName} to read the document
+    and then call variables as for e.g. \\OverallResult. Note that the file needs
     to be in the same directory as the main tex document.
 
     Parameters

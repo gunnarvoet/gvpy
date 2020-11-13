@@ -211,7 +211,9 @@ def newfig(width=7.5, height=5.5, fontsize=12):
     return fig, ax
 
 
-def axstyle(ax=None, fontsize=12, nospine=False, grid=True, ticks="off", ticklength=2):
+def axstyle(
+    ax=None, fontsize=12, nospine=False, grid=True, ticks="off", ticklength=2
+):
     """
     Apply own style to axis.
 
@@ -414,9 +416,13 @@ def pcm(*args, **kwargs):
         if "ax" in kwargs:
             pax = kwargs["ax"]
             del kwargs["ax"]
-            h = pax.pcolormesh(np.ma.masked_invalid(z), vmin=vmin, vmax=vmax, **kwargs)
+            h = pax.pcolormesh(
+                np.ma.masked_invalid(z), vmin=vmin, vmax=vmax, **kwargs
+            )
         else:
-            h = plt.pcolormesh(np.ma.masked_invalid(z), vmin=vmin, vmax=vmax, **kwargs)
+            h = plt.pcolormesh(
+                np.ma.masked_invalid(z), vmin=vmin, vmax=vmax, **kwargs
+            )
 
     elif len(args) == 3:
         if "ax" in kwargs:
@@ -693,7 +699,9 @@ def concise_date(ax=None, minticks=3, maxticks=10, show_offset=True, **kwargs):
     if ax is None:
         ax = plt.gca()
     locator = mdates.AutoDateLocator(minticks=minticks, maxticks=maxticks)
-    formatter = mdates.ConciseDateFormatter(locator, show_offset=show_offset, **kwargs)
+    formatter = mdates.ConciseDateFormatter(
+        locator, show_offset=show_offset, **kwargs
+    )
     ax.xaxis.set_major_locator(locator)
     ax.xaxis.set_major_formatter(formatter)
 
@@ -770,23 +778,93 @@ def annotate_upper_left(text, ax):
     return ax.annotate(text, (0.02, 0.9), xycoords="axes fraction")
 
 
-def annotate_corner(text, ax, quadrant=1, fw='bold', fs=10, addx=0, addy=0, col='k'):
+def annotate_corner(
+    text,
+    ax,
+    quadrant=1,
+    fw="bold",
+    fs=10,
+    addx=0,
+    addy=0,
+    col="k",
+    background_circle=False,
+):
+    """Add text to axis corner.
+
+    Parameters
+    ----------
+    text : str
+        Text to add
+    ax : matplotlib.axis
+        Axis
+    quadrant : int [1, 2, 3, 4]
+        Corner 
+    fw : str, optional
+        Font weight 
+    fs : int, optional
+        Font size 
+    addx : float, optional
+        Position offset in x
+    addy : float, optional
+        Position offset in y
+    col : str, optional
+        Text color
+    background_circle : bool or str, optional
+        Draw background circle behind text.
+        Can be a string defining circle color.
+        Default color is white.
+        Defaults to False.
+
+    Returns
+    -------
+    h : matplotlib.Annotation
+
+    """
+
+    if background_circle is True:
+        background_circle = "w"
     if quadrant == 1:
-        loc = (0.02+addx, 0.9+addy)
-        ha = 'left'
+        loc = (0.02 + addx, 0.9 + addy)
+        ha = "left"
     if quadrant == 2:
-        loc = (0.02+addx, 0.1+addy)
-        ha = 'left'
+        loc = (0.02 + addx, 0.1 + addy)
+        ha = "left"
     if quadrant == 3:
-        loc = (0.98+addx, 0.1+addy)
-        ha = 'right'
+        loc = (0.98 + addx, 0.1 + addy)
+        ha = "right"
     if quadrant == 4:
-        loc = (0.98+addx, 0.9+addy)
-        ha = 'right'
-    return ax.annotate(text, loc, xycoords="axes fraction", fontweight=fw, fontsize=fs, color=col, ha=ha)
+        loc = (0.98 + addx, 0.9 + addy)
+        ha = "right"
+    if background_circle:
+        h = ax.annotate(
+            text,
+            loc,
+            xycoords="axes fraction",
+            fontweight=fw,
+            fontsize=fs,
+            color=col,
+            ha=ha,
+            backgroundcolor="w",
+            bbox=dict(
+                boxstyle="circle",
+                edgecolor=background_circle,
+                facecolor=background_circle,
+            ),
+        )
+    else:
+        h = ax.annotate(
+            text,
+            loc,
+            xycoords="axes fraction",
+            fontweight=fw,
+            fontsize=fs,
+            color=col,
+            ha=ha,
+        )
+    return h
 
 
-def subplotlabel(ax, color='k', fs=10, fw='bold', bg='w', bga=1, x=0, y=0.96):
+def subplotlabel(ax, color="k", fs=10, fw="bold", bg="w", bga=1, x=0, y=0.96):
     """Add alphabetic subplot labels to an array of axes.
 
     Parameters
@@ -816,8 +894,15 @@ def subplotlabel(ax, color='k', fs=10, fw='bold', bg='w', bga=1, x=0, y=0.96):
     out = []
     atoz = string.ascii_lowercase
     n = len(ax.flatten())
-    sublabelspecs = dict(xycoords='axes fraction', color=color, fontweight=fw, fontsize=fs,
-                bbox=dict(facecolor=bg, edgecolor='none', alpha=bga, boxstyle='circle,pad=0.1'))
+    sublabelspecs = dict(
+        xycoords="axes fraction",
+        color=color,
+        fontweight=fw,
+        fontsize=fs,
+        bbox=dict(
+            facecolor=bg, edgecolor="none", alpha=bga, boxstyle="circle,pad=0.1"
+        ),
+    )
     for axi, letter in zip(ax.flatten(), atoz[:n]):
         out.append(axi.annotate(letter, (x, y), **sublabelspecs))
 

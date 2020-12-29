@@ -4,7 +4,7 @@
 
 import ctypes
 import inspect
-
+import warnings
 import numpy as np
 
 
@@ -49,7 +49,11 @@ def getshape(d):
 
 
 def cmap_div(
-    numcolors=11, name="custom_div_cmap", mincol="blue", midcol="white", maxcol="red"
+    numcolors=11,
+    name="custom_div_cmap",
+    mincol="blue",
+    midcol="white",
+    maxcol="red",
 ):
     """ Create a custom diverging colormap with three colors
 
@@ -115,7 +119,7 @@ def qpsave(filename, vars):
     f.close()
 
 
-def extract(prepend='xx'):
+def extract(prepend="xx"):
     """Copies the variables of the caller up to iPython. Useful when in
     debugging mode.
 
@@ -147,9 +151,9 @@ def extract(prepend='xx'):
     caller = frames[1].frame
     name, ls, gs = caller.f_code.co_name, caller.f_locals, caller.f_globals
 
-    ipython = [f for f in inspect.stack() if f.filename.startswith("<ipython-input")][
-        -1
-    ].frame
+    ipython = [
+        f for f in inspect.stack() if f.filename.startswith("<ipython-input")
+    ][-1].frame
 
     ipython.f_locals.update(
         {"{}{}".format(prepend, k): v for k, v in gs.items() if k[:2] != "__"}
@@ -158,7 +162,9 @@ def extract(prepend='xx'):
         {"{}{}".format(prepend, k): v for k, v in ls.items() if k[:2] != "__"}
     )
 
-    ctypes.pythonapi.PyFrame_LocalsToFast(ctypes.py_object(ipython), ctypes.c_int(0))
+    ctypes.pythonapi.PyFrame_LocalsToFast(
+        ctypes.py_object(ipython), ctypes.c_int(0)
+    )
 
 
 def latex_float(f, decimals=0):
@@ -182,3 +188,13 @@ def latex_float(f, decimals=0):
         return r"{0} \times 10^{{{1}}}".format(base, int(exponent))
     else:
         return float_str
+
+
+def warnless(verbose=False):
+    """Suppress common annoying warnings."""
+    if verbose:
+        print('Ignore the following warnings:')
+    messages = ["Mean of empty slice"]
+    for mi in messages:
+        print(mi)
+        warnings.filterwarnings("ignore", message=mi)

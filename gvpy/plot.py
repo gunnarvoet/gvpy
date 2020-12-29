@@ -651,6 +651,27 @@ def colcyc10(ax=None):
     ax.set_prop_cycle(cycler(color=colors))
 
 
+def cycle_cmap(n=10, cmap='viridis', ax=None):
+    """
+    Set automatic color cycling through colormap for ax or current axis.
+
+    Parameters
+    ----------
+    n : int, optional
+        Number of colors. Defaults to 10.
+    cmap : str, optional
+        Colormap name. Defaults to 'viridis'.
+    ax : axis handle, optional
+        Handle to axis. Defaults to plt.gca().
+    """
+    from cycler import cycler
+
+    if ax is None:
+        ax = plt.gca()
+    colors = [plt.get_cmap(cmap)(1. * i/n) for i in range(n)]
+    ax.set_prop_cycle(cycler(color=colors))
+
+
 def xytickdist(ax=None, x=1, y=1):
     """
     Set distance between ticks for xaxis and yaxis

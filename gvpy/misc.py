@@ -196,5 +196,6 @@ def warnless(verbose=False):
         print('Ignore the following warnings:')
     messages = ["Mean of empty slice"]
     for mi in messages:
-        print(mi)
+        if verbose:
+            print(mi)
         warnings.filterwarnings("ignore", message=mi)

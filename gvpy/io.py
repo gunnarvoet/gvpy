@@ -313,6 +313,9 @@ def mat2dataset(m1):
     elif "dnum" in k:
         if len(m1["dnum"].shape) == 1:
             ii = m1["dnum"].shape[0]
+    elif "datenum" in k:
+        if len(m1["datenum"].shape) == 1:
+            ii = m1["datenum"].shape[0]
 
     out = xr.Dataset(data_vars={"dummy": (["z", "x"], np.ones((jj, ii)) * np.nan)})
     # get 1d variables
@@ -322,16 +325,23 @@ def mat2dataset(m1):
         elif m1[v].shape[0] == jj:
             out[v] = (["z"], m1[v])
 
-    # convert the usual suspects into variables
+    # convert the usual suspects into coordinates
     suspects = ["lon", "lat", "p", "z", "depth", "dep", "P"]
     for si in suspects:
         if si in vars1d:
             out.coords[si] = out[si]
 
     # convert time if possible
-    for si in ["datenum", "dtnum", "dnum"]:
+    for si in ["datenum", "dtnum", "dnum", "time"]:
         if si in vars1d and np.median(m1[si]) > 1e5:
             out.coords["time"] = (["x"], mtlb2datetime(m1[si]))
+        # we have a problem if there is a variable called 'time' in 2D.
+    if "time" in vars2d:
+        # m1['time2d'] = m1.pop('time')
+        # for n, v in enumerate(vars2d):
+        #     if v == 'time':
+        #         vars2d[n] = 'time2d'
+        vars2d = ['time2d' if v=='time' else v for v in vars2d]
 
     # get 2d variables
     for v in vars2d:

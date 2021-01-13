@@ -333,14 +333,11 @@ def mat2dataset(m1):
 
     # convert time if possible
     for si in ["datenum", "dtnum", "dnum", "time"]:
-        if si in vars1d and np.median(m1[si]) > 1e5:
+        if si in vars1d and np.nanmedian(m1[si]) > 1e5:
             out.coords["time"] = (["x"], mtlb2datetime(m1[si]))
-        # we have a problem if there is a variable called 'time' in 2D.
+    # we have a problem if there is a variable called 'time' in 2D.
     if "time" in vars2d:
-        # m1['time2d'] = m1.pop('time')
-        # for n, v in enumerate(vars2d):
-        #     if v == 'time':
-        #         vars2d[n] = 'time2d'
+        m1['time2d'] = m1.pop('time')
         vars2d = ['time2d' if v=='time' else v for v in vars2d]
 
     # get 2d variables
@@ -356,6 +353,10 @@ def mat2dataset(m1):
 
     # drop dummy
     out = out.drop(["dummy"])
+
+    # remove entries without time stamp
+    if 'time' in out.coords:
+        out = out.where(~np.isnat(out.time), drop=True)
     return out
 
 

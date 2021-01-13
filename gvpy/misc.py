@@ -194,7 +194,7 @@ def warnless(verbose=False):
     """Suppress common annoying warnings."""
     if verbose:
         print('Ignore the following warnings:')
-    messages = ["Mean of empty slice"]
+    messages = ["Mean of empty slice", "invalid value encountered in greater"]
     for mi in messages:
         if verbose:
             print(mi)

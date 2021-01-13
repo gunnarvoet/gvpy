@@ -91,10 +91,10 @@ def switch_backend():
 def quickfig(fs=10, yi=True, w=6, h=4, fgs=None):
     """
     Quick single pane figure.
-    
-    Automatically sets yaxis to be decreasing upwards so 
+
+    Automatically sets yaxis to be decreasing upwards so
     we can plot against depth.
-    
+
     Also closes all other figures for convenience.
 
     Parameters
@@ -268,7 +268,10 @@ def axstyle(
 
     # Change the labels to the off-black
     ax.tick_params(
-        axis="both", which="major", labelsize=fontsize, colors=almost_black,
+        axis="both",
+        which="major",
+        labelsize=fontsize,
+        colors=almost_black,
     )
 
     # Change the axis title to off-black
@@ -441,7 +444,7 @@ def pcm(*args, **kwargs):
     return h
 
 
-def png(fname, figdir="fig", dpi=300, verbose=True):
+def png(fname, figdir="fig", dpi=300, verbose=True, transparent=False):
     """
     Save figure as png.
 
@@ -453,8 +456,14 @@ def png(fname, figdir="fig", dpi=300, verbose=True):
     figdir : str or Path object
         Path to figure directory. Default ./fig/
 
-    dpi : int
+    dpi : int, optional
         Resolution (default 200)
+
+    verbose : bool, optional
+        Output path figure is saved to.
+
+    transparent : bool, optional
+        Transparent figure background. Default False.
     """
     # get current working directory
     cwd = Path.cwd()
@@ -468,7 +477,22 @@ def png(fname, figdir="fig", dpi=300, verbose=True):
             print("creating figure directory at {}/".format(savedir))
         savedir.mkdir()
     fname = fname + ".png"
-    plt.savefig(savedir.joinpath(fname), dpi=dpi, bbox_inches="tight")
+    if transparent:
+        plt.savefig(
+            savedir.joinpath(fname),
+            dpi=dpi,
+            bbox_inches="tight",
+            facecolor="none",
+            edgecolor="none",
+        )
+    else:
+        plt.savefig(
+            savedir.joinpath(fname),
+            dpi=dpi,
+            bbox_inches="tight",
+            facecolor="w",
+            edgecolor="none",
+        )
 
 
 def figsave(fname, dirname="fig"):
@@ -550,7 +574,7 @@ def quickbasemap(ax, lon, lat, field=None):
 
 def add_cax(fig, width=0.01, pad=0.01):
     """
-    Add a colorbar axis to a row of axes (after last axis.) This axis can then 
+    Add a colorbar axis to a row of axes (after last axis.) This axis can then
     be passed on to a colorbar call.
 
     Parameters
@@ -651,7 +675,7 @@ def colcyc10(ax=None):
     ax.set_prop_cycle(cycler(color=colors))
 
 
-def cycle_cmap(n=10, cmap='viridis', ax=None):
+def cycle_cmap(n=10, cmap="viridis", ax=None):
     """
     Set automatic color cycling through colormap for ax or current axis.
 
@@ -668,7 +692,7 @@ def cycle_cmap(n=10, cmap='viridis', ax=None):
 
     if ax is None:
         ax = plt.gca()
-    colors = [plt.get_cmap(cmap)(1. * i/n) for i in range(n)]
+    colors = [plt.get_cmap(cmap)(1.0 * i / n) for i in range(n)]
     ax.set_prop_cycle(cycler(color=colors))
 
 
@@ -707,11 +731,11 @@ def concise_date(ax=None, minticks=3, maxticks=10, show_offset=True, **kwargs):
         Maximum number of ticks (optional, default 10).
     show_offset : bool, optional
         Show offset string to the right (default True).
-        
+
     Note
     ----
     Currently only works for x-axis
-    
+
     See Also
     --------
     matplotlib.mdates.ConciseDateFormatter : For formatting options that
@@ -809,6 +833,8 @@ def annotate_corner(
     addy=0,
     col="k",
     background_circle=False,
+    text_bg=None,
+    text_bg_alpha=0.5,
 ):
     """Add text to axis corner.
 
@@ -819,11 +845,11 @@ def annotate_corner(
     ax : matplotlib.axis
         Axis
     quadrant : int [1, 2, 3, 4]
-        Corner 
+        Corner
     fw : str, optional
-        Font weight 
+        Font weight
     fs : int, optional
-        Font size 
+        Font size
     addx : float, optional
         Position offset in x
     addy : float, optional
@@ -835,6 +861,10 @@ def annotate_corner(
         Can be a string defining circle color.
         Default color is white.
         Defaults to False.
+    text_bg : str, optional
+        Text background color. Defaults to None.
+    text_bg_alpha : float
+        Alpha for text_bg. Default 0.5.
 
     Returns
     -------
@@ -870,6 +900,21 @@ def annotate_corner(
                 boxstyle="circle",
                 edgecolor=background_circle,
                 facecolor=background_circle,
+            ),
+        )
+    elif text_bg:
+        h = ax.annotate(
+            text,
+            loc,
+            xycoords="axes fraction",
+            fontweight=fw,
+            fontsize=fs,
+            color=col,
+            ha=ha,
+            bbox=dict(
+                edgecolor="none",
+                facecolor=text_bg,
+                alpha=text_bg_alpha,
             ),
         )
     else:

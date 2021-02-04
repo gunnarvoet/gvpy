@@ -4,7 +4,7 @@
 
 import socket
 from pathlib import Path
-
+import math
 import gsw
 import numpy as np
 import xarray as xr
@@ -1038,8 +1038,8 @@ def uv_rotate(u, v, theta):
     vr : array-like
         Rotated north-south component.
     """
-    ur = u * cos(theta) - v * sin(theta)
-    vr = u * sin(theta) + v * cos(theta)
+    ur = u * math.cos(theta) - v * math.sin(theta)
+    vr = u * math.sin(theta) + v * math.cos(theta)
     return ur, vr
 
 

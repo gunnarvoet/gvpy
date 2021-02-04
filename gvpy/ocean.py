@@ -167,7 +167,7 @@ def tzfcn(CT, z, z0, dz):
         z0+dz, z0+2dz, ....,
     (3) converts differences in temperature into dt/dz
     (4) returns NaNs if the filtered depth is not monotonic.
-                      
+
     Adapted from nsqfcn from Gregg and Alford.
 
     Gunnar Voet
@@ -450,7 +450,9 @@ def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000, verbose=False):
                 PTov = CTs[iostart : ioend + 1]
                 zov = z[iostart : ioend + 1]
 
-            local_dtdz = (np.min(PTov) - np.max(PTov)) / (np.max(zov) - np.min(zov))
+            local_dtdz = (np.min(PTov) - np.max(PTov)) / (
+                np.max(zov) - np.min(zov)
+            )
             DTDZ2[idx] = local_dtdz
 
         # % Calculate epsilon
@@ -635,7 +637,9 @@ def eps_overturn2(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
                 PTov = CTs[iostart : ioend + 1]
                 zov = z[iostart : ioend + 1]
 
-            local_dtdz = (np.min(PTov) - np.max(PTov)) / (np.max(zov) - np.min(zov))
+            local_dtdz = (np.min(PTov) - np.max(PTov)) / (
+                np.max(zov) - np.min(zov)
+            )
             DTDZ[idx] = local_dtdz
 
         # % Calculate epsilon
@@ -677,26 +681,26 @@ def vmodes(z, N, clat, nmodes):
         Equivalent depth of the mode [m] (useful for deformation radii)
     PVel : array_like
         Phase velocity of the mode [m/s]
-        
+
     Notes
     -----
     Basically solves
       .. math::
-    
+
         \Phi_{zz} + \mathrm{ev} N^2 \Phi = 0
-    
+
     subject to:
       .. math::
-    
+
         \Phi(-d) = 0
-    
+
     .. math::
         \Phi_z(0) - g \, \mathrm{ev} \, \Phi(0) = 0
 
     Where \(\Phi\) is the mode function, \(\mathrm{ev}\) the eigenvalue, \(N^2\)
     the buoyancy frequency squared and \(g\) the gravitational constant as a fcn
     of latitude.
-    
+
     `| Originally written by Benno Blumenthal, 23 July 1981, in FORTRAN
     | Modified for SUNS by  CC Eriksen, August 1988
     | Translated to MatLab 4.2c J. Klymak, March 1997
@@ -705,7 +709,7 @@ def vmodes(z, N, clat, nmodes):
     Matlab results are in good agreement with the results from Blumenthal's
     original code, but they are not precise. The Python translation returns
     the Matlab results within numerical precision.
-    
+
     """
     z = -z if z[0] < 0 else z
     z_in = z.copy()
@@ -782,7 +786,9 @@ def vmodes(z, N, clat, nmodes):
         dz[i] = 1
         imax = npts - 2
         for i2 in range(imax):
-            dz[i - 1] = -((ev[imode] - d[i]) * dz[i] + u[i + 1] * dz[i + 1]) / l[i]
+            dz[i - 1] = (
+                -((ev[imode] - d[i]) * dz[i] + u[i + 1] * dz[i + 1]) / l[i]
+            )
             i = i - 1
         sum_ = nsq[0] * dz[0] * dz[0] * z_in[1]
         difz_ = z[2:npts] - z[: npts - 2]
@@ -819,7 +825,9 @@ def vmodes(z, N, clat, nmodes):
         emver[0] = const * dz[0]
         emhor[0] = -(dz[1] - dz[0]) / (z_in[1] - z_in[0])
         emver[nptsin - 1] = const * dz[nptsin - 1]
-        emhor[nptsin - 1] = -dz[nptsin - 2] / (z_in[nptsin - 2] - z_in[nptsin - 1])
+        emhor[nptsin - 1] = -dz[nptsin - 2] / (
+            z_in[nptsin - 2] - z_in[nptsin - 1]
+        )
 
         # put everybody in their matrices
         Vert[0 : len(emver), imode] = emver
@@ -851,20 +859,20 @@ def wind_stress(u10, v10):
         Zonal wind stress [N/m^2]
     Ty : array_like
         Meridional wind stress [N/m^2]
-        
+
     Notes
     -----
     Wind stress is calculated for one component as
-    
+
     .. math:: \tau_x = \rho \, C_d \,  u \, \vec{u}
 
     Non-linear drag coefficient :math:`C_d` based on [1]_, modified for low wind speeds by [2]_ .
-    
+
     References
     ----------
     .. [1] W. G. Large & S. Pond., 1981, Open Ocean Measurements in Moderate to
        Strong Winds, J. Phys. Oceanogr., Vol. 11, pp. 324--336.
-           
+
     .. [2] K.E. Trenberth, W.G. Large & J.G. Olson, 1990, The Mean
        Annual Cycle in Global Ocean Wind Stress, J.Phys. Oceanogr.,
        Vol. 20, pp. 1742--1760.
@@ -990,25 +998,49 @@ def tpxo_extract(year, yday, lon, lat):
 
 
 def uv2speeddir(u, v):
-    """Convert velocity from u,v to speed and direction
+    r"""Convert velocity from u,v to speed and direction
 
     Parameters
     ----------
-    u : float
+    u : array-like
         East-West velocity
-    v : float
+    v : array-like
         North-South velocity
 
     Returns
     -------
-    speed : Velocity amplitude
-    direction : Velocity direction from 0 to 360 starting North.
-
+    speed : array-like
+        Velocity amplitude
+    direction : array-like
+        Velocity direction CCW from 0 to $2 \pi$ starting East.
     """
 
     speed = np.sqrt(u ** 2 + v ** 2)
     direction = np.arctan2(v, u)
     return speed, direction
+
+
+def uv_rotate(u, v, theta):
+    """Rotate velocity vector.
+
+    Parameters
+    ----------
+    u : array-like
+        East-west component.
+    v : array-like
+        North-south component.
+    theta : float
+        Rotation angle [rad]. Angle is zero for current due east.
+    Returns
+    -------
+    ur : array-like
+        Rotated east-west component.
+    vr : array-like
+        Rotated north-south component.
+    """
+    ur = u * cos(theta) - v * sin(theta)
+    vr = u * sin(theta) + v * cos(theta)
+    return ur, vr
 
 
 def smith_sandwell(lon="all", lat="all", r15=False, subsample=False):
@@ -1032,7 +1064,7 @@ def smith_sandwell(lon="all", lat="all", r15=False, subsample=False):
     -------
     b : xarray DataArray
         Bathymetry in an xarray DataArray using dask for quick access.
-        
+
     Notes
     -----
     Returns a lazily evaluated dask array. Run b.load() to load data into
@@ -1046,12 +1078,16 @@ def smith_sandwell(lon="all", lat="all", r15=False, subsample=False):
     else:
         resolution = 30
     if hn == "oahu":
-        nc_file = "/Users/gunnar/Data/bathymetry/smith_sandwell/topo{}.grd".format(
-            resolution
+        nc_file = (
+            "/Users/gunnar/Data/bathymetry/smith_sandwell/topo{}.grd".format(
+                resolution
+            )
         )
     elif hn == "upolu":
-        nc_file = "/Users/gunnar/Data/bathymetry/smith_sandwell/topo{}.grd".format(
-            resolution
+        nc_file = (
+            "/Users/gunnar/Data/bathymetry/smith_sandwell/topo{}.grd".format(
+                resolution
+            )
         )
     elif hn == "samoa":
         nc_file = "/Users/gunnar/Data/bathymetry/smith_and_sandwell/topo{}.grd".format(
@@ -1059,8 +1095,10 @@ def smith_sandwell(lon="all", lat="all", r15=False, subsample=False):
         )
     else:
         # lets hope this works
-        nc_file = "/Users/gunnar/Data/bathymetry/smith_sandwell/topo{}.grd".format(
-            resolution
+        nc_file = (
+            "/Users/gunnar/Data/bathymetry/smith_sandwell/topo{}.grd".format(
+                resolution
+            )
         )
     b = xr.open_dataarray(nc_file, chunks=1000)
     b["lon"] = np.mod((b.lon + 180), 360) - 180
@@ -1080,9 +1118,9 @@ def smith_sandwell(lon="all", lat="all", r15=False, subsample=False):
             b = b.isel(lon=lonmask, lat=latmask)
     # Transforming lon from 0:360 to -180:180 mean we also have to sort the
     # dataset by the new coordinate.
-    b = b.sortby('lon')
+    b = b.sortby("lon")
     if subsample:
-        b = b.coarsen({'lon': subsample, 'lat': subsample}).mean()
+        b = b.coarsen({"lon": subsample, "lat": subsample}).mean()
     return b
 
 
@@ -1149,7 +1187,9 @@ def bathy_section(bathy, lon, lat, res=1, ext=0):
     # Make sure lon and lat have the same dimensions
     assert lon.shape == lat.shape, "lat and lon must have the same size"
     # Make sure lon and lat have at least 3 elements
-    assert len(lon) > 1 and len(lat) > 1, "lon/lat must have at least 2 elements"
+    assert (
+        len(lon) > 1 and len(lat) > 1
+    ), "lon/lat must have at least 2 elements"
 
     # Load bathymetry
     coords = list(bathy.coords.keys())
@@ -1163,7 +1203,9 @@ def bathy_section(bathy, lon, lat, res=1, ext=0):
         ptopo = bathy.data
     elif isinstance(bathy, xr.Dataset):
         dvar = list(bathy.data_vars.keys())
-        assert len(dvar) == 1, "Bathymetry dataset must have only one data variable"
+        assert (
+            len(dvar) == 1
+        ), "Bathymetry dataset must have only one data variable"
         ptopo = bathy[dvar[0]].data
 
     # 2D interpolation function used below. RectBivariateSpline can't deal with
@@ -1386,7 +1428,9 @@ def inertial_period(lat):
     Ti = 2 * np.pi / f
     Ti = Ti / 3600 / 24
     print(
-        "\nInertial period at {:1.2f}° is {:1.2f} days\n".format(float(lat), np.abs(Ti))
+        "\nInertial period at {:1.2f}° is {:1.2f} days\n".format(
+            float(lat), np.abs(Ti)
+        )
     )
     return Ti
 
@@ -1407,17 +1451,17 @@ def inertial_frequency(lat):
     See Also
     --------
     inertial_period : Inertial period in days
-    
+
     Notes
     -----
     The inertial frequency or Coriolis frequency \(f\) is equal to twice the rotation rate of \(\Omega\) of the Earth multiplied by the sine of the latitude \(\phi\):
-    
+
     .. math::
-    
+
         f = 2\omega \sin \phi
-        
+
     and has units of rad/s. The rotation rate of the Earth can be approximated as \(\Omega=2\pi/T\) with the rotation period of the Earth \(T\) which is approximately one *sidereal day*: 23h, 56m, 4.1s.
-    
+
     The inertial period in days can be calculated from \(f\) as \(T=2\pi/f/24/3600\).
     """
     Omega = 7.292115e-5  # [1/s] (Groten, 2004)
@@ -1456,7 +1500,7 @@ def woce_climatology(lon=None, lat=None, z=None, std=False):
     -----
     Remote data access at:
     http://icdc.cen.uni-hamburg.de/thredds/catalog/ftpthredds/woce/catalog.html
-    
+
     More info:
     http://icdc.cen.uni-hamburg.de/1/daten/ocean/woce-climatology.html
     """
@@ -1516,10 +1560,10 @@ def woce_argo_profile(lon, lat, interp=False, load=True):
 
     lat : float
         latitude
-        
+
     interp : bool
         Defaults to False for nearest neighbor lookup. Set to True for interpolation.
-    
+
     load : bool
         Load data into memory (default True).
 
@@ -1527,15 +1571,15 @@ def woce_argo_profile(lon, lat, interp=False, load=True):
     -------
     prf : xarray.Dataset
         Data at provided location with coordinates depth and time.
-        
+
     Notes
     -----
     Go here for more info on the dataset: https://icdc.cen.uni-hamburg.de/1/daten/ocean/waghc/
-    
+
     Cite data as:
     Gouretski, Viktor (2018). WOCE-Argo Global Hydrographic Climatology (WAGHC Version 1.0).
     World Data Center for Climate (WDCC) at DKRZ. https://doi.org/10.1594/WDCC/WAGHC_V1.0
-    
+
     """
     woce_argo_path = Path(
         "/Users/gunnar/Data/woce_argo_global_hydrographic_climatology"
@@ -1557,7 +1601,11 @@ def woce_argo_profile(lon, lat, interp=False, load=True):
     prf = out.squeeze()
     # rename a few variables
     newnames = dict(
-        latitude="lat", longitude="lon", temperature="t", salinity="s", depth="z",
+        latitude="lat",
+        longitude="lon",
+        temperature="t",
+        salinity="s",
+        depth="z",
     )
     prf = prf.rename(newnames)
     prf.z.attrs["units"] = "m"
@@ -1589,10 +1637,10 @@ def lonlatstr(lon, lat):
         Longitude string
     slat : str
         Latitude str
-        
+
     Example
     -------
-    >>> lon, lat = -168.9158, -9.7152 
+    >>> lon, lat = -168.9158, -9.7152
     >>> slon, slat = lonlatstr(lon, lat)
     >>> print(slon, slat)
     168° 54.948' W   9° 42.912' S
@@ -1605,7 +1653,9 @@ def lonlatstr(lon, lat):
         EW = "E"
     lon_degrees = np.trunc(lon)
     lon_minutes = np.abs(lon - lon_degrees) * 60
-    slon = "{:3d}° {:6.3f}' {}".format(int(np.abs(lon_degrees)), lon_minutes, EW)
+    slon = "{:3d}° {:6.3f}' {}".format(
+        int(np.abs(lon_degrees)), lon_minutes, EW
+    )
 
     if lat > 0:
         NS = "N"
@@ -1613,7 +1663,9 @@ def lonlatstr(lon, lat):
         NS = "S"
     lat_degrees = np.trunc(lat)
     lat_minutes = np.abs(lat - lat_degrees) * 60
-    slat = "{:3d}° {:6.3f}' {}".format(int(np.abs(lat_degrees)), lat_minutes, NS)
+    slat = "{:3d}° {:6.3f}' {}".format(
+        int(np.abs(lat_degrees)), lat_minutes, NS
+    )
 
     return slon, slat
 
@@ -1639,7 +1691,9 @@ def _consec_blocks(idx=None, combine_gap=0, combine_run=0):
 
     # Find the block boundaries
     didx = np.diff(idx)
-    ii = np.concatenate(((didx > 1).nonzero()[0], np.atleast_1d(idx.shape[0] - 1)))
+    ii = np.concatenate(
+        ((didx > 1).nonzero()[0], np.atleast_1d(idx.shape[0] - 1))
+    )
 
     # Create the block_idx array
     block_idx = np.zeros((ii.shape[0], 2), dtype=int)

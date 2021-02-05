@@ -1043,65 +1043,49 @@ def uv_rotate(u, v, theta):
     return ur, vr
 
 
-def smith_sandwell(lon="all", lat="all", r15=False, subsample=False):
+def smith_sandwell(
+    lon="all", lat="all", r15=False, subsample=False, lon360=False
+):
     """Load Smith & Sandwell bathymetry
 
     Parameters
     ----------
     lon : float, list or 'all'
-        Longitude range. This may either be a single point,
-        a list of points, or 'all' (default). If given onne
-        point, the nearest ocean depth is returned. For a
-        list of locations, the are encompassing all points
-        is returned. 'all' returns the whole bathymetry.
+        Longitude range. This may either be a single point, a list of points,
+        or 'all' (default). If given onne point, the nearest ocean depth is
+        returned. For a list of locations, all encompassing data points are
+        returned. 'all' returns the whole bathymetry.
     lat : float, list or 'all'
         Latitude. Same options as lon.
     r15 : bool, optional
-        Set to True for reading the latest 15sec bathymetry. Other
-        wise reads the 30sec bathymetry (default).
+        Set to True for reading the latest 15sec bathymetry. Otherwise reads
+        the 30sec bathymetry (default).
+    subsample : int, optional
+        Downsample over this many points.
+    lon360 : bool
+        Return longitude [0...360]. Defaults to False.
 
     Returns
     -------
-    b : xarray DataArray
-        Bathymetry in an xarray DataArray using dask for quick access.
+    b : xarray.DataArray
+        Bathymetry in an xarray.DataArray using dask for quick access.
 
     Notes
     -----
     Returns a lazily evaluated dask array. Run b.load() to load data into
     memory.
     """
-    # Load Smith & Sandwell bathymetry as xarray DataArray
-    hn = socket.gethostname()
-    hn = hn.split(sep=".")[0]
     if r15:
         resolution = 15
     else:
         resolution = 30
-    if hn == "oahu":
-        nc_file = (
-            "/Users/gunnar/Data/bathymetry/smith_sandwell/topo{}.grd".format(
-                resolution
-            )
-        )
-    elif hn == "upolu":
-        nc_file = (
-            "/Users/gunnar/Data/bathymetry/smith_sandwell/topo{}.grd".format(
-                resolution
-            )
-        )
-    elif hn == "samoa":
-        nc_file = "/Users/gunnar/Data/bathymetry/smith_and_sandwell/topo{}.grd".format(
-            resolution
-        )
-    else:
-        # lets hope this works
-        nc_file = (
-            "/Users/gunnar/Data/bathymetry/smith_sandwell/topo{}.grd".format(
-                resolution
-            )
-        )
+    nc_file = "/Users/gunnar/Data/bathymetry/smith_sandwell/topo{}.grd".format(
+        resolution
+    )
+    # by providing a chunk size, the array is loaded lazily via dask
     b = xr.open_dataarray(nc_file, chunks=1000)
-    b["lon"] = np.mod((b.lon + 180), 360) - 180
+    if not lon360:
+        b["lon"] = np.mod((b.lon + 180), 360) - 180
     if lon == "all":
         print("returning whole dataset")
     else:
@@ -1116,9 +1100,10 @@ def smith_sandwell(lon="all", lat="all", r15=False, subsample=False):
             lonmask = (b.lon > np.nanmin(lon)) & (b.lon < np.nanmax(lon))
             latmask = (b.lat > np.nanmin(lat)) & (b.lat < np.nanmax(lat))
             b = b.isel(lon=lonmask, lat=latmask)
-    # Transforming lon from 0:360 to -180:180 mean we also have to sort the
-    # dataset by the new coordinate.
-    b = b.sortby("lon")
+    # Transforming lon from 0:360 to -180:180 means we also have to sort the
+    # dataset along the new coordinate.
+    if not lon360:
+        b = b.sortby("lon")
     if subsample:
         b = b.coarsen({"lon": subsample, "lat": subsample}).mean()
     return b

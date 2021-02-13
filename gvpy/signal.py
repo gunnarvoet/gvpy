@@ -9,58 +9,98 @@ from scipy.signal import butter, filtfilt
 
 
 def lowpassfilter(x, lowcut, fs, order=3):
-    """
-    Lowpass-filter a signal using a butterworth filter.
+    """Low-pass filter a signal using a butterworth filter.
 
     Parameters
     ----------
     x : array-like
-        time series to be filtered
+        Time series.
 
     lowcut : float
-        cut-off frequency
+        Cut-off frequency in units of fs.
 
     fs : float
-        sampling frequency
+        Sampling frequency.
 
     order : int
-        order of the filter
+        Filter order.
 
     Returns
     -------
     lpx : array-like
-        lowpass-filtered time series
+        Low-pass filtered time series.
+
+    Notes
+    -----
+    For example, if sampling four times per hour, fs=4. A cut-off period of 24
+    hours is then expressed as lowcut=1/24. 
     """
     b, a = _butter_lowpass(lowcut, fs, order=order)
     lpx = filtfilt(b, a, x)
     return lpx
 
 
-def bandpassfilter(x, lowcut, highcut, fs, order=3):
-    """
-    Bandpass-filter a signal using a butterworth filter.
+def highpassfilter(x, highcut, fs, order=3):
+    """High-pass filter a signal using a butterworth filter.
 
     Parameters
     ----------
     x : array-like
-        time series to be filtered
-
-    lowcut : float
-        cut-off low frequency
+        Time series.
 
     highcut : float
-        cut-off high frequency
+        Cut-off frequency in units of fs.
 
     fs : float
-        sampling frequency
+        Sampling frequency.
 
     order : int
-        order of the filter
+        Filter order.
+
+    Returns
+    -------
+    hpx : array-like
+        High-pass filtered time series.
+
+    Notes
+    -----
+    For example, if sampling four times per hour, fs=4. A cut-off period of 24
+    hours is then expressed as highcut=1/24. 
+    """
+    b, a = _butter_highpass(highcut, fs, order=order)
+    hpx = filtfilt(b, a, x)
+    return hpx
+
+
+def bandpassfilter(x, lowcut, highcut, fs, order=3):
+    """Band-pass filter a signal using a butterworth filter.
+
+    Parameters
+    ----------
+    x : array-like
+        Time series.
+
+    lowcut : float
+        Cut-off low frequency in units of fs.
+
+    highcut : float
+        Cut-off high frequency in units of fs.
+
+    fs : float
+        Sampling frequency.
+
+    order : int
+        Filter order.
 
     Returns
     -------
     bpx : array-like
-        bandpass-filtered time series
+        Band-pass filtered time series.
+
+    Notes
+    -----
+    For example, if sampling four times per hour, fs=4. A cut-off period of 24
+    hours is then expressed as highcut=1/24. 
     """
     b, a = _butter_bandpass(lowcut, highcut, fs, order=order)
     bpx = filtfilt(b, a, x)
@@ -79,4 +119,11 @@ def _butter_lowpass(lowcut, fs, order=3):
     nyq = 0.5 * fs
     low = lowcut / nyq
     b, a = butter(order, low, btype="lowpass")
+    return b, a
+
+
+def _butter_highpass(highcut, fs, order=3):
+    nyq = 0.5 * fs
+    high = highcut / nyq
+    b, a = butter(order, high, btype="highpass")
     return b, a

@@ -55,7 +55,7 @@ def cmap_div(
     midcol="white",
     maxcol="red",
 ):
-    """ Create a custom diverging colormap with three colors
+    """Create a custom diverging colormap with three colors
 
     Default is blue to white to red with 11 colors.  Colors can be specified
     in any way understandable by matplotlib.colors.ColorConverter.to_rgb()
@@ -127,7 +127,7 @@ def extract(prepend="xx"):
     ----------
     prepend : str, optional
         String to prepend to each variable name. Defaults to 'xx'.
-    
+
     By default returns variables with xx prepended to their names as not to clutter the
     workspace.
 
@@ -193,9 +193,31 @@ def latex_float(f, decimals=0):
 def warnless(verbose=False):
     """Suppress common annoying warnings."""
     if verbose:
-        print('Ignore the following warnings:')
+        print("Ignore the following warnings:")
     messages = ["Mean of empty slice", "invalid value encountered in greater"]
     for mi in messages:
         if verbose:
             print(mi)
         warnings.filterwarnings("ignore", message=mi)
+
+
+def pretty_print(d, indent=0, indentstr='   '):
+    r"""Pretty print a nested dictionary.
+
+    Parameters
+    ----------
+    d : `dict`
+        Dicitonary to print.
+    indent : `int`, optional
+        Extra indent (this times `indentstr`).
+    indentstr : `str`
+        Indent str. Defaults to three spaces. Change to '\t' for tabs if
+        desired.
+    """
+    indentstr = "   "
+    for key, value in d.items():
+        print(indentstr * indent + str(key))
+        if isinstance(value, dict):
+            pretty_print(value, indent + 1)
+        else:
+            print(indentstr * (indent + 1) + str(value))

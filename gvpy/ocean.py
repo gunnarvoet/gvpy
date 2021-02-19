@@ -3,6 +3,9 @@
 """Module gvpy.ocean with oceanography related functions"""
 
 import socket
+import requests
+import json
+import re
 from pathlib import Path
 import math
 import gsw
@@ -1606,6 +1609,55 @@ def argo_mld_climatology():
     return a
 
 
+def search_marineregions_by_name(name: str, parse=True):
+    """Search for location of marine feature by name.
+
+    Parameters
+    ----------
+    name : str
+        Name of feature
+    parse : bool, optional
+        Parse results by name if more than one. Defaults to True.
+
+    Notes
+    -----
+    See here how to generate a RESTful request:
+    https://www.marineregions.org/gazetteer.php?p=webservices&type=rest#/
+    """
+    name2 = name.replace(" ", "%20")
+    url = f"https://www.marineregions.org/rest/getGazetteerRecordsByNames.json/true/true/{name2}/"
+    response = json.loads(requests.get(url).text)
+    if parse:
+        response = _parse_marineregions_response_by_name(response, name)
+    return response
+
+
+def search_marineregions_by_location(
+    lon: float, lat: float, lonradius: float = 1.0, latradius: float = 1.0
+):
+    """Search for name of marine feature by location.
+
+    Parameters
+    ----------
+    lon : float
+        Longitude ranging from -180 to 180
+    lat : float
+        Latitude ranging from -90 to 90
+    lonradius : float, optional
+        Search radius in longitude, defaults to 1.0
+    latradius : float, optional
+        Search radius in latitude, defaults to 1.0
+
+    Notes
+    -----
+    See here how to generate a RESTful request:
+    https://www.marineregions.org/gazetteer.php?p=webservices&type=rest#/
+    """
+    url = f"https://www.marineregions.org/rest/getGazetteerRecordsByLatLong.json/{lat}/{lon}/{latradius}/{lonradius}/"
+    response = json.loads(requests.get(url).text)
+    return response
+
+
 def lonlatstr(lon, lat):
     r"""Generate longitude/latitude strings from position in decimal format.
 
@@ -1714,3 +1766,18 @@ def _consec_blocks(idx=None, combine_gap=0, combine_run=0):
         block_idx = new_block[:count, :]
 
     return np.atleast_2d(block_idx)
+
+
+def _parse_marineregions_response_by_name(response, name):
+    if type(response[0]) is list:
+        response = response[0]
+    if len(response) > 1:
+        pick = [
+            bool(re.match(name, d["preferredGazetteerName"], re.I))
+            for d in response
+        ]
+        from itertools import compress
+
+        return list(compress(response, pick))[0]
+    else:
+        return response[0]

@@ -1089,7 +1089,7 @@ def smith_sandwell(
     b = xr.open_dataarray(nc_file, chunks=1000)
     if not lon360:
         b["lon"] = np.mod((b.lon + 180), 360) - 180
-    if lon == "all":
+    if type(lon) is str and lon == "all":
         print("returning whole dataset")
     else:
         # for only one point

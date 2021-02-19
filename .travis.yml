@@ -4,7 +4,7 @@ python:
   - "3.8"
 
 install:
-  - pip install numpy scipy matplotlib gsw munch pdoc3
+  - pip install numpy scipy matplotlib gsw munch pdoc3 requests
   - pip install .
 
 script:

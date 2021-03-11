@@ -227,6 +227,10 @@ def axstyle(
     ax : AxesSubplot
         Axis handle
     """
+    # find out background color - if this is set to ayu dark, adjust some axis
+    # colors
+    figcolor = plt.rcParams['figure.facecolor']
+    dark = True if figcolor == '#0d1318' else False
 
     if ax is None:
         ax = plt.gca()
@@ -252,6 +256,10 @@ def axstyle(
     # For remaining spines, thin out their line and change
     # the black to a slightly off-black dark grey
     almost_black = "#262626"
+    # if figure background is dark, set this close to white
+    if dark:
+        almost_black = "#ebe6d7"
+ 
     spines_to_keep = ["bottom", "left"]
     for spine in spines_to_keep:
         ax.spines[spine].set_linewidth(0.5)

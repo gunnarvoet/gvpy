@@ -34,8 +34,6 @@ def nsqfcn(s, t, p, p0, dp, lon, lat):
     (5) returns NaNs if the filtered pressure is not
         monotonic.
 
-    If you want to have the buoyancy frequency in [cyc/s] then
-    calculate sqrt(n2)/(2*pi). For the period in [s] do sqrt(n2)*2*pi
 
     Adapted from Gregg and Alford.
 
@@ -60,6 +58,11 @@ def nsqfcn(s, t, p, p0, dp, lon, lat):
     -------
     n2 : Buoyancy frequency squared in (rad/s)^2
     pout : Pressure vector for n2
+
+    Notes
+    -----
+    For buoyancy frequency in [cyc/s] calculate sqrt(n2)/(2*pi). For the period
+    in [s] do sqrt(n2)*2*pi.
 
     """
     G = 9.80655

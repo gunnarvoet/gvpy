@@ -29,6 +29,7 @@ setup(
         "munch",
         "pandas",
         "IPython",
+        "requests",
     ],
     extras_require={
         "cartopy": ["cartopy"],  # install these with: pip install gvpy[cartopy]

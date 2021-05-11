@@ -1089,7 +1089,7 @@ def smith_sandwell(
         resolution
     )
     # by providing a chunk size, the array is loaded lazily via dask
-    b = xr.open_dataarray(nc_file, chunks=1000)
+    b = xr.open_dataarray(nc_file, chunks=1000, engine="netcdf4")
     if not lon360:
         b["lon"] = np.mod((b.lon + 180), 360) - 180
     if type(lon) is str and lon == "all":

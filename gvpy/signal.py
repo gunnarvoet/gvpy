@@ -40,22 +40,21 @@ def lowpassfilter(x, lowcut, fs, order=3):
     return lpx
 
 
-def highpassfilter(x, highcut, fs, order=3):
+def highpassfilter(x, highcut, fs, order=3, axis=-1):
     """High-pass filter a signal using a butterworth filter.
 
     Parameters
     ----------
     x : array-like
         Time series.
-
     highcut : float
         Cut-off frequency in units of fs.
-
     fs : float
         Sampling frequency.
-
     order : int
         Filter order.
+    axis : int, optional
+        The axis of x to which the filter is applied. Default is -1.
 
     Returns
     -------
@@ -68,7 +67,7 @@ def highpassfilter(x, highcut, fs, order=3):
     hours is then expressed as highcut=1/24. 
     """
     b, a = _butter_highpass(highcut, fs, order=order)
-    hpx = filtfilt(b, a, x)
+    hpx = filtfilt(b, a, x, axis=axis)
     return hpx
 
 

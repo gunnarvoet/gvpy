@@ -6,6 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import matplotlib as mpl
+import matplotlib.pyplot as plt
 import scipy.ndimage as ndimage
 from matplotlib.colors import (
     LightSource,
@@ -185,6 +186,70 @@ class HillShade:
         for c in h2.collections:
             c.set_rasterized(True)
 
+    def plot_topo_c(self, cmap="Blues"):
+        """Plot topography with hill shading using cartopy.
+
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes
+            Axis instance for plotting.
+        cmap : str or matplotlib.colors.Colormap, optional
+            Colormap for plotting. Defaults to "Blues".
+        """
+        projection = ccrs.PlateCarree()
+
+        fig, ax = plt.subplots(
+            nrows=1,
+            ncols=1,
+            figsize=(8, 8),
+            subplot_kw={"projection": projection},
+        )
+
+        mindepth = np.min(self.topo)
+        maxdepth = np.max(self.topo)
+        h = ax.contourf(
+            self.lon,
+            self.lat,
+            self.topo,
+            np.arange(mindepth, maxdepth, 100),
+            cmap=cmap,
+            vmin=mindepth,
+            vmax=maxdepth + 500,
+            extend="both",
+            zorder=9,
+            transform=ccrs.PlateCarree(),
+        )
+        for c in h.collections:
+            c.set_rasterized(True)
+            c.set_edgecolor("face")
+
+        ax.imshow(
+            self.smoothbumps,
+            extent=self.topo_extent,
+            cmap=self.kmap4,
+            alpha=0.5,
+            zorder=10,
+            transform=ccrs.PlateCarree(),
+        )
+
+        # contour depth
+        h2 = ax.contour(
+            self.lon,
+            self.lat,
+            self.topo,
+            np.arange(mindepth, maxdepth, 500),
+            colors="0.1",
+            linewidths=0.25,
+            zorder=11,
+            transform=ccrs.PlateCarree(),
+        )
+        for c in h2.collections:
+            c.set_rasterized(True)
+
+        ax.set_extent(self.topo_extent, crs=ccrs.PlateCarree())
+
+        return fig, ax
+
 
 def cartopy_scale_bar(
     ax,
@@ -210,7 +275,7 @@ def cartopy_scale_bar(
 
     Args:
         ax:              CartoPy axes.
-        location:        Position of left-side of bar in axes coordinates.
+        location:        Position of left-side of bar in axes coordinates (x,y).
         length:          Geodesic length of the scale bar.
         metres_per_unit: Number of metres in the given unit. Default: 1000
         unit_name:       Name of the given unit. Default: 'km'
@@ -226,7 +291,9 @@ def cartopy_scale_bar(
         **text_kwargs:   Keyword arguments for text, overridden by **kwargs.
         **kwargs:        Keyword arguments for both plot and text.
 
-    https://stackoverflow.com/questions/32333870/how-can-i-show-a-km-ruler-on-a-cartopy-matplotlib-plot/50674451#50674451
+    Notes
+    -----
+    [stackoverflow source code](https://stackoverflow.com/questions/32333870/how-can-i-show-a-km-ruler-on-a-cartopy-matplotlib-plot/50674451#50674451)
     """
     if not _has_cartopy:
         raise ImportError("Cartopy needs to be installed for this feature.")

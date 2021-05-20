@@ -229,8 +229,8 @@ def axstyle(
     """
     # find out background color - if this is set to ayu dark, adjust some axis
     # colors
-    figcolor = plt.rcParams['figure.facecolor']
-    dark = True if figcolor == '#0d1318' else False
+    figcolor = plt.rcParams["figure.facecolor"]
+    dark = True if figcolor == "#0d1318" else False
 
     if ax is None:
         ax = plt.gca()
@@ -259,7 +259,7 @@ def axstyle(
     # if figure background is dark, set this close to white
     if dark:
         almost_black = "#ebe6d7"
- 
+
     spines_to_keep = ["bottom", "left"]
     for spine in spines_to_keep:
         ax.spines[spine].set_linewidth(0.5)
@@ -454,37 +454,49 @@ def pcm(*args, **kwargs):
 
 def png(fname, figdir="fig", dpi=300, verbose=True, transparent=False):
     """
-    Save figure as png.
+    Save figure to png file.
 
     Parameters
     ----------
-    fname : str
-        Figure name without file extension.
-
-    figdir : str or Path object
-        Path to figure directory. Default ./fig/
-
+    fname : str or Path
+        Figure name if str, figure name and optionally absolute path as well if
+        Path.
+    figdir : str or Path, optional
+        Path to figure directory. Defaults to ./fig; will be created if it does
+        not exist.
     dpi : int, optional
-        Resolution (default 200)
-
+        Resolution (default 300)
     verbose : bool, optional
-        Output path figure is saved to.
-
+        Print output path that the figure is saved to in screen.
     transparent : bool, optional
-        Transparent figure background. Default False.
+        Transparent figure background. Defaults to False.
     """
-    # get current working directory
-    cwd = Path.cwd()
+    # see if we have a path instance with an absolute path. then we make this
+    # the figure directory and file name.
+    if isinstance(fname, Path):
+        if fname.is_absolute():
+            savedir = fname.parent
+            name = fname.stem
+        else:
+            # get current working directory
+            cwd = Path.cwd()
+            savedir = cwd.joinpath(figdir)
+            name = fname.stem
+    elif isinstance(fname, str):
+        tmpname = Path(fname)
+        name = tmpname.stem
+    else:
+        raise TypeError("Input must be str or Path instance")
+
     # see if we already have a figure directory
-    savedir = cwd.joinpath(figdir)
     if savedir.exists() and savedir.is_dir():
         if verbose:
-            print("saving to {}/".format(figdir))
+            print("saving to {}/".format(savedir))
     else:
         if verbose:
             print("creating figure directory at {}/".format(savedir))
         savedir.mkdir()
-    fname = fname + ".png"
+    name = name + ".png"
     if transparent:
         plt.savefig(
             savedir.joinpath(fname),

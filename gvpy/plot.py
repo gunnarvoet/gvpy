@@ -471,19 +471,23 @@ def png(fname, figdir="fig", dpi=300, verbose=True, transparent=False):
     transparent : bool, optional
         Transparent figure background. Defaults to False.
     """
+    # get current working directory
+    cwd = Path.cwd()
     # see if we have a path instance with an absolute path. then we make this
     # the figure directory and file name.
     if isinstance(fname, Path):
         if fname.is_absolute():
             savedir = fname.parent
-            name = fname.stem
         else:
-            # get current working directory
-            cwd = Path.cwd()
             savedir = cwd.joinpath(figdir)
-            name = fname.stem
+        name = fname.stem
+    # otherwise deal with str
     elif isinstance(fname, str):
         tmpname = Path(fname)
+        if tmpname.is_absolute():
+            savedir = tmpname.parent()
+        else:
+            savedir = cwd.joinpath(figdir)
         name = tmpname.stem
     else:
         raise TypeError("Input must be str or Path instance")

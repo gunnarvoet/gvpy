@@ -285,6 +285,8 @@ def mat2dataset(m1):
     """
     if "DateNum" in m1.keys():
         m1["datenum"] = m1.pop("DateNum")
+    if "mtime" in m1.keys():
+        m1["datenum"] = m1.pop("mtime")
 
     k = m1.keys()
 
@@ -310,9 +312,9 @@ def mat2dataset(m1):
     elif "P" in k:
         jj = m1["P"].shape[0]
 
-    if "lon" in k:
-        if len(m1["lon"].shape) == 1:
-            ii = m1["lon"].shape[0]
+    if "lon" in k and type(m1["lon"]) != float:
+            if len(m1["lon"].shape) == 1:
+                ii = m1["lon"].shape[0]
     elif "dnum" in k:
         if len(m1["dnum"].shape) == 1:
             ii = m1["dnum"].shape[0]

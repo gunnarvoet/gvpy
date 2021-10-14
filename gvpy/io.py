@@ -45,7 +45,9 @@ def loadmat(filename, onevar=False, verbose=False):
                     dict[key] = _todict(dict[key])
             else:
                 for i in range(0, ni):
-                    if isinstance(dict[key][i], spio.matlab.mio5_params.mat_struct):
+                    if isinstance(
+                        dict[key][i], spio.matlab.mio5_params.mat_struct
+                    ):
                         dict[key][i] = _todict(dict[key][i])
         return dict
 
@@ -72,7 +74,9 @@ def loadmat(filename, onevar=False, verbose=False):
         actual_keys = [k for k in dk if k[:2] != "__"]
         if len(actual_keys) == 1:
             if verbose:
-                print("found only one variable, returning munchified data structure")
+                print(
+                    "found only one variable, returning munchified data structure"
+                )
             return munchify(out[actual_keys[0]])
         else:
             out2 = {}
@@ -100,7 +104,9 @@ def loadmat(filename, onevar=False, verbose=False):
         return out
 
 
-def mtlb2datetime(matlab_datenum, strip_microseconds=False, strip_seconds=False):
+def mtlb2datetime(
+    matlab_datenum, strip_microseconds=False, strip_seconds=False
+):
     """
     Convert Matlab datenum format to python datetime.
 
@@ -137,10 +143,15 @@ def mtlb2datetime(matlab_datenum, strip_microseconds=False, strip_seconds=False)
         nonan = np.isfinite(matlab_datenum)
         md = matlab_datenum[nonan]
         day = [dt.datetime.fromordinal(int(tval)) for tval in md]
-        dayfrac = [dt.timedelta(days=tval % 1) - dt.timedelta(days=366) for tval in md]
+        dayfrac = [
+            dt.timedelta(days=tval % 1) - dt.timedelta(days=366) for tval in md
+        ]
         tt = [day1 + dayfrac1 for day1, dayfrac1 in zip(day, dayfrac)]
         if strip_microseconds and strip_seconds:
-            tt = [dt.datetime.replace(tval, microsecond=0, second=0) for tval in tt]
+            tt = [
+                dt.datetime.replace(tval, microsecond=0, second=0)
+                for tval in tt
+            ]
         elif strip_microseconds:
             tt = [dt.datetime.replace(tval, microsecond=0) for tval in tt]
         tt = [np.datetime64(ti) for ti in tt]
@@ -228,7 +239,9 @@ def read_sbe_cnv(file, lat=0, lon=0):
         "SA": dict(long_name="absolute salinity", units=r"kg/m$^3$"),
         "c": dict(long_name="conductivity", units="mS/cm"),
         "SP": dict(long_name="practical salinity", units=""),
-        "sg0": dict(long_name=r"potential density $\sigma_0$", units=r"kg/m$^3$"),
+        "sg0": dict(
+            long_name=r"potential density $\sigma_0$", units=r"kg/m$^3$"
+        ),
     }
     for k, att in attributes.items():
         if k in list(mc.variables.keys()):
@@ -322,7 +335,9 @@ def mat2dataset(m1):
         if len(m1["datenum"].shape) == 1:
             ii = m1["datenum"].shape[0]
 
-    out = xr.Dataset(data_vars={"dummy": (["z", "x"], np.ones((jj, ii)) * np.nan)})
+    out = xr.Dataset(
+        data_vars={"dummy": (["z", "x"], np.ones((jj, ii)) * np.nan)}
+    )
     # get 1d variables
     for v in vars1d:
         if m1[v].shape[0] == ii:
@@ -342,8 +357,8 @@ def mat2dataset(m1):
             out.coords["time"] = (["x"], mtlb2datetime(m1[si]))
     # we have a problem if there is a variable called 'time' in 2D.
     if "time" in vars2d:
-        m1['time2d'] = m1.pop('time')
-        vars2d = ['time2d' if v=='time' else v for v in vars2d]
+        m1["time2d"] = m1.pop("time")
+        vars2d = ["time2d" if v == "time" else v for v in vars2d]
 
     # get 2d variables
     for v in vars2d:
@@ -360,7 +375,7 @@ def mat2dataset(m1):
     out = out.drop(["dummy"])
 
     # remove entries without time stamp
-    if 'time' in out.coords:
+    if "time" in out.coords:
         out = out.where(~np.isnat(out.time), drop=True)
     return out
 
@@ -429,6 +444,91 @@ def yday0_to_datetime64(baseyear, yday):
     # convert to numpy datetime64
     time64 = np.array([np.datetime64(ti, "ms") for ti in time])
     return time64
+
+
+def mpmat_load(file):
+    """Read moored profiler data in .mat format processed with the MP
+    processing toolbox in Matlab.
+
+    Parameters
+    ----------
+    file : Path or str
+        Path to MP dataset.
+
+    Returns
+    -------
+    mp : xr.Dataset
+        MP dataset.
+    """
+    tmp = loadmat(file)
+    mp = mat2dataset(tmp)
+    return mp
+
+
+def mpmat_load_raw(path_raw_mat, n):
+    path_raw_mat = _ensure_Path(path_raw_mat)
+    file = path_raw_mat.joinpath(f"raw{n:04d}.mat")
+    mpts = gv.io.loadmat(file)
+    mpts_time = gv.io.mtlb2datetime(mpts.engtime)
+
+    tmp = mpts["psdate"] + " " + mpts["pstart"]
+    start_time = gv.io.str_to_datetime64(tmp)
+    tmp = mpts["pedate"] + " " + mpts["pstop"]
+    stop_time = gv.io.str_to_datetime64(tmp)
+
+    mp = xr.Dataset(
+        dict(epres=(["etime"], mpts.epres)),
+        coords=dict(
+            etime=(["etime"], mpts_time),
+            esnum=(["etime"], mpts.esnum),
+            csnum=(["csnum"], mpts.csnum),
+        ),
+    )
+    evars = [
+        "ecurr",
+        "evolt",
+        "engtime",
+        "edpdt",
+    ]
+    for var in evars:
+        mp[var] = (["etime"], mpts[var])
+
+    timevars = [
+        "psdate",
+        "pedate",
+        "pstart",
+        "pstop",
+    ]
+    for var in timevars:
+        mp.attrs[var] = mpts[var]
+    mp.attrs["start"] = start_time
+    mp.attrs["stop"] = stop_time
+
+    cvars = ["csnum", "ccond", "ctemp", "cpres"]
+    for var in cvars:
+        mp[var] = (["csnum"], mpts[var])
+    mp = ctd_time(mp)
+
+    avars = [
+        "Vab",
+        "Vcd",
+        "Vef",
+        "Vgh",
+        "aHx",
+        "aHy",
+        "aHz",
+        "aTx",
+        "aTy",
+    ]
+    mp.coords["asnum"] = (["asnum"], mpts["asnum"])
+    for var in avars:
+        mp[var] = (["asnum"], mpts[var])
+
+    mp["Vx"] = (["asnum"], -(mp.Vab + mp.Vef) / (2 * 0.707))
+    mp["Vy"] = (["asnum"], (mp.Vab - mp.Vef) / (2 * 0.707))
+    mp["Vz1"] = (["asnum"], mp.Vx - mp.Vgh / 0.707)
+    mp["Vz2"] = (["asnum"], -mp.Vx + mp.Vcd / 0.707)
+    return mp
 
 
 class ANTS(object):
@@ -566,16 +666,16 @@ def results_to_latex(res, file):
 
     def newcommand(name, val):
         """Format name and val into latex command"""
-        fmt = '\\newcommand{{\\{name}}}[0]{{{action}}}'
+        fmt = "\\newcommand{{\\{name}}}[0]{{{action}}}"
         cmd = fmt.format(name=name, action=val)
         print(cmd)
-        return cmd + '\n'
+        return cmd + "\n"
 
     cmds = []
     for key, values in res.items():
-        cmds+=newcommand(key, values)
+        cmds += newcommand(key, values)
 
-    with open(file, 'a') as fh:
+    with open(file, "a") as fh:
         for cmd in cmds:
             fh.write(cmd)
 
@@ -599,3 +699,8 @@ def _is_number(s):
         return True
     except ValueError:
         return False
+
+
+def _ensure_Path(path):
+    path = Path(path) if not isinstance(path, Path) else path
+    return path

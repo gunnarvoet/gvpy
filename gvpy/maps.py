@@ -44,7 +44,7 @@ class HillShade:
         shading_factor : float, optional
             Factor for hill shading. Less hill shading for a smaller factor.
             Defaults to 0.2.
-        
+
         Attributes
         ----------
         smoothbtopo : array-like
@@ -64,7 +64,7 @@ class HillShade:
 
         The hill shading can be added on top of the topography like this:
         ```python
-        hs = HillShade(topo, lon, lat) 
+        hs = HillShade(topo, lon, lat)
         ax.imshow(
             hs.smoothbumps,
             extent=hs.topo_extent,
@@ -196,7 +196,7 @@ class HillShade:
         cmap : str or matplotlib.colors.Colormap, optional
             Colormap for plotting. Defaults to "Blues".
         """
-        projection = ccrs.PlateCarree()
+        projection = ccrs.Mercator()
 
         fig, ax = plt.subplots(
             nrows=1,
@@ -216,7 +216,7 @@ class HillShade:
             vmin=mindepth,
             vmax=maxdepth + 500,
             extend="both",
-            zorder=9,
+            zorder=2,
             transform=ccrs.PlateCarree(),
         )
         for c in h.collections:
@@ -228,7 +228,7 @@ class HillShade:
             extent=self.topo_extent,
             cmap=self.kmap4,
             alpha=0.5,
-            zorder=10,
+            zorder=3,
             transform=ccrs.PlateCarree(),
         )
 
@@ -240,7 +240,7 @@ class HillShade:
             np.arange(mindepth, maxdepth, 500),
             colors="0.1",
             linewidths=0.25,
-            zorder=11,
+            zorder=4,
             transform=ccrs.PlateCarree(),
         )
         for c in h2.collections:

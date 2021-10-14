@@ -88,14 +88,12 @@ def switch_backend():
         print("switched to inline plots")
 
 
-def quickfig(fs=10, yi=True, w=6, h=4, fgs=None):
+def quickfig(fs=10, yi=True, w=6, h=4, fgs=None, r=1, c=1, **kwargs):
     """
     Quick single pane figure.
 
     Automatically sets yaxis to be decreasing upwards so
     we can plot against depth.
-
-    Also closes all other figures for convenience.
 
     Parameters
     ----------
@@ -109,6 +107,10 @@ def quickfig(fs=10, yi=True, w=6, h=4, fgs=None):
         Figure height in inches (default 4)
     fgs : (float, float)
         Figure size, constructed as (w, h) if not specified here.
+    r : int, optional
+        Number of rows (default 1)
+    c : int, optional
+        Number of columns (default 1)
 
     Returns
     -------
@@ -121,12 +123,21 @@ def quickfig(fs=10, yi=True, w=6, h=4, fgs=None):
         fgs = (w, h)
 
     fig, ax = plt.subplots(
-        nrows=1, ncols=1, figsize=fgs, constrained_layout=True, dpi=75
+        nrows=r,
+        ncols=c,
+        figsize=fgs,
+        constrained_layout=True,
+        dpi=75,
+        **kwargs,
     )
-    axstyle(ax, fontsize=fs)
+    if isinstance(ax, np.ndarray):
+        [axstyle(axi) for axi in ax]
+    else:
+        axstyle(ax, fontsize=fs)
     if yi is False:
         ax.invert_yaxis()
-    ax.autoscale()
+    if r == 1 & c == 1:
+        ax.autoscale()
 
     # some adjustments when using ipympl
     current_backend = mpl.get_backend()
@@ -212,7 +223,13 @@ def newfig(width=7.5, height=5.5, fontsize=12):
 
 
 def axstyle(
-    ax=None, fontsize=12, nospine=False, grid=True, ticks="off", ticklength=2
+    ax=None,
+    fontsize=12,
+    nospine=False,
+    grid=True,
+    ticks="off",
+    ticklength=2,
+    spine_offset=5,
 ):
     """
     Apply own style to axis.
@@ -246,13 +263,6 @@ def axstyle(
         for spine in more_spines_to_remove:
             ax.spines[spine].set_visible(False)
 
-    if ticks == "off":
-        # Get rid of ticks.
-        ax.xaxis.set_ticks_position("none")
-        ax.yaxis.set_ticks_position("none")
-    elif ticks == "in":
-        ax.tick_params(axis="both", direction="in", length=ticklength)
-
     # For remaining spines, thin out their line and change
     # the black to a slightly off-black dark grey
     almost_black = "#262626"
@@ -260,27 +270,41 @@ def axstyle(
     if dark:
         almost_black = "#ebe6d7"
 
+    if ticks == "off":
+        # Change the labels to the off-black
+        ax.tick_params(
+            axis="both",
+            which="major",
+            labelsize=fontsize,
+            colors=almost_black,
+        )
+        # Get rid of ticks.
+        ax.xaxis.set_ticks_position("none")
+        ax.yaxis.set_ticks_position("none")
+    elif ticks == "in":
+        # Change the labels to the off-black
+        ax.tick_params(
+            axis="both",
+            which="major",
+            labelsize=fontsize,
+            colors=almost_black,
+            direction="in",
+            length=ticklength,
+        )
+
     spines_to_keep = ["bottom", "left"]
     for spine in spines_to_keep:
         ax.spines[spine].set_linewidth(0.5)
         ax.spines[spine].set_color(almost_black)
-        ax.spines[spine].set_position(("outward", 5))
+        ax.spines[spine].set_position(("outward", spine_offset))
 
     # Change the labels to the off-black
-    ax.xaxis.label.set_color(almost_black)
     ax.yaxis.label.set_color(almost_black)
     ax.yaxis.label.set_size(fontsize)
     ax.yaxis.offsetText.set_fontsize(fontsize)
+    ax.xaxis.label.set_color(almost_black)
     ax.xaxis.label.set_size(fontsize)
     ax.xaxis.offsetText.set_fontsize(fontsize)
-
-    # Change the labels to the off-black
-    ax.tick_params(
-        axis="both",
-        which="major",
-        labelsize=fontsize,
-        colors=almost_black,
-    )
 
     # Change the axis title to off-black
     ax.title.set_color(almost_black)
@@ -305,6 +329,47 @@ def axstyle(
         noleg = 1
 
     return ax
+
+
+def gridstyle(ax, which="major"):
+    if which == "both":
+        ax.grid(
+            b=True,
+            which="major",
+            axis="both",
+            color="0.4",
+            linewidth=0.25,
+            linestyle="-",
+            alpha=0.8,
+        )
+        ax.grid(
+            b=True,
+            which="minor",
+            axis="both",
+            color="0.7",
+            linewidth=0.25,
+            linestyle="-",
+            alpha=0.8,
+        )
+        ax.minorticks_on()
+    else:
+        ax.grid(
+            b=True,
+            which=which,
+            axis="both",
+            color="0.5",
+            linewidth=0.25,
+            linestyle="-",
+            alpha=0.8,
+        )
+
+
+def tickstyle(ax, which="both", direction="in"):
+    ax.tick_params(
+        axis="both",
+        which=which,
+        direction=direction,
+    )
 
 
 def newfigyy(width=7.5, height=5.5, fontsize=12):
@@ -1036,3 +1101,11 @@ def get_max_zorder(ax):
         Maximum zorder
     """
     return max([_.zorder for _ in ax.get_children()])
+
+
+def remove_axis_labels(ax):
+    if isinstance(ax, np.ndarray):
+        [axi.set(xlabel="", ylabel="", title="") for axi in ax]
+    else:
+        ax.set(xlabel="", ylabel="")
+    return

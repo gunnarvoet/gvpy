@@ -925,12 +925,8 @@ def woa_get_ts(llon, llat, plot=0):
     sg = sg.sel(lon=llon, lat=llat, method="nearest").values
 
     if plot:
-        # import gvfigure as gvf
         import matplotlib.pyplot as plt
 
-        # fig,ax = gvf.newfig(3,5)
-        # plt.plot(T,depth)
-        # ax.invert_yaxis()
         f, (ax1, ax2, ax3) = plt.subplots(1, 3, sharey=True)
         ax1.plot(T, depth, "k")
         ax1.set_xlabel("Temperature [°C]")

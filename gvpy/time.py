@@ -4,8 +4,10 @@
 """
 
 import datetime as dt
+import datetime
 import numpy as np
 import pandas as pd
+import xarray as xr
 
 
 def mtlb2datetime(
@@ -13,7 +15,7 @@ def mtlb2datetime(
 ):
     """
     Convert Matlab datenum format to python datetime.
-    
+
     This version also works for vector input and strips
     milliseconds if desired.
 
@@ -133,11 +135,44 @@ def mattime_to_sbetime(dtnum):
     return sbetime
 
 
+def mattime_to_datetime64(dnum):
+    """Convert Matlab datenum time format to numpy's datetime64 format.
+
+    Parameters
+    ----------
+    dtnum : array-like
+        Time in Matlab datenum format.
+
+    Returns
+    -------
+    time : np.datetime64
+        Time in numpy datetime64 format
+
+    Notes
+    -----
+    In Matlab, datevec(719529) = [1970 1 1 0 0 0]
+    """
+    time = pd.to_datetime(dnum-719529, unit='D')
+    return time
+
+
+def datevec_to_datetime64(dv):
+    def vec2str(dv):
+        return f'{dv[0]:02.0f}-{dv[1]:02.0f}-{dv[2]:02.0f} {dv[3]:02.0f}:{dv[4]:02.0f}:{dv[5]:02.0f}'
+    if isinstance(dv, list):
+        dtstr = [vec2str(dvi) for dvi in dv]
+        time = np.array([str_to_datetime64(ti) for ti in dtstr])
+    else:
+        dtstr = vec2str(dv)
+        time = str_to_datetime64(dtstr)
+    return time
+
+
 def str_to_datetime64(timestr):
     """
     Convert date/time in str format to numpy's datetime64 format.
-    
-    Makes intermediate use of pandas datetime format, their string 
+
+    Makes intermediate use of pandas datetime format, their string
     conversion seems to be much more capable than numpy's.
 
     Parameters
@@ -218,3 +253,36 @@ def yday0_to_datetime64(baseyear, yday):
         return False
 
     return t1
+
+
+def convert_units(t, unit='s'):
+    if type(t) == xr.DataArray:
+        torig = t.copy()
+        xa = True
+        t = t.data
+    else:
+        xa = False
+
+    data_type = type(t)
+    if data_type == np.ndarray or data_type == list:
+        t0 = t[0]
+    else:
+        t0 = t
+    t_type = type(t0)
+    if t_type == np.datetime64:
+        tfun = np.datetime64
+    elif t_type == np.timedelta64:
+        tfun = np.timedelta64
+
+    if data_type == np.ndarray:
+        out = np.array([tfun(ti, unit) for ti in t])
+    elif data_type == list:
+        out = [tfun(ti, unit) for ti in t]
+    elif data_type == np.datetime64 or data_type == np.timedelta64:
+        out = tfun(t, unit)
+
+    if xa:
+        out = xr.DataArray(out, coords=torig.coords)
+
+    return out
+

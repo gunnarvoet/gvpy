@@ -61,7 +61,7 @@ import gvpy
 which will provide several sub-modules as documented here.
 """
 
-__all__ = ["plot", "ocean", "misc", "signal", "io", "maps", "time"]
+__all__ = ["plot", "ocean", "misc", "signal", "io", "maps", "time", "mp"]
 
 __author__ = "Gunnar Voet"
 __email__ = "gvoet@ucsd.edu"
@@ -75,4 +75,4 @@ except ImportError:
 
     mpl.use("Agg")
 
-from . import io, misc, ocean, plot, signal, maps, time
+from . import io, misc, ocean, plot, signal, maps, time, mp

@@ -42,4 +42,5 @@ dependencies:
     - seabird
     - watchmagic
     - jupytext
+    - mixsea
     - "-e /Users/gunnar/Projects/python/gvpy"

@@ -15,9 +15,11 @@ from matplotlib.colors import (
 )
 
 try:
+    import cartopy
     import cartopy.crs as ccrs
     from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
     import cartopy.geodesic as cgeo
+    import shapely
 except ImportError:
     _has_cartopy = False
 else:
@@ -77,6 +79,9 @@ class HillShade:
         """
 
         self.topo = topo
+        if 'lon' in topo:
+            self.lon = topo.lon
+            self.lat = topo.lat
         if lon is not None and lat is not None:
             self.lon = lon
             self.lat = lat
@@ -348,6 +353,45 @@ def cartopy_scale_bar(
         **text_kwargs,
     )
     return h, ht
+
+
+def plot_watch_circle(lon, lat, radius, ax, zorder=50, ec="b", alpha=1):
+    """Plot a watch circle on a cartopy map.
+
+    Parameters
+    ----------
+    lon : float
+        Longitude
+    lat : float
+        Latitude
+    radius : float
+        Circle radius in m.
+    ax : matplotlib.axes.Axes
+        Axis instance for plotting.
+    zorder : int
+        Vertical order on matplotlib plot. Optional, defaults to 50 (pretty high).
+    ec : color or None or 'auto'
+        Edgecolor. Optional, defaults to 'b'.
+    """
+    if not _has_cartopy:
+        raise ImportError("Cartopy needs to be installed for this feature.")
+    circle_points = cartopy.geodesic.Geodesic().circle(
+        lon,
+        lat,
+        radius=radius,
+        n_samples=100,
+        endpoint=False,
+    )
+    geom = shapely.geometry.Polygon(circle_points)
+    ax.add_geometries(
+        (geom,),
+        crs=cartopy.crs.PlateCarree(),
+        facecolor="none",
+        edgecolor=ec,
+        linewidth=1,
+        zorder=zorder,
+        alpha=alpha,
+    )
 
 
 def _axes_to_lonlat(ax, coords):

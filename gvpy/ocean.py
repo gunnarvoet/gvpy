@@ -1681,6 +1681,11 @@ def lonlatstr(lon, lat):
     >>> print(slon, slat)
     168° 54.948' W   9° 42.912' S
     """
+    # Convert from numpy ndarray to float if necessary
+    if type(lon) == np.ndarray:
+        lon = lon.item()
+        lat = lat.item()
+
     if lon > 180:
         lon = lon - 360
     if lon < 0:
@@ -1689,9 +1694,10 @@ def lonlatstr(lon, lat):
         EW = "E"
     lon_degrees = np.trunc(lon)
     lon_minutes = np.abs(lon - lon_degrees) * 60
-    slon = "{:3d}° {:6.3f}' {}".format(
-        int(np.abs(lon_degrees)), lon_minutes, EW
-    )
+    # slon = "{:3d}° {:6.3f}' {}".format(
+    #     int(np.abs(lon_degrees)), lon_minutes, EW
+    # )
+    slon = f"{int(np.abs(lon_degrees)):3d}° {lon_minutes:6.3f}' {EW}"
 
     if lat > 0:
         NS = "N"
@@ -1699,9 +1705,10 @@ def lonlatstr(lon, lat):
         NS = "S"
     lat_degrees = np.trunc(lat)
     lat_minutes = np.abs(lat - lat_degrees) * 60
-    slat = "{:3d}° {:6.3f}' {}".format(
-        int(np.abs(lat_degrees)), lat_minutes, NS
-    )
+    # slat = "{:3d}° {:6.3f}' {}".format(
+    #     int(np.abs(lat_degrees)), lat_minutes, NS
+    # )
+    slat = f"{int(np.abs(lat_degrees)):3d}° {lat_minutes:6.3f}' {NS}"
 
     return slon, slat
 

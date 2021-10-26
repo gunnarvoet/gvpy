@@ -30,6 +30,7 @@ setup(
         "pandas",
         "IPython",
         "requests",
+        "mixsea",
     ],
     extras_require={
         "cartopy": ["cartopy"],  # install these with: pip install gvpy[cartopy]

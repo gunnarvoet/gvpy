@@ -8,7 +8,7 @@ from pathlib import Path
 import gsw
 import numpy as np
 import pandas as pd
-import scipy.io as spio
+import scipy as sp
 import xarray as xr
 import mixsea as mx
 
@@ -39,6 +39,7 @@ def load_proc_mat(file):
     mp = mp.drop(['lon', 'lat'])
     mp.coords['lon'] = (['lon'], [lon])
     mp.coords['lat'] = (['lat'], [lat])
+    mp = mp.squeeze()
     return mp
 
 
@@ -316,4 +317,27 @@ def add_overturns(mp):
         mp.eps[:, i] = epsi
     for i, epsi in enumerate(epstall):
         mp.eps_t[:, i] = epsi
+    return mp
+
+
+def add_gsw_variables(mp):
+    SA = gsw.SA_from_SP(mp.s, mp.p, mp.lon, mp.lat)
+    mp['SA'] = (('z', 'time'), SA)
+
+    CT = gsw.CT_from_t(SA, mp.t, mp.p)
+    mp['CT'] = (('z', 'time'), CT)
+
+    P = np.tile(mp.p.transpose(), (mp.time.size, 1)).transpose()
+    mp['P'] = (('z', 'time'), P)
+
+    return mp
+
+
+def add_nsquared(mp):
+    if 'SA' not in mp:
+        mp = add_gsw_variables(mp)
+    N2, pmid = gsw.Nsquared(mp.SA, mp.CT, mp.P)
+    fint = sp.interpolate.interp1d(x=pmid[:, 0], y=N2, axis=0, bounds_error=False)
+    N2i = fint(mp.p)
+    mp['N2'] = (('z', 'time'), N2i)
     return mp

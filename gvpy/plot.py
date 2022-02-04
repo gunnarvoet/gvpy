@@ -13,6 +13,7 @@ from cycler import cycler
 from matplotlib.collections import LineCollection
 from matplotlib.colors import LinearSegmentedColormap
 import string
+import xarray as xr
 
 from IPython import get_ipython
 
@@ -1109,3 +1110,36 @@ def remove_axis_labels(ax):
     else:
         ax.set(xlabel="", ylabel="")
     return
+
+
+# extend and/or modify xarray's plotting capabilities
+@xr.register_dataarray_accessor("gv")
+class GunnarsAccessor:
+    def __init__(self, xarray_obj):
+        self._obj = xarray_obj
+        self._center = None
+
+    @property
+    def center(self):
+        """Return the geographic center point of this dataset."""
+        if self._center is None:
+            # we can use a cache on our accessor objects, because accessors
+            # themselves are cached on instances that access them.
+            lon = self._obj.latitude
+            lat = self._obj.longitude
+            self._center = (float(lon.mean()), float(lat.mean()))
+        return self._center
+
+    def plot(self):
+        """Plot data on a map."""
+        return "plotting!"
+
+    def ts(self, **kwargs):
+        if 'ax' not in kwargs:
+            fig, ax = quickfig()
+        else:
+            ax = kwargs['ax']
+        self._obj.plot(**kwargs)
+        concise_date(ax, minticks=4)
+        ax.set(xlabel='', title='')
+        return ax

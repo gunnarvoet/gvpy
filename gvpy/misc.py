@@ -201,7 +201,7 @@ def warnless(verbose=False):
         warnings.filterwarnings("ignore", message=mi)
 
 
-def pretty_print(d, indent=0, indentstr='   '):
+def pretty_print(d, indent=0, indentstr="   ", print_values=True):
     r"""Pretty print a nested dictionary.
 
     Parameters
@@ -210,14 +210,22 @@ def pretty_print(d, indent=0, indentstr='   '):
         Dicitonary to print.
     indent : `int`, optional
         Extra indent (this times `indentstr`).
-    indentstr : `str`
+    indentstr : `str`, optional
         Indent str. Defaults to three spaces. Change to '\t' for tabs if
         desired.
+    print_values : bool, optional
+        Show dictionary values. Defaults to True.
     """
     indentstr = "   "
     for key, value in d.items():
         print(indentstr * indent + str(key))
         if isinstance(value, dict):
-            pretty_print(value, indent + 1)
+            pretty_print(
+                value,
+                indent + 1,
+                indentstr=indentstr,
+                print_values=print_values,
+            )
         else:
-            print(indentstr * (indent + 1) + str(value))
+            if print_values:
+                print(indentstr * (indent + 1) + str(value))

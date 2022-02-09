@@ -300,6 +300,8 @@ def mat2dataset(m1):
         m1["datenum"] = m1.pop("DateNum")
     if "mtime" in m1.keys():
         m1["datenum"] = m1.pop("mtime")
+    if "dtnum" in m1.keys():
+        m1["datenum"] = m1.pop("dtnum")
 
     k = m1.keys()
 

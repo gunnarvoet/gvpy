@@ -12,6 +12,7 @@ import scipy as sp
 import xarray as xr
 import mixsea as mx
 
+import gvpy as gv
 from . import io
 
 
@@ -33,13 +34,35 @@ def load_proc_mat(file):
     mp = io.mat2dataset(tmp)
     mp = mp.dropna(dim="z", how="all")
     mp.coords["profile"] = mp.id
+    mp = mp.drop("id")
     mp = add_hab(mp)
-    lon = mp.lon.median().data
-    lat = mp.lat.median().data
-    mp = mp.drop(['lon', 'lat'])
-    mp.coords['lon'] = (['lon'], [lon])
-    mp.coords['lat'] = (['lat'], [lat])
-    mp = mp.squeeze()
+    lon = np.round(mp.lon.median().data, decimals=4)
+    lat = np.round(mp.lat.median().data, decimals=4)
+    mp = mp.drop(["lon", "lat"])
+    mp.attrs["lon"] = lon
+    mp.attrs["lat"] = lat
+
+    time2d = np.array([gv.time.mattime_to_datetime64(mpi.time2d.data) for g, mpi in mp.groupby('time')])
+    mp.coords['time2'] = (('z', 'time'), time2d.transpose())
+    mp = mp.drop("time2d")
+
+    atts = dict(
+        z=dict(long_name="depth", units="m"),
+        p=dict(long_name="pressure", units="dbar"),
+        th=dict(long_name=r"$\Theta$", units="°C"),
+        t=dict(long_name="in-situ temperature", units="°C"),
+        s=dict(long_name="salinity", units=""),
+        c=dict(long_name="conductivity", units="mS/cm"),
+        u=dict(long_name="u", units="m/s"),
+        v=dict(long_name="v", units="m/s"),
+        w=dict(long_name="w", units="m/s"),
+        sgth=dict(long_name=r"$\sigma_\Theta$", units="kg/m$^3$"),
+    )
+
+    for k, v in atts.items():
+        for ki, vi in v.items():
+            mp[k].attrs[ki] = vi
+
     return mp
 
 
@@ -245,15 +268,20 @@ def acm_path_to_instrument_coordinate(mp):
 
 
 def add_hab(mp, bottom_depth=None):
-    bottom_depth = mp.H.median(dim="time").data
+    if bottom_depth is None:
+        bottom_depth = mp.H.median(dim="time").data
     hab = bottom_depth - mp.z
     mp.coords["hab"] = hab
+    mp.hab.attrs["long_name"] = "height above bottom"
+    mp.hab.attrs["units"] = "m"
     return mp
 
 
 def add_overturns(mp):
     epsall = []
     epstall = []
+    lon = mp.attrs["lon"]
+    lat = mp.attrs["lat"]
     for group, ctd in mp.groupby("time"):
         notnan = (
             np.isfinite(ctd["z"])
@@ -264,8 +292,6 @@ def add_overturns(mp):
         depth = ctd["z"][notnan].data
         t = ctd["t"][notnan].data
         SP = ctd["s"][notnan].data
-        lon = ctd["lon"].data
-        lat = ctd["lat"].data
 
         dnoise = 5e-4  # Noise parameter
         alpha = 0.8  # Coefficient relating the Thorpe and Ozmidov scales.
@@ -311,8 +337,8 @@ def add_overturns(mp):
         eps_t[notnan] = epstmpt
         epsall.append(eps)
         epstall.append(eps_t)
-    mp['eps'] = (['z', 'time'], mp.t.data * np.nan)
-    mp['eps_t'] = (['z', 'time'], mp.t.data * np.nan)
+    mp["eps"] = (["z", "time"], mp.t.data * np.nan)
+    mp["eps_t"] = (["z", "time"], mp.t.data * np.nan)
     for i, epsi in enumerate(epsall):
         mp.eps[:, i] = epsi
     for i, epsi in enumerate(epstall):
@@ -321,23 +347,33 @@ def add_overturns(mp):
 
 
 def add_gsw_variables(mp):
-    SA = gsw.SA_from_SP(mp.s, mp.p, mp.lon, mp.lat)
-    mp['SA'] = (('z', 'time'), SA)
+    SA = gsw.SA_from_SP(mp.s, mp.p, mp.attrs["lon"], mp.attrs["lat"])
+    mp["SA"] = (("z", "time"), SA)
+    mp.SA.attrs["long_name"] = "absolute salinity"
+    mp.SA.attrs["units"] = "g/kg"
 
     CT = gsw.CT_from_t(SA, mp.t, mp.p)
-    mp['CT'] = (('z', 'time'), CT)
+    mp["CT"] = (("z", "time"), CT)
+    mp.CT.attrs["long_name"] = "conservative temperature"
+    mp.CT.attrs["units"] = "°C"
 
     P = np.tile(mp.p.transpose(), (mp.time.size, 1)).transpose()
-    mp['P'] = (('z', 'time'), P)
+    mp["P"] = (("z", "time"), P)
+    mp.P.attrs["long_name"] = "pressure"
+    mp.P.attrs["units"] = "dbar"
 
     return mp
 
 
 def add_nsquared(mp):
-    if 'SA' not in mp:
+    if "SA" not in mp:
         mp = add_gsw_variables(mp)
     N2, pmid = gsw.Nsquared(mp.SA, mp.CT, mp.P)
-    fint = sp.interpolate.interp1d(x=pmid[:, 0], y=N2, axis=0, bounds_error=False)
+    fint = sp.interpolate.interp1d(
+        x=pmid[:, 0], y=N2, axis=0, bounds_error=False
+    )
     N2i = fint(mp.p)
-    mp['N2'] = (('z', 'time'), N2i)
+    mp["N2"] = (("z", "time"), N2i)
+    mp.N2.attrs["long_name"] = r"N$^2$"
+    mp.N2.attrs["units"] = r"s$^{-2}$"
     return mp

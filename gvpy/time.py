@@ -264,18 +264,31 @@ def convert_units(t, unit='s'):
         xa = False
 
     data_type = type(t)
-    if data_type == np.ndarray or data_type == list:
+    if data_type == list:
         t0 = t[0]
+        t_type = type(t0)
+        if t_type == np.datetime64:
+            tfun = np.datetime64
+        elif t_type == np.timedelta64:
+            tfun = np.timedelta64
+    elif data_type == np.ndarray:
+        if t.dtype == '<M8[ns]':
+            tfun = np.datetime64
+        elif t.dtype == '<m8[ns]':
+            tfun = np.timedelta64
     else:
         t0 = t
-    t_type = type(t0)
-    if t_type == np.datetime64:
-        tfun = np.datetime64
-    elif t_type == np.timedelta64:
-        tfun = np.timedelta64
+        t_type = type(t0)
+        if t_type == np.datetime64:
+            tfun = np.datetime64
+        elif t_type == np.timedelta64:
+            tfun = np.timedelta64
 
-    if data_type == np.ndarray:
+
+    if data_type == np.ndarray and t.size > 1:
         out = np.array([tfun(ti, unit) for ti in t])
+    elif data_type == np.ndarray and t.size == 1:
+        out = tfun(t, unit)
     elif data_type == list:
         out = [tfun(ti, unit) for ti in t]
     elif data_type == np.datetime64 or data_type == np.timedelta64:

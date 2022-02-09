@@ -2,21 +2,9 @@
 # -*- coding: utf-8 -*-
 """Collection of xarray extensions that can be found under .gv attached to xarray data objects, mostly to speed up stuff that otherwise I tediously have to type out."""
 
-from pathlib import Path
-
-import matplotlib as mpl
-import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
-import matplotlib.ticker as mticker
 import numpy as np
-from cycler import cycler
-from matplotlib.collections import LineCollection
-from matplotlib.colors import LinearSegmentedColormap
-import string
 import xarray as xr
-import bottleneck
-
-from IPython import get_ipython
 
 from . import plot as gvplot
 

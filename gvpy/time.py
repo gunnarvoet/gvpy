@@ -3,7 +3,6 @@
 """Module gvpy.time with time conversion functions. A few of these also still live in io.py for backwards compatibility.
 """
 
-import datetime as dt
 import datetime
 import numpy as np
 import pandas as pd
@@ -35,31 +34,31 @@ def mtlb2datetime(
     """
 
     if np.size(matlab_datenum) == 1:
-        day = dt.datetime.fromordinal(int(matlab_datenum))
-        dayfrac = dt.timedelta(days=matlab_datenum % 1) - dt.timedelta(days=366)
+        day = datetime.datetime.fromordinal(int(matlab_datenum))
+        dayfrac = datetime.timedelta(days=matlab_datenum % 1) - datetime.timedelta(days=366)
         t1 = day + dayfrac
         if strip_microseconds and strip_seconds:
-            t1 = dt.datetime.replace(t1, microsecond=0, second=0)
+            t1 = datetime.datetime.replace(t1, microsecond=0, second=0)
         elif strip_microseconds:
-            t1 = dt.datetime.replace(t1, microsecond=0)
+            t1 = datetime.datetime.replace(t1, microsecond=0)
 
     else:
         t1 = np.ones_like(matlab_datenum) * np.nan
         t1 = t1.tolist()
         nonan = np.isfinite(matlab_datenum)
         md = matlab_datenum[nonan]
-        day = [dt.datetime.fromordinal(int(tval)) for tval in md]
+        day = [datetime.datetime.fromordinal(int(tval)) for tval in md]
         dayfrac = [
-            dt.timedelta(days=tval % 1) - dt.timedelta(days=366) for tval in md
+            datetime.timedelta(days=tval % 1) - datetime.timedelta(days=366) for tval in md
         ]
         tt = [day1 + dayfrac1 for day1, dayfrac1 in zip(day, dayfrac)]
         if strip_microseconds and strip_seconds:
             tt = [
-                dt.datetime.replace(tval, microsecond=0, second=0)
+                datetime.datetime.replace(tval, microsecond=0, second=0)
                 for tval in tt
             ]
         elif strip_microseconds:
-            tt = [dt.datetime.replace(tval, microsecond=0) for tval in tt]
+            tt = [datetime.datetime.replace(tval, microsecond=0) for tval in tt]
         tt = [np.datetime64(ti) for ti in tt]
         xi = np.where(nonan)[0]
         for i, ii in enumerate(xi):
@@ -204,8 +203,8 @@ def yday1_to_datetime64(baseyear, yday):
     time : np.datetime64
         Time in numpy datetime64 format
     """
-    base = dt.datetime(baseyear, 1, 1, 0, 0, 0)
-    time = [base + dt.timedelta(days=ti) for ti in yday - 1]
+    base = datetime.datetime(baseyear, 1, 1, 0, 0, 0)
+    time = [base + datetime.timedelta(days=ti) for ti in yday - 1]
     # convert to numpy datetime64
     time64 = np.array([np.datetime64(ti, "ms") for ti in time])
     return time64
@@ -227,8 +226,8 @@ def yday0_to_datetime64(baseyear, yday):
     time : np.datetime64
         Time in numpy datetime64 format
     """
-    base = dt.datetime(baseyear, 1, 1, 0, 0, 0)
-    time = [base + dt.timedelta(days=ti) for ti in yday]
+    base = datetime.datetime(baseyear, 1, 1, 0, 0, 0)
+    time = [base + datetime.timedelta(days=ti) for ti in yday]
     # convert to numpy datetime64
     time64 = np.array([np.datetime64(ti, "ms") for ti in time])
     return time64
@@ -299,3 +298,8 @@ def convert_units(t, unit='s'):
 
     return out
 
+
+def datetime64_to_str(dt, strformat='%Y-%m-%d'):
+    t = dt.astype(datetime.datetime)
+    tstr = t.strftime(strformat)
+    return tstr

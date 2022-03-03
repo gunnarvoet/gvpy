@@ -303,3 +303,8 @@ def datetime64_to_str(dt, strformat='%Y-%m-%d'):
     t = dt.astype(datetime.datetime)
     tstr = t.strftime(strformat)
     return tstr
+
+
+def now_datestr():
+    datestr = datetime64_to_str(np.datetime64(datetime.datetime.now()), strformat="%Y-%m-%d")
+    return datestr

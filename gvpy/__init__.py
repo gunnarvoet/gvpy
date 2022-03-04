@@ -15,7 +15,7 @@
 # along with gvpy.  If not, see <http://www.gnu.org/licenses/>.
 
 
-"""gvpy is a Python package with various little bits and pieces of code that are mostly useful for oceanographic data analysis.
+"""Python package with various little bits and pieces of code that are mostly useful for oceanographic data analysis. Please note that the code changes often without any warning or notice.
 
 ## License
 

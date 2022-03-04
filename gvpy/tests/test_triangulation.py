@@ -1,6 +1,5 @@
 import numpy as np
 import pytest
-from scipy import signal
 
 from gvpy import trilaterate
 

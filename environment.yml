@@ -2,7 +2,7 @@ name: gvpy
 channels:
   - conda-forge
 dependencies:
-  - python=3.8
+  - python=3.10
   - cartopy
   - cmocean
   - dask
@@ -30,4 +30,4 @@ dependencies:
     - watchmagic
     - jupytext
     - mixsea
-    - "-e /Users/gunnar/Projects/python/gvpy"
+    - "-e ."

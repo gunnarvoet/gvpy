@@ -42,9 +42,10 @@ def load_proc_mat(file):
     mp.attrs["lon"] = lon
     mp.attrs["lat"] = lat
 
-    time2d = np.array([gv.time.mattime_to_datetime64(mpi.time2d.data) for g, mpi in mp.groupby('time')])
-    mp.coords['time2'] = (('z', 'time'), time2d.transpose())
-    mp = mp.drop("time2d")
+    if 'time2d' in mp:
+        time2d = np.array([gv.time.mattime_to_datetime64(mpi.time2d.data) for g, mpi in mp.groupby('time')])
+        mp.coords['time2'] = (('z', 'time'), time2d.transpose())
+        mp = mp.drop("time2d")
 
     atts = dict(
         z=dict(long_name="depth", units="m"),

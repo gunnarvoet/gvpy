@@ -390,9 +390,12 @@ def newfigyy(width=7.5, height=5.5, fontsize=12):
 
     Returns
     -------
-    fig : Figure handle
-    ax1, ax2 : Axis handles
-
+    fig
+        Figure handle
+    ax1
+        Axis handle
+    ax2
+        Axis handle
     """
 
     fig, ax1 = newfig(width, height)

@@ -35,35 +35,57 @@ class GunnarsAccessor:
         ax
             Axis
         """
+
         def assign_cmap(t):
             # set a default cmap
-            cmap = 'viridis'
+            cmap = "viridis"
             cmap_dict = dict(
-                    Spectral_r = ['temperature', 'temp', 't', 'th', 'theta', 'Theta', '$\\Theta$'],
-                    RdBu_r =['u', 'v'],
-                    )
+                Spectral_r=[
+                    "temperature",
+                    "temp",
+                    "t",
+                    "th",
+                    "theta",
+                    "Theta",
+                    "$\\Theta$",
+                ],
+                RdBu_r=["u", "v"],
+            )
 
-            longname = t.attrs['long_name'] if 'long_name' in t.attrs else 'no_long_name'
+            longname = (
+                t.attrs["long_name"]
+                if "long_name" in t.attrs
+                else "no_long_name"
+            )
             for cmapi, longnames in cmap_dict.items():
                 if longname in longnames:
                     cmap = cmapi
             return cmap
 
-        if 'ax' not in kwargs:
+        if "ax" not in kwargs:
             fig, ax = gvplot.quickfig(w=8, h=3.5)
         else:
-            ax = kwargs['ax']
+            ax = kwargs["ax"]
         if self._obj.ndim == 2:
-            kwargs['cbar_kwargs'] = dict(shrink=0.8, aspect=25)
-            kwargs['cmap'] = assign_cmap(self._obj) if 'cmap' not in kwargs else kwargs['cmap']
-        self._obj.plot(x='time', **kwargs)
+            cbar_kwargs_new = dict(shrink=0.8, aspect=25)
+            if "cbar_kwargs" in kwargs:
+                for k, v in kwargs["cbar_kwargs"].items():
+                    cbar_kwargs_new[k] = v
+            kwargs["cbar_kwargs"] = cbar_kwargs_new
+
+            kwargs["cmap"] = (
+                assign_cmap(self._obj)
+                if "cmap" not in kwargs
+                else kwargs["cmap"]
+            )
+        self._obj.plot(x="time", **kwargs)
         gvplot.concise_date(ax, minticks=4)
-        ax.set(xlabel='', title='')
-        if 'depth' in self._obj.dims:
+        ax.set(xlabel="", title="")
+        if "depth" in self._obj.dims:
             ax.invert_yaxis()
-        if 'z' in self._obj.dims and self._obj.z.median()>0:
+        if "z" in self._obj.dims and self._obj.z.median() > 0:
             ax.invert_yaxis()
         return ax
 
     def tcoarsen(self, n=100):
-        return self._obj.coarsen(time=n, boundary='trim').mean()
+        return self._obj.coarsen(time=n, boundary="trim").mean()

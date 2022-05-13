@@ -83,6 +83,8 @@ class GunnarsAccessor:
         ax.set(xlabel="", title="")
         if "depth" in self._obj.dims:
             ax.invert_yaxis()
+        if "pressure" in self._obj.dims:
+            ax.invert_yaxis()
         if "z" in self._obj.dims and self._obj.z.median() > 0:
             ax.invert_yaxis()
         return ax

@@ -232,26 +232,61 @@ def yday0_to_datetime64(baseyear, yday):
     time64 = np.array([np.datetime64(ti, "ms") for ti in time])
     return time64
 
-    """
-    Check if string can be converted to a float.
+
+def datetime64_to_yday0(time64):
+    """Convert numpy's datetime64 format to year day (starting at yday 0).
 
     Parameters
     ----------
-    s : str
-        string
+    time64 : np.datetime64
+        Time in numpy datetime64 format
 
     Returns
     -------
-    out : bool
-        True if string can be converted to float, else False.
+    baseyear : int
+        Base year
+    yday : float
+        Year day
     """
-    try:
-        float(s)
-        return True
-    except ValueError:
-        return False
+    # convert single value to list
+    if type(time64) == np.datetime64:
+        time64 = [time64]
+    # base year
+    pt = pd.to_datetime(time64)
+    baseyears = pt.year.to_numpy()
+    baseyear = baseyears[0]
+    # year day
+    base64 = np.datetime64(f'{baseyear}-01-01 00:00:00')
+    delta64 = time64 - base64
+    delta64ns = delta64.astype('timedelta64[ns]')
+    delta = delta64ns.astype(float)
+    yday = delta / 1e9 / 3600 / 24
+    # convert back to single value if needed
+    if len(yday) == 1:
+        yday = yday[0]
 
-    return t1
+    return baseyear, yday
+
+
+def datetime64_to_yday1(time64):
+    """Convert numpy's datetime64 format to year day (starting at yday 1).
+
+    Parameters
+    ----------
+    time64 : np.datetime64
+        Time in numpy datetime64 format
+
+    Returns
+    -------
+    baseyear : int
+        Base year
+    yday : float
+        Year day
+    """
+    baseyear, yday0 = datetime64_to_yday0(time64)
+    yday1 = yday0 + 1
+
+    return baseyear, yday
 
 
 def convert_units(t, unit='s'):
@@ -294,7 +329,10 @@ def convert_units(t, unit='s'):
         out = tfun(t, unit)
 
     if xa:
-        out = xr.DataArray(out, coords=torig.coords)
+        time = out.copy()
+        new_coords = torig.drop('time').coords
+        out = xr.DataArray(time, coords=new_coords)
+        kut.coords['time'] = time
 
     return out
 

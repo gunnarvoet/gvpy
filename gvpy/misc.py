@@ -6,6 +6,7 @@ import ctypes
 import inspect
 import warnings
 import numpy as np
+from IPython import get_ipython
 
 
 def near(A, target):
@@ -229,3 +230,19 @@ def pretty_print(d, indent=0, indentstr="   ", print_values=True):
         else:
             if print_values:
                 print(indentstr * (indent + 1) + str(value))
+
+
+def is_notebook():
+    s = get_ipython().__class__.__name__
+    if s == 'ZMQInteractiveShell':
+        return True
+    else:
+        return False
+
+
+def is_ipython():
+    s = get_ipython().__class__.__name__
+    if s == 'TerminalInteractiveShell':
+        return True
+    else:
+        return False

@@ -13,6 +13,7 @@ from matplotlib.colors import (
     LinearSegmentedColormap,
     ListedColormap,
 )
+import xarray as xr
 
 try:
     import cartopy
@@ -79,9 +80,10 @@ class HillShade:
         """
 
         self.topo = topo
-        if 'lon' in topo:
-            self.lon = topo.lon
-            self.lat = topo.lat
+        if type(topo) == xr.DataArray or type(topo) == xr.Dataset:
+            if 'lon' in topo:
+                self.lon = topo.lon
+                self.lat = topo.lat
         if lon is not None and lat is not None:
             self.lon = lon
             self.lat = lat

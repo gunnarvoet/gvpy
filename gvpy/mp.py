@@ -329,7 +329,7 @@ def add_overturns(mp):
             background_eps=background_eps,
             use_ip=use_ip,
             return_diagnostics=True,
-            overturns_from_CT=True,
+            overturns_from_t=True,
         )
 
         eps = ctd["t"].data * np.nan
@@ -349,17 +349,17 @@ def add_overturns(mp):
 
 def add_gsw_variables(mp):
     SA = gsw.SA_from_SP(mp.s, mp.p, mp.attrs["lon"], mp.attrs["lat"])
-    mp["SA"] = (("z", "time"), SA)
+    mp["SA"] = (("z", "time"), SA.data)
     mp.SA.attrs["long_name"] = "absolute salinity"
     mp.SA.attrs["units"] = "g/kg"
 
     CT = gsw.CT_from_t(SA, mp.t, mp.p)
-    mp["CT"] = (("z", "time"), CT)
+    mp["CT"] = (("z", "time"), CT.data)
     mp.CT.attrs["long_name"] = "conservative temperature"
     mp.CT.attrs["units"] = "°C"
 
     P = np.tile(mp.p.transpose(), (mp.time.size, 1)).transpose()
-    mp["P"] = (("z", "time"), P)
+    mp["P"] = (("z", "time"), P.data)
     mp.P.attrs["long_name"] = "pressure"
     mp.P.attrs["units"] = "dbar"
 

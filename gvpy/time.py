@@ -308,6 +308,8 @@ def convert_units(t, unit='s'):
     elif data_type == np.ndarray:
         if t.dtype == '<M8[ns]':
             tfun = np.datetime64
+        elif t.dtype == '<M8[ms]':
+            tfun = np.datetime64
         elif t.dtype == '<m8[ns]':
             tfun = np.timedelta64
     else:

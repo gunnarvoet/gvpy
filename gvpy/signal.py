@@ -236,12 +236,17 @@ def psd(
             return_onesided=False,
         )
         # One side of 0 is shifted to negative values - need to shift back
-        f0[f0 < 0] = f0[f0 < 0] + 1
-        # Since we've shifted the wavenumber near zero to near one, we need to
-        # extend it fully to one for interpolation to work below. Technically,
-        # this should be the same as interpolating from zero to a very small
-        # value.
-        f0[-1] = 1
+        # !!! changing here !!!
+        # f0[f0 < 0] = f0[f0 < 0] + 1
+        # # Since we've shifted the wavenumber near zero to near one, we need to
+        # # extend it fully to one for interpolation to work below. Technically,
+        # # this should be the same as interpolating from zero to a very small
+        # # value.
+        # f0[-1] = 1
+        # !!! the above code shifting the frequency vector did not work! below
+        # is what amy suggests works.
+        f0 = np.fft.fftshift(f0) + np.abs(f0).max()
+
         Pxx0 = sp.interpolate.interp1d(
             f0, Pxx0, bounds_error=False, axis=-1
         )(f_full)

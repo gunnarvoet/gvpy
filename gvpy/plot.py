@@ -446,6 +446,55 @@ def vstep(x, y, ax=None, *args, **kwargs):
     return lines
 
 
+def stickplot(ax, times, speeds, directions, units='', scale=0.1):
+    """
+    Create a stick plot of the given data on the given axes.
+
+    Stick plots are commonly used to display time series of
+    a vector quantity at a point, such as wind or ocean current observations.
+
+    Parameters
+    ----------
+    axes: The axes object you want to plot on
+    times: An array of datetime objects giving the time of the observations
+    speeds: An array of the velocities of the observations
+    directions: An array of the directions of the observations (in
+                degrees from North, where North is up on the plot)
+    units: A string with the units of the observation
+
+    Credits
+    -------
+    Chris Barker
+    http://matplotlib.1069221.n5.nabble.com/Stick-Plot-td21479.html
+
+    See also
+    --------
+    http://matplotlib.1069221.n5.nabble.com/scaling-arrows-in-quiver-td23758.html
+    """
+
+    props = {'units' : "dots",
+             'width' : 2,
+             'headwidth': 0,
+             'headlength': 0,
+             'headaxislength': 0,
+             'scale' : scale,
+             }
+
+    # fixme: this should use some smarts to fit the data
+    label_scale = 0.1
+    unit_label = "%3g %s"%(label_scale, units)
+
+    y = np.zeros_like(speeds)
+    dir_rad = directions / 180. * np.pi
+    u = np.sin(dir_rad) * speeds
+    v = np.cos(dir_rad) * speeds
+
+    Q = ax.quiver(times, y, u, v, **props)
+    ax.quiverkey(Q, X=0.1, Y=0.95, U=label_scale, label=unit_label, coordinates='axes', labelpos='S')
+    yaxis = ax.yaxis
+    yaxis.set_ticklabels([])
+
+
 def pcm(*args, **kwargs):
     """
     Wrapper for matplotlib's pcolormesh, blanking out nan's and

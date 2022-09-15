@@ -455,21 +455,24 @@ def stickplot(ax, times, speeds, directions, units='', scale=0.1):
 
     Parameters
     ----------
-    axes: The axes object you want to plot on
-    times: An array of datetime objects giving the time of the observations
-    speeds: An array of the velocities of the observations
-    directions: An array of the directions of the observations (in
-                degrees from North, where North is up on the plot)
-    units: A string with the units of the observation
+    axes: matplotlib.axis.Axis
+        The axes object to plot on.
+    times: array-like
+        An array of datetime objects giving the time of the observations.
+    speeds: array-like
+        An array of the velocities of the observations.
+    directions: array-like
+        An array of the directions of the observations (in degrees from North,
+        where North is up on the plot)
+    units: str, optional
+        Units of the observation. Defaults to empty string.
+    scale: float, optional
+        Data scale factor. Defaults to 0.1.
 
     Credits
     -------
     Chris Barker
     http://matplotlib.1069221.n5.nabble.com/Stick-Plot-td21479.html
-
-    See also
-    --------
-    http://matplotlib.1069221.n5.nabble.com/scaling-arrows-in-quiver-td23758.html
     """
 
     props = {'units' : "dots",

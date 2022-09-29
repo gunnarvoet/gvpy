@@ -369,7 +369,7 @@ def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000, verbose=False):
     n = sgt / dnoise
     n = np.fix(n)
     sgi = [D0 + n * dnoise]  # first element
-    for i in np.arange(1, np.alen(sg), 1):
+    for i in np.arange(1, len(sg), 1):
         sgt = sg[i] - sgi[i - 1]
         n = sgt / dnoise
         n = np.fix(n)
@@ -1403,7 +1403,7 @@ def bathy_section(bathy, lon, lat, res=1, ext=0):
     return out
 
 
-def inertial_period(lat):
+def inertial_period(lat, verbose=True):
     """
     Return inertial period [days] for a given latitude.
 
@@ -1421,11 +1421,12 @@ def inertial_period(lat):
     f = 2 * Omega * np.sin(np.deg2rad(lat))
     Ti = 2 * np.pi / f
     Ti = Ti / 3600 / 24
-    print(
-        "\nInertial period at {:1.2f}° is {:1.2f} days\n".format(
-            float(lat), np.abs(Ti)
+    if verbose:
+        print(
+            "\nInertial period at {:1.2f}° is {:1.2f} days\n".format(
+                float(lat), np.abs(Ti)
+            )
         )
-    )
     return Ti
 
 

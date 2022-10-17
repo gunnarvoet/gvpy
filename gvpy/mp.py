@@ -16,7 +16,7 @@ import gvpy as gv
 from . import io
 
 
-def load_proc_mat(file):
+def load_proc_mat(file, subvar=None):
     """Read moored profiler data in .mat format processed with the MP
     processing toolbox in Matlab.
 
@@ -24,6 +24,9 @@ def load_proc_mat(file):
     ----------
     file : Path or str
         Path to MP dataset.
+    subvar : str
+        Key for dictionary entry if MP data are contained in a subvariable
+        within the .mat-file.
 
     Returns
     -------
@@ -31,6 +34,8 @@ def load_proc_mat(file):
         MP dataset.
     """
     tmp = io.loadmat(file)
+    if subvar is not None:
+        tmp = tmp[subvar]
     mp = io.mat2dataset(tmp)
     mp = mp.dropna(dim="z", how="all")
     mp.coords["profile"] = mp.id

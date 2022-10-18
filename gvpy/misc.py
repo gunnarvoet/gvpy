@@ -152,9 +152,9 @@ def extract(prepend="xx"):
     caller = frames[1].frame
     name, ls, gs = caller.f_code.co_name, caller.f_locals, caller.f_globals
 
-    ipython = [
-        f for f in inspect.stack() if f.filename.startswith("<ipython-input")
-    ][-1].frame
+    ipython = [f for f in inspect.stack() if f.filename.startswith("<ipython-input")][
+        -1
+    ].frame
 
     ipython.f_locals.update(
         {"{}{}".format(prepend, k): v for k, v in gs.items() if k[:2] != "__"}
@@ -163,9 +163,7 @@ def extract(prepend="xx"):
         {"{}{}".format(prepend, k): v for k, v in ls.items() if k[:2] != "__"}
     )
 
-    ctypes.pythonapi.PyFrame_LocalsToFast(
-        ctypes.py_object(ipython), ctypes.c_int(0)
-    )
+    ctypes.pythonapi.PyFrame_LocalsToFast(ctypes.py_object(ipython), ctypes.c_int(0))
 
 
 def latex_float(f, decimals=0):
@@ -234,7 +232,7 @@ def pretty_print(d, indent=0, indentstr="   ", print_values=True):
 
 def is_notebook():
     s = get_ipython().__class__.__name__
-    if s == 'ZMQInteractiveShell':
+    if s == "ZMQInteractiveShell":
         return True
     else:
         return False
@@ -242,7 +240,21 @@ def is_notebook():
 
 def is_ipython():
     s = get_ipython().__class__.__name__
-    if s == 'TerminalInteractiveShell':
+    if s == "TerminalInteractiveShell":
         return True
     else:
         return False
+
+
+def connect_to_server(server, drive):
+    """Mount smb drive in macOS.
+
+    Parameters
+    ----------
+    server : str
+        Server address (without smb://)
+    drive : str
+        Drive to mount
+    """
+    command = 'mount volume "smb://{}/{}"'.format(server, drive)
+    output = subprocess.run(["osascript", "-e", command], capture_output=True)

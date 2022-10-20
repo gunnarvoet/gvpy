@@ -115,7 +115,10 @@ def nsqfcn(s, t, p, p0, dp, lon, lat):
     dp_med = np.median(dp_data)
     # [b,a]=butter(4,2*dp_med/dp); %causing problems...
     a = 1
-    b = np.hanning(2 * np.floor(dp / dp_med))
+    if dp < 1:
+        b = np.hanning(2 * np.floor(dp_med / dp))
+    else:
+        b = np.hanning(2 * np.floor(dp / dp_med))
     b = b / np.sum(b)
 
     tlp = filtfilt(b, a, t)
@@ -463,13 +466,11 @@ def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000, verbose=False):
                 PTov = CTs[iostart : ioend + 1]
                 zov = z[iostart : ioend + 1]
 
-            local_dtdz = (np.min(PTov) - np.max(PTov)) / (
-                np.max(zov) - np.min(zov)
-            )
+            local_dtdz = (np.min(PTov) - np.max(PTov)) / (np.max(zov) - np.min(zov))
             DTDZ2[idx] = local_dtdz
 
         # % Calculate epsilon
-        THepsilon = 0.9 * THsc ** 2.0 * np.sqrt(N2) ** 3
+        THepsilon = 0.9 * THsc**2.0 * np.sqrt(N2) ** 3
         THepsilon[N2 <= 0] = np.nan
         THk = 0.2 * THepsilon / N2
 
@@ -650,13 +651,11 @@ def eps_overturn2(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
                 PTov = CTs[iostart : ioend + 1]
                 zov = z[iostart : ioend + 1]
 
-            local_dtdz = (np.min(PTov) - np.max(PTov)) / (
-                np.max(zov) - np.min(zov)
-            )
+            local_dtdz = (np.min(PTov) - np.max(PTov)) / (np.max(zov) - np.min(zov))
             DTDZ[idx] = local_dtdz
 
         # % Calculate epsilon
-        THepsilon = 0.9 * THsc ** 2.0 * np.sqrt(N2) ** 3
+        THepsilon = 0.9 * THsc**2.0 * np.sqrt(N2) ** 3
         THepsilon[N2 <= 0] = np.nan
         THk = 0.2 * THepsilon / N2
 
@@ -727,7 +726,7 @@ def vmodes(z, N, clat, nmodes):
     z = -z if z[0] < 0 else z
     z_in = z.copy()
     N_in = N.copy()
-    nsqin = N_in ** 2
+    nsqin = N_in**2
 
     # pick only valid data
     good = (N > 0) & np.isfinite(N)
@@ -799,9 +798,7 @@ def vmodes(z, N, clat, nmodes):
         dz[i] = 1
         imax = npts - 2
         for i2 in range(imax):
-            dz[i - 1] = (
-                -((ev[imode] - d[i]) * dz[i] + u[i + 1] * dz[i + 1]) / l[i]
-            )
+            dz[i - 1] = -((ev[imode] - d[i]) * dz[i] + u[i + 1] * dz[i + 1]) / l[i]
             i = i - 1
         sum_ = nsq[0] * dz[0] * dz[0] * z_in[1]
         difz_ = z[2:npts] - z[: npts - 2]
@@ -838,9 +835,7 @@ def vmodes(z, N, clat, nmodes):
         emver[0] = const * dz[0]
         emhor[0] = -(dz[1] - dz[0]) / (z_in[1] - z_in[0])
         emver[nptsin - 1] = const * dz[nptsin - 1]
-        emhor[nptsin - 1] = -dz[nptsin - 2] / (
-            z_in[nptsin - 2] - z_in[nptsin - 1]
-        )
+        emhor[nptsin - 1] = -dz[nptsin - 2] / (z_in[nptsin - 2] - z_in[nptsin - 1])
 
         # put everybody in their matrices
         Vert[0 : len(emver), imode] = emver
@@ -892,7 +887,7 @@ def wind_stress(u10, v10):
 
     """
     rho = 1.2  # kg/m^3, air density
-    U = np.sqrt(u10 ** 2 + v10 ** 2)  # wind speed
+    U = np.sqrt(u10**2 + v10**2)  # wind speed
     Cd = np.full_like(U, np.nan)
     Cd[np.where(U <= 1)] = 0.00218
     Cd[np.where((U > 1) & (U <= 3))] = (
@@ -1024,7 +1019,7 @@ def uv2speeddir(u, v):
         Velocity direction CCW from 0 to $2 \pi$ starting East.
     """
 
-    speed = np.sqrt(u ** 2 + v ** 2)
+    speed = np.sqrt(u**2 + v**2)
     direction = np.arctan2(v, u)
     return speed, direction
 
@@ -1052,9 +1047,7 @@ def uv_rotate(u, v, theta):
     return ur, vr
 
 
-def smith_sandwell(
-    lon="all", lat="all", r15=False, subsample=False, lon360=False
-):
+def smith_sandwell(lon="all", lat="all", r15=False, subsample=False, lon360=False):
     """Load Smith & Sandwell bathymetry
 
     Parameters
@@ -1091,8 +1084,18 @@ def smith_sandwell(
     nc_file = "/Users/gunnar/Data/bathymetry/smith_sandwell/topo{}.grd".format(
         resolution
     )
-    # by providing a chunk size, the array is loaded lazily via dask
-    b = xr.open_dataarray(nc_file, chunks=1000, engine="netcdf4")
+    try:
+        # by providing a chunk size, the array is loaded lazily via dask
+        b = xr.open_dataarray(nc_file, chunks=1000, engine="netcdf4")
+    except FileNotFoundError as e:
+        print(
+            "Download Smith&Sandwell bathymetry at https://topex.ucsd.edu/marine_topo/"
+        )
+        print(
+            "The file location is currently hard-coded into gvpy.ocean.smith_sandwell()"
+        )
+        print(e)
+        return
     if not lon360:
         b["lon"] = np.mod((b.lon + 180), 360) - 180
     if type(lon) is str and lon == "all":
@@ -1181,9 +1184,7 @@ def bathy_section(bathy, lon, lat, res=1, ext=0):
     # Make sure lon and lat have the same dimensions
     assert lon.shape == lat.shape, "lat and lon must have the same size"
     # Make sure lon and lat have at least 3 elements
-    assert (
-        len(lon) > 1 and len(lat) > 1
-    ), "lon/lat must have at least 2 elements"
+    assert len(lon) > 1 and len(lat) > 1, "lon/lat must have at least 2 elements"
 
     # Load bathymetry
     coords = list(bathy.coords.keys())
@@ -1197,9 +1198,7 @@ def bathy_section(bathy, lon, lat, res=1, ext=0):
         ptopo = bathy.data
     elif isinstance(bathy, xr.Dataset):
         dvar = list(bathy.data_vars.keys())
-        assert (
-            len(dvar) == 1
-        ), "Bathymetry dataset must have only one data variable"
+        assert len(dvar) == 1, "Bathymetry dataset must have only one data variable"
         ptopo = bathy[dvar[0]].data
 
     # 2D interpolation function used below. RectBivariateSpline can't deal with
@@ -1742,9 +1741,7 @@ def _consec_blocks(idx=None, combine_gap=0, combine_run=0):
 
     # Find the block boundaries
     didx = np.diff(idx)
-    ii = np.concatenate(
-        ((didx > 1).nonzero()[0], np.atleast_1d(idx.shape[0] - 1))
-    )
+    ii = np.concatenate(((didx > 1).nonzero()[0], np.atleast_1d(idx.shape[0] - 1)))
 
     # Create the block_idx array
     block_idx = np.zeros((ii.shape[0], 2), dtype=int)
@@ -1787,8 +1784,7 @@ def _parse_marineregions_response_by_name(response, name):
         response = response[0]
     if len(response) > 1:
         pick = [
-            bool(re.match(name, d["preferredGazetteerName"], re.I))
-            for d in response
+            bool(re.match(name, d["preferredGazetteerName"], re.I)) for d in response
         ]
         from itertools import compress
 

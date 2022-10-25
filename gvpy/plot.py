@@ -894,6 +894,9 @@ def concise_date(ax=None, minticks=3, maxticks=10, show_offset=True, **kwargs):
     )
     ax.xaxis.set_major_locator(locator)
     ax.xaxis.set_major_formatter(formatter)
+    # remove axis label "time" if present
+    if ax.get_xlabel() == "time":
+        _ = ax.set_xlabel("")
 
 
 def concise_date_all():

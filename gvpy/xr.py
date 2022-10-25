@@ -49,7 +49,7 @@ class GunnarsAccessor:
                     "Theta",
                     "$\\Theta$",
                 ],
-                RdBu_r=["u", "v"],
+                RdBu_r=["u", "v", "w"],
             )
 
             longname = (

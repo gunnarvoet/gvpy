@@ -50,6 +50,42 @@ def nostalgic():
     mpl.rcParams["axes.titlesize"] = "x-large"
 
 
+def font_sue_ellen():
+    """
+    Reading old papers and feeling nostalgic? Fear not! This will change the
+    default matplotlib settings to transport you right back several decades.
+
+    Notes
+    -----
+    Depends on Routed Gothic Font:
+    https://webonastick.com/fonts/routed-gothic/
+    """
+    mpl.rcParams["font.size"] = 12
+    mpl.rcParams["font.family"] = "Sue Ellen Francisco"
+    mpl.rcParams["mathtext.fontset"] = "custom"
+    mpl.rcParams["mathtext.rm"] = "Helvetica"
+    mpl.rcParams["axes.titlesize"] = "x-large"
+
+
+def helvetica():
+    """
+    Reading old papers and feeling nostalgic? Fear not! This will change the
+    default matplotlib settings to transport you right back several decades.
+
+    Notes
+    -----
+    Depends on Routed Gothic Font:
+    https://webonastick.com/fonts/routed-gothic/
+    """
+    mpl.rcParams["font.size"] = 12
+    mpl.rcParams["font.family"] = "Helvetica"
+    mpl.rcParams["mathtext.fontset"] = "custom"
+    mpl.rcParams["mathtext.rm"] = "Helvetica"
+    mpl.rcParams["mathtext.it"] = "Helvetica:italic"
+    mpl.rcParams["mathtext.bf"] = "Helvetica:bold"
+    mpl.rcParams["axes.titlesize"] = "x-large"
+
+
 def stix():
     """
     Use STIX fonts
@@ -314,7 +350,6 @@ def axstyle(
     # turn grid on
     if grid:
         ax.grid(
-            b=True,
             which="major",
             axis="both",
             color="0.5",

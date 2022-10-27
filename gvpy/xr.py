@@ -62,6 +62,12 @@ class GunnarsAccessor:
                     cmap = cmapi
             return cmap
 
+        def change_cf_labels():
+            if "units" in self._obj.attrs:
+                if self._obj.attrs["units"] == "m s-1":
+                    self._obj.attrs["units"] = r"m$\,$s$^{-1}$"
+        change_cf_labels()
+
         if "ax" not in kwargs:
             fig, ax = gvplot.quickfig(w=8, h=3.5)
         else:

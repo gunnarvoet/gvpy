@@ -348,3 +348,23 @@ def datetime64_to_str(dt, strformat='%Y-%m-%d'):
 def now_datestr():
     datestr = datetime64_to_str(np.datetime64(datetime.datetime.now()), strformat="%Y-%m-%d")
     return datestr
+
+
+def slice_to_datetime64(ts):
+    """Time slice (str) to np.datetime64 array.
+
+    Parameters
+    ----------
+    ts : slice
+        Slice object with date/time strings as used when selecting subsets of
+        time series in xarray with the .sel() method.
+
+    Returns
+    -------
+    array-like
+        Two-element array with start and end time as np.datetime64 objects.
+    """
+
+    start = pd.Timestamp(ts.start).to_datetime64()
+    stop = pd.Timestamp(ts.stop).to_datetime64()
+    return np.array([start, stop])

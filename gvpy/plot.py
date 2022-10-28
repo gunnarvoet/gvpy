@@ -83,7 +83,8 @@ def helvetica():
     mpl.rcParams["mathtext.rm"] = "Helvetica"
     mpl.rcParams["mathtext.it"] = "Helvetica:italic"
     mpl.rcParams["mathtext.bf"] = "Helvetica:bold"
-    mpl.rcParams["axes.titlesize"] = "x-large"
+    mpl.rcParams["axes.titlesize"] = "medium"
+    mpl.rcParams["legend.fontsize"] = "small"
 
 
 def stix():

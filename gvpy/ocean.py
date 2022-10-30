@@ -1521,7 +1521,7 @@ def woce_climatology(lon=None, lat=None, z=None, std=False):
             ws = xr.open_dataset(woce_std_remote)
     # change a few variable names for easier access
     rnm = {
-        "ZAX": "z",
+        "ZAX": "depth",
         "LON": "lon",
         "LAT": "lat",
         "BOT_DEP": "bottom_depth",
@@ -1536,7 +1536,7 @@ def woce_climatology(lon=None, lat=None, z=None, std=False):
         "GAMMAN": "gamma",
     }
     w = w.rename(rnm)
-    w.z.attrs["units"] = "m"
+    w.depth.attrs["units"] = "m"
     if std:
         return w, ws
     else:

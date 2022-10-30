@@ -126,7 +126,7 @@ def switch_backend():
         print("switched to inline plots")
 
 
-def quickfig(fs=10, yi=True, w=6, h=4, fgs=None, r=1, c=1, **kwargs):
+def quickfig(fs=10, yi=True, w=6, h=4, fgs=None, r=1, c=1, grid=False, **kwargs):
     """
     Quick single pane figure.
 
@@ -149,6 +149,8 @@ def quickfig(fs=10, yi=True, w=6, h=4, fgs=None, r=1, c=1, **kwargs):
         Number of rows (default 1)
     c : int, optional
         Number of columns (default 1)
+    grid : bool
+        Show grid (default False)
 
     Returns
     -------
@@ -169,9 +171,9 @@ def quickfig(fs=10, yi=True, w=6, h=4, fgs=None, r=1, c=1, **kwargs):
         **kwargs,
     )
     if isinstance(ax, np.ndarray):
-        [axstyle(axi) for axi in ax]
+        [axstyle(axi, fontsize=fs, grid=grid) for axi in ax]
     else:
-        axstyle(ax, fontsize=fs)
+        axstyle(ax, fontsize=fs, grid=grid)
     if yi is False:
         ax.invert_yaxis()
     if r == 1 & c == 1:
@@ -628,6 +630,87 @@ def png(fname, figdir="fig", dpi=300, verbose=True, transparent=False):
     transparent : bool, optional
         Transparent figure background. Defaults to False.
     """
+    savedir, name = _figure_name(fname, figdir, extension="png", verbose=verbose)
+    if transparent:
+        plt.savefig(
+            savedir.joinpath(fname),
+            dpi=dpi,
+            bbox_inches="tight",
+            facecolor="none",
+            edgecolor="none",
+        )
+    else:
+        plt.savefig(
+            savedir.joinpath(fname),
+            dpi=dpi,
+            bbox_inches="tight",
+            facecolor="w",
+            edgecolor="none",
+        )
+
+
+def pdf(fname, figdir="fig", dpi=300, verbose=True, transparent=False):
+    """
+    Save figure to pdf file.
+
+    Parameters
+    ----------
+    fname : str or Path
+        Figure name if str, figure name and optionally absolute path as well if
+        Path.
+    figdir : str or Path, optional
+        Path to figure directory. Defaults to ./fig; will be created if it does
+        not exist.
+    dpi : int, optional
+        Resolution (default 300)
+    verbose : bool, optional
+        Print output path that the figure is saved to in screen.
+    transparent : bool, optional
+        Transparent figure background. Defaults to False.
+    """
+    savedir, name = _figure_name(fname, figdir, extension="pdf", verbose=verbose)
+    if transparent:
+        plt.savefig(
+            savedir.joinpath(name),
+            dpi=dpi,
+            bbox_inches="tight",
+            facecolor="none",
+            edgecolor="none",
+        )
+    else:
+        plt.savefig(
+            savedir.joinpath(name),
+            dpi=dpi,
+            bbox_inches="tight",
+            facecolor="w",
+            edgecolor="none",
+        )
+
+
+def _figure_name(fname, figdir, extension, verbose=True):
+    """
+    Generate figure name/path for png and pdf functions.
+
+    Parameters
+    ----------
+    fname : str or Path
+        Figure name if str, figure name and optionally absolute path as well if
+        Path.
+    figdir : str or Path, optional
+        Path to figure directory. Defaults to ./fig; will be created if it does
+        not exist.
+    extension : str
+        png or pdf
+    verbose : bool
+        Print savedir to screen.
+
+    Returns
+    -------
+    savedir : pathlib.Path
+        Diretory.
+    name : str
+        File name.
+    """
     # get current working directory
     cwd = Path.cwd()
     # see if we have a path instance with an absolute path. then we make this
@@ -657,23 +740,11 @@ def png(fname, figdir="fig", dpi=300, verbose=True, transparent=False):
         if verbose:
             print("creating figure directory at {}/".format(savedir))
         savedir.mkdir()
-    name = name + ".png"
-    if transparent:
-        plt.savefig(
-            savedir.joinpath(fname),
-            dpi=dpi,
-            bbox_inches="tight",
-            facecolor="none",
-            edgecolor="none",
-        )
-    else:
-        plt.savefig(
-            savedir.joinpath(fname),
-            dpi=dpi,
-            bbox_inches="tight",
-            facecolor="w",
-            edgecolor="none",
-        )
+
+    if extension[0] == ".":
+        extension = extension[1:]
+    name = name + "." + extension
+    return savedir, name
 
 
 def figsave(fname, dirname="fig"):

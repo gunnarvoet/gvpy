@@ -93,6 +93,9 @@ class GunnarsAccessor:
             ax.invert_yaxis()
         if "z" in self._obj.dims and self._obj.z.median() > 0:
             ax.invert_yaxis()
+        xlab = ax.get_xlabel()
+        if xlab[:4] == "time":
+            ax.set(xlabel="")
         return ax
 
     def tcoarsen(self, n=100):

@@ -302,6 +302,8 @@ def mat2dataset(m1):
         m1["datenum"] = m1.pop("mtime")
     if "dtnum" in m1.keys():
         m1["datenum"] = m1.pop("dtnum")
+    if "time" in m1.keys():
+        m1["datenum"] = m1.pop("time")
 
     k = m1.keys()
 
@@ -319,6 +321,7 @@ def mat2dataset(m1):
         except:
             tmp = None
             varsint.append(ki)
+
     # let's find probable dimensions. usually we have p or z for depth
     if "z" in k:
         jj = m1["z"].shape[0]
@@ -326,6 +329,8 @@ def mat2dataset(m1):
         jj = m1["p"].shape[0]
     elif "P" in k:
         jj = m1["P"].shape[0]
+    else:
+        jj = 0
 
     if "lon" in k and type(m1["lon"]) != float:
             if len(m1["lon"].shape) == 1:
@@ -337,10 +342,24 @@ def mat2dataset(m1):
         if len(m1["datenum"].shape) == 1:
             ii = m1["datenum"].shape[0]
 
-    out = xr.Dataset(
-        data_vars={"dummy": (["z", "x"], np.ones((jj, ii)) * np.nan)}
-    )
-    # get 1d variables
+    # maybe this is just a time series and not 2D...
+    if not vars2d:
+        is2d = False
+    elif jj > 0 and jj == ii:
+        is2d = False
+    else:
+        is2d = True
+
+    if is2d:
+        out = xr.Dataset(
+            data_vars={"dummy": (["z", "x"], np.ones((jj, ii)) * np.nan)}
+        )
+    else:
+        out = xr.Dataset(
+            data_vars={"dummy": (["x"], np.ones(ii) * np.nan)}
+        )
+
+    # Assign 1d variables
     for v in vars1d:
         if m1[v].shape[0] == ii:
             out[v] = (["x"], m1[v])
@@ -348,10 +367,11 @@ def mat2dataset(m1):
             out[v] = (["z"], m1[v])
 
     # convert the usual suspects into coordinates
-    suspects = ["lon", "lat", "p", "z", "depth", "dep", "P"]
-    for si in suspects:
-        if si in vars1d:
-            out.coords[si] = out[si]
+    if is2d:
+        suspects = ["lon", "lat", "p", "z", "depth", "dep", "P"]
+        for si in suspects:
+            if si in vars1d:
+                out.coords[si] = out[si]
 
     # convert time if possible
     for si in ["datenum", "dtnum", "dnum", "time"]:

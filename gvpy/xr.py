@@ -66,13 +66,16 @@ class GunnarsAccessor:
             if "units" in self._obj.attrs:
                 if self._obj.attrs["units"] == "m s-1":
                     self._obj.attrs["units"] = r"m$\,$s$^{-1}$"
+
         change_cf_labels()
 
+        grid = kwargs.pop("grid", True)
+
         if "ax" not in kwargs:
-            fig, ax = gvplot.quickfig(w=8, h=3.5)
+            fig, ax = gvplot.quickfig(w=8, h=3.5, grid=grid)
         else:
             ax = kwargs["ax"]
-        if self._obj.ndim == 2:
+        if self._obj.ndim == 2 and "hue" not in kwargs:
             cbar_kwargs_new = dict(shrink=0.8, aspect=25)
             if "cbar_kwargs" in kwargs:
                 for k, v in kwargs["cbar_kwargs"].items():
@@ -84,6 +87,8 @@ class GunnarsAccessor:
                 if "cmap" not in kwargs
                 else kwargs["cmap"]
             )
+        if "hue" in kwargs and "add_legend" not in kwargs:
+            kwargs["add_legend"] = False
         self._obj.plot(x="time", **kwargs)
         gvplot.concise_date(ax, minticks=4)
         ax.set(xlabel="", title="")
@@ -91,12 +96,19 @@ class GunnarsAccessor:
             ax.invert_yaxis()
         if "pressure" in self._obj.dims:
             ax.invert_yaxis()
+        if "p" in self._obj.dims:
+            ax.invert_yaxis()
         if "z" in self._obj.dims and self._obj.z.median() > 0:
             ax.invert_yaxis()
         xlab = ax.get_xlabel()
         if xlab[:4] == "time":
             ax.set(xlabel="")
         return ax
+
+    # Just so can inject the .gv before plot() and don't have to type the tplot()...
+    # Can still remove this if I want to make something different with it.
+    def plot(self, **kwargs):
+        self._obj.gv.tplot(**kwargs)
 
     def tcoarsen(self, n=100):
         return self._obj.coarsen(time=n, boundary="trim").mean()

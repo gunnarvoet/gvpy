@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Collection of xarray extensions that can be found under .gv attached to xarray data objects, mostly to speed up stuff that otherwise I tediously have to type out."""
+"""
+Collection of xarray extensions that can be found under .gv attached to
+xarray data objects, mostly to speed up stuff that otherwise I tediously have
+to type out.
+"""
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -108,6 +112,7 @@ class GunnarsAccessor:
     # Just so can inject the .gv before plot() and don't have to type the tplot()...
     # Can still remove this if I want to make something different with it.
     def plot(self, **kwargs):
+        """Shortcut for gv.tplot()"""
         self._obj.gv.tplot(**kwargs)
 
     def tcoarsen(self, n=100):

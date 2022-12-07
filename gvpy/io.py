@@ -15,6 +15,8 @@ import xarray as xr
 from munch import munchify
 from seabird.cnv import fCNV
 
+import gvpy
+
 
 def loadmat(filename, onevar=False, verbose=False):
     """
@@ -270,7 +272,7 @@ def read_sadcp(ncfile):
     sadcp = sadcp.drop("depth")
     # sadcp['depth'] = (['depth_cell'], mdepth)
     sadcp = sadcp.rename_dims({"depth_cell": "z"})
-    sadcp.coords["z"] = (["z"], mdepth)
+    sadcp.coords["z"] = (["z"], mdepth.data)
     # Fix some attributes
     sadcp.z.attrs = dict(long_name="depth", units="m")
     sadcp.u.attrs = dict(long_name="u", units="m/s")
@@ -296,13 +298,13 @@ def mat2dataset(m1):
     xr.Dataset
         Dataset with named variables
     """
-    if "DateNum" in m1.keys():
+    if "DateNum" in m1.keys() and "datenum" not in m1.keys():
         m1["datenum"] = m1.pop("DateNum")
-    if "mtime" in m1.keys():
+    if "mtime" in m1.keys() and "datenum" not in m1.keys():
         m1["datenum"] = m1.pop("mtime")
-    if "dtnum" in m1.keys():
+    if "dtnum" in m1.keys() and "datenum" not in m1.keys():
         m1["datenum"] = m1.pop("dtnum")
-    if "time" in m1.keys():
+    if "time" in m1.keys() and "datenum" not in m1.keys():
         m1["datenum"] = m1.pop("time")
 
     k = m1.keys()
@@ -375,8 +377,8 @@ def mat2dataset(m1):
 
     # convert time if possible
     for si in ["datenum", "dtnum", "dnum", "time"]:
-        if si in vars1d and np.nanmedian(m1[si]) > 1e5:
-            out.coords["time"] = (["x"], mtlb2datetime(m1[si]))
+        if si in vars1d and 1e8 > np.nanmedian(m1[si]) > 1e5:
+            out.coords["time"] = (["x"], gvpy.time.mattime_to_datetime64(m1[si]))
     # we have a problem if there is a variable called 'time' in 2D.
     if "time" in vars2d:
         m1["time2d"] = m1.pop("time")

@@ -52,13 +52,7 @@ def nostalgic():
 
 def font_sue_ellen():
     """
-    Reading old papers and feeling nostalgic? Fear not! This will change the
-    default matplotlib settings to transport you right back several decades.
-
-    Notes
-    -----
-    Depends on Routed Gothic Font:
-    https://webonastick.com/fonts/routed-gothic/
+    Use a font (Sue Ellen Francisco) that looks somewhat hand-written.
     """
     mpl.rcParams["font.size"] = 12
     mpl.rcParams["font.family"] = "Sue Ellen Francisco"
@@ -69,13 +63,7 @@ def font_sue_ellen():
 
 def helvetica():
     """
-    Reading old papers and feeling nostalgic? Fear not! This will change the
-    default matplotlib settings to transport you right back several decades.
-
-    Notes
-    -----
-    Depends on Routed Gothic Font:
-    https://webonastick.com/fonts/routed-gothic/
+    Use Helvetica font for plotting.
     """
     mpl.rcParams["font.size"] = 12
     mpl.rcParams["font.family"] = "Helvetica"
@@ -373,7 +361,6 @@ def axstyle(
 def gridstyle(ax, which="major"):
     if which == "both":
         ax.grid(
-            b=True,
             which="major",
             axis="both",
             color="0.4",
@@ -382,7 +369,6 @@ def gridstyle(ax, which="major"):
             alpha=0.8,
         )
         ax.grid(
-            b=True,
             which="minor",
             axis="both",
             color="0.7",
@@ -393,13 +379,12 @@ def gridstyle(ax, which="major"):
         ax.minorticks_on()
     else:
         ax.grid(
-            b=True,
             which=which,
             axis="both",
             color="0.5",
             linewidth=0.25,
             linestyle="-",
-            alpha=0.8,
+            alpha=0.5,
         )
 
 

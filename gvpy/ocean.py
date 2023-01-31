@@ -470,7 +470,7 @@ def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000, verbose=False):
             DTDZ2[idx] = local_dtdz
 
         # % Calculate epsilon
-        THepsilon = 0.9 * THsc**2.0 * np.sqrt(N2) ** 3
+        THepsilon = 0.9 * THsc ** 2.0 * np.sqrt(N2) ** 3
         THepsilon[N2 <= 0] = np.nan
         THk = 0.2 * THepsilon / N2
 
@@ -655,7 +655,7 @@ def eps_overturn2(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
             DTDZ[idx] = local_dtdz
 
         # % Calculate epsilon
-        THepsilon = 0.9 * THsc**2.0 * np.sqrt(N2) ** 3
+        THepsilon = 0.9 * THsc ** 2.0 * np.sqrt(N2) ** 3
         THepsilon[N2 <= 0] = np.nan
         THk = 0.2 * THepsilon / N2
 
@@ -726,7 +726,7 @@ def vmodes(z, N, clat, nmodes):
     z = -z if z[0] < 0 else z
     z_in = z.copy()
     N_in = N.copy()
-    nsqin = N_in**2
+    nsqin = N_in ** 2
 
     # pick only valid data
     good = (N > 0) & np.isfinite(N)
@@ -887,7 +887,7 @@ def wind_stress(u10, v10):
 
     """
     rho = 1.2  # kg/m^3, air density
-    U = np.sqrt(u10**2 + v10**2)  # wind speed
+    U = np.sqrt(u10 ** 2 + v10 ** 2)  # wind speed
     Cd = np.full_like(U, np.nan)
     Cd[np.where(U <= 1)] = 0.00218
     Cd[np.where((U > 1) & (U <= 3))] = (
@@ -1019,7 +1019,7 @@ def uv2speeddir(u, v):
         Velocity direction CCW from 0 to $2 \pi$ starting East.
     """
 
-    speed = np.sqrt(u**2 + v**2)
+    speed = np.sqrt(u ** 2 + v ** 2)
     direction = np.arctan2(v, u)
     return speed, direction
 

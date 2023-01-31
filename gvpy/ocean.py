@@ -724,6 +724,8 @@ def vmodes(z, N, clat, nmodes):
 
     """
     z = -z if z[0] < 0 else z
+    if np.any(z < 0):
+        raise (ValueError("Depths need to be all positive"))
     z_in = z.copy()
     N_in = N.copy()
     nsqin = N_in ** 2

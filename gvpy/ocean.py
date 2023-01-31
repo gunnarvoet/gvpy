@@ -774,8 +774,16 @@ def vmodes(z, N, clat, nmodes):
     u[-1] = 0
     l[-1] = 0
 
+    # sw_vmodes needs to do some extra indexing for offsetting vectors. Here,
+    # we can pass the offsets directly to scipy's sparse.diags() function. See
+    # this article for more info on how to create block tridiagonal matrices in
+    # python:
+    # https://stackoverflow.com/questions/5842903/block-tridiagonal-matrix-python
     offset = [-1, 0, 1]
-    v = np.array([-l[1:], d, -u[1:]])
+    # At some point the following worked but it does not anymore...
+    # v = np.array([-l[1:], d, -u[1:]])
+    # Constructing a list instead of a numpy array fixes the bug.
+    v = [-l[1:], d, -u[1:]]
     M = scipy.sparse.diags(v, offset).toarray()
 
     w = scipy.linalg.eig(M)

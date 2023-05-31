@@ -106,6 +106,19 @@ def loadmat(filename, onevar=False, verbose=False):
         return out
 
 
+def savemat(out, filename):
+    """Save dictionary to Matlab .mat file.
+
+    Parameters
+    ----------
+    out : dict
+        Dictionary with data to save. Variables in the .mat file will have dict keys as names.
+    filename : str
+        Path to .mat file
+    """
+    sio.savemat(filename, out, format="5")
+
+
 def mtlb2datetime(
     matlab_datenum, strip_microseconds=False, strip_seconds=False
 ):

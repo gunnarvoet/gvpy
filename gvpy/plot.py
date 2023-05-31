@@ -768,6 +768,12 @@ def figsave(fname, dirname="fig"):
     print("figure printed to {}".format(pwd))
 
 
+def contourf_hide_edges(h):
+    for c in h.collections:
+        c.set_rasterized(True)
+        c.set_edgecolor("face")
+
+
 def quickbasemap(ax, lon, lat, field=None):
     """
     Plot a quick map using basemap.

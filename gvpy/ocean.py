@@ -15,6 +15,7 @@ from scipy import interpolate
 from scipy.interpolate import NearestNDInterpolator, interp1d
 from scipy.signal import filtfilt
 import scipy
+import lat_lon_parser
 
 from gvpy.misc import nearidx2
 
@@ -1057,14 +1058,14 @@ def uv_rotate(u, v, theta):
     return ur, vr
 
 
-def smith_sandwell(lon="all", lat="all", r15=False, subsample=False, lon360=False):
+def smith_sandwell(lon="all", lat="all", r15=False, subsample=False, lon360=False, pad=0):
     """Load Smith & Sandwell bathymetry
 
     Parameters
     ----------
     lon : float, list or 'all'
         Longitude range. This may either be a single point, a list of points,
-        or 'all' (default). If given onne point, the nearest ocean depth is
+        or 'all' (default). If given one point, the nearest ocean depth is
         returned. For a list of locations, all encompassing data points are
         returned. 'all' returns the whole bathymetry.
     lat : float, list or 'all'
@@ -1076,6 +1077,8 @@ def smith_sandwell(lon="all", lat="all", r15=False, subsample=False, lon360=Fals
         Downsample over this many points.
     lon360 : bool
         Return longitude [0...360]. Defaults to False.
+    pad : float or (float, float), optional
+        Pad lon/lat range by this much. Defaults to zero.
 
     Returns
     -------
@@ -1106,6 +1109,14 @@ def smith_sandwell(lon="all", lat="all", r15=False, subsample=False, lon360=Fals
         )
         print(e)
         return
+
+    if type(pad) is tuple:
+        pad_lon = pad[0]
+        pad_lat = pad[1]
+    else:
+        pad_lon = pad
+        pad_lat = pad
+
     if not lon360:
         b["lon"] = np.mod((b.lon + 180), 360) - 180
     if type(lon) is str and lon == "all":
@@ -1119,15 +1130,15 @@ def smith_sandwell(lon="all", lat="all", r15=False, subsample=False, lon360=Fals
             b = b.interp(dict(lon=lon, lat=lat))
         # for a range of lon/lat
         else:
-            lonmask = (b.lon > np.nanmin(lon)) & (b.lon < np.nanmax(lon))
-            latmask = (b.lat > np.nanmin(lat)) & (b.lat < np.nanmax(lat))
+            lonmask = (b.lon > np.nanmin(lon)-pad_lon) & (b.lon < np.nanmax(lon)+pad_lon)
+            latmask = (b.lat > np.nanmin(lat)-pad_lat) & (b.lat < np.nanmax(lat)+pad_lat)
             b = b.isel(lon=lonmask, lat=latmask)
     # Transforming lon from 0:360 to -180:180 means we also have to sort the
     # dataset along the new coordinate.
     if not lon360:
         b = b.sortby("lon")
     if subsample:
-        b = b.coarsen({"lon": subsample, "lat": subsample}).mean()
+        b = b.coarsen({"lon": subsample, "lat": subsample}, boundary="trim").mean()
     return b
 
 
@@ -1728,6 +1739,10 @@ def lonlatstr(lon, lat):
     slat = f"{int(np.abs(lat_degrees)):3d}° {lat_minutes:6.3f}' {NS}"
 
     return slon, slat
+
+
+def lonlat_str_to_dec(ll):
+    return lat_lon_parser.parse(ll)
 
 
 def _consec_blocks(idx=None, combine_gap=0, combine_run=0):

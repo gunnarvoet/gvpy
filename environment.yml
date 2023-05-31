@@ -26,6 +26,7 @@ dependencies:
   - pip
   - pip:
     - pyrsktools
+    - lat-lon-parser
     - seabird
     - watchmagic
     - jupytext

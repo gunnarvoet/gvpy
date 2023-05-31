@@ -85,6 +85,9 @@ class GunnarsAccessor:
                 for k, v in kwargs["cbar_kwargs"].items():
                     cbar_kwargs_new[k] = v
             kwargs["cbar_kwargs"] = cbar_kwargs_new
+            # this is hacky but allows to pass the add_colorbar argument
+            if "add_colorbar" in kwargs and kwargs["add_colorbar"] is False:
+                kwargs.pop("cbar_kwargs", True)
 
             kwargs["cmap"] = (
                 assign_cmap(self._obj)

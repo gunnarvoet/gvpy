@@ -386,3 +386,11 @@ def slice_to_datetime64(ts):
     start = pd.Timestamp(ts.start).to_datetime64()
     stop = pd.Timestamp(ts.stop).to_datetime64()
     return np.array([start, stop])
+
+
+def month_str(one_letter_only=False):
+    if one_letter_only:
+        months = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"]
+    else:
+        months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    return months

@@ -339,10 +339,28 @@ def convert_units(t, unit='s'):
     return out
 
 
-def datetime64_to_str(dt, strformat='%Y-%m-%d'):
-    t = dt.astype(datetime.datetime)
-    tstr = t.strftime(strformat)
-    return tstr
+def datetime64_to_str(dt, unit="D"):
+    """Convert numpy datetime64 object or array to str or array of str.
+
+    Parameters
+    ----------
+    dt : np.datetime64 or array-like
+        Time in numpy datetime64 format
+    unit : str, optional
+        Date unit. Defaults to "D".
+
+    Returns
+    -------
+    str or array of str
+
+    Notes
+    -----
+    Valid date unit formats are listed at
+    https://numpy.org/doc/stable/reference/arrays.datetime.html#arrays-dtypes-dateunits
+
+    """
+
+    return np.datetime_as_string(dt, unit=unit)
 
 
 def now_datestr():

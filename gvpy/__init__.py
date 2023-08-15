@@ -19,7 +19,7 @@
 
 ## License
 
-Copyright 2020 Gunnar Voet
+Copyright 2023 Gunnar Voet
 
 gvpy is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by

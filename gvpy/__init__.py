@@ -38,11 +38,15 @@ along with gvpy.  If not, see <http://www.gnu.org/licenses/>.
 Clone the package from https://github.com/gunnarvoet/gvpy. Then install `gvpy`
 by changing into the root directory and running
 
->>> python setup.py install
+```sh
+python setup.py install
+```
 
 or using [pip](https://pypi.org/project/pip/)
 
->>> pip install .
+```sh
+pip install .
+```
 
 To install in developer mode run either
 

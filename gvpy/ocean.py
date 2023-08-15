@@ -63,15 +63,14 @@ def nsqfcn(s, t, p, p0, dp, lon, lat):
     Notes
     -----
     For buoyancy frequency in [cyc/s] calculate
-      .. math::
-
-        \sqrt{N^2} / (2 \pi)
+    $$
+    \sqrt{N^2} / (2 \pi)
+    $$
 
     For the period in [s]:
-      .. math::
-
-        (2 \pi) / \sqrt{N^2}
-
+    $$
+    (2 \pi) / \sqrt{N^2}
+    $$
     """
     G = 9.80655
     dz = dp

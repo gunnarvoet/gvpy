@@ -71,17 +71,14 @@ coverage: ## check code coverage quickly with the default Python
 	coverage html
 	$(BROWSER) htmlcov/index.html
 
-docs: ## generate Sphinx HTML documentation, including API docs
-	rm -rf html
-	pdoc --html --config latex_math=True gvpy
-	mv html/gvpy docs
-	rmdir html
+docs: ## generate documentation using pdoc
+	rm -rf docs
+	pdoc -d numpy -o docs -t .pdoc-theme-gv/ --math gvpy
 	$(BROWSER) docs/index.html
 
-servedocs: docs ## compile the docs watching for changes
-	pdoc --http : --config latex_math=True gvpy
-	$(BROWSER) http://localhost:8080
-
+servedocs: ## compile the docs & watch for changes
+	pdoc -d numpy -t .pdoc-theme-gv/ --math gvpy
+	# $(BROWSER) http://localhost:8080
 
 release: dist ## package and upload a release
 	twine upload dist/*

@@ -22,7 +22,7 @@ dependencies:
   - tqdm
   - xarray
   - xgcm
-  - pdoc3
+  - pdoc
   - pip
   - pip:
     - pyrsktools

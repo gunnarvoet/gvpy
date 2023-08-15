@@ -698,26 +698,26 @@ def vmodes(z, N, clat, nmodes):
     Notes
     -----
     Basically solves
-      .. math::
-
+    $$
         \Phi_{zz} + \mathrm{ev} N^2 \Phi = 0
-
+    $$
     subject to:
-      .. math::
-
+    $$
         \Phi(-d) = 0
+    $$
 
-    .. math::
+    $$
         \Phi_z(0) - g \, \mathrm{ev} \, \Phi(0) = 0
+    $$
 
-    Where \(\Phi\) is the mode function, \(\mathrm{ev}\) the eigenvalue, \(N^2\)
-    the buoyancy frequency squared and \(g\) the gravitational constant as a fcn
+    Where $\Phi$ is the mode function, $\mathrm{ev}$ the eigenvalue, $N^2$ the
+    buoyancy frequency squared and $g$ the gravitational constant as a function
     of latitude.
 
-    `| Originally written by Benno Blumenthal, 23 July 1981, in FORTRAN
-    | Modified for SUNS by  CC Eriksen, August 1988
-    | Translated to MatLab 4.2c J. Klymak, March 1997
-    | Ported from sw_vmodes.m to Python by G. Voet, May 2020`
+    `| Originally written by Benno Blumenthal, 23 July 1981, in FORTRAN`<br>
+    `| Modified for SUNS by  CC Eriksen, August 1988`<br>
+    `| Translated to MatLab 4.2c J. Klymak, March 1997`<br>
+    `| Ported from sw_vmodes.m to Python by G. Voet, May 2020`
 
     Matlab results are in good agreement with the results from Blumenthal's
     original code, but they are not precise. The Python translation returns

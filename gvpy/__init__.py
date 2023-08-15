@@ -50,11 +50,15 @@ pip install .
 
 To install in developer mode run either
 
->>> python setup.py develop
+```sh
+python setup.py develop
+```
 
 or
 
->>> pip install -e .
+```sh
+pip install -e .
+```
 
 Now in python you should be able to run
 

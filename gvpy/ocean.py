@@ -1703,9 +1703,11 @@ def lonlatstr(lon, lat):
 
     Example
     -------
-    >>> lon, lat = -168.9158, -9.7152
-    >>> slon, slat = lonlatstr(lon, lat)
-    >>> print(slon, slat)
+    ```py
+    lon, lat = -168.9158, -9.7152
+    slon, slat = lonlatstr(lon, lat)
+    print(slon, slat)
+    ```
     168° 54.948' W   9° 42.912' S
     """
     # Convert from numpy ndarray to float if necessary

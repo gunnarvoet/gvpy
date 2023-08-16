@@ -669,8 +669,8 @@ def eps_overturn2(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
 
 
 def vmodes(z, N, clat, nmodes):
-    r"""
-    Calculate vertical and associated horizontal modes in a flat-bottomed ocean.
+    r"""Calculate vertical and associated horizontal modes in a flat-bottomed
+    ocean.
 
     Parameters
     ----------
@@ -709,7 +709,7 @@ def vmodes(z, N, clat, nmodes):
         \Phi_z(0) - g \, \mathrm{ev} \, \Phi(0) = 0
     $$
 
-    Where $\Phi$ is the mode function, $\mathrm{ev}$ the eigenvalue, $N^2$ the
+    where $\Phi$ is the mode function, $\mathrm{ev}$ the eigenvalue, $N^2$ the
     buoyancy frequency squared and $g$ the gravitational constant as a function
     of latitude.
 

@@ -2,6 +2,42 @@
 useful for oceanographic data analysis. Please note that the code changes often
 and without any warning or notice.
 
+## Installation
+
+Clone the package from
+[https://github.com/gunnarvoet/gvpy](https://github.com/gunnarvoet/gvpy). For a regular
+installation, change into the package root directory and run
+
+```sh
+python setup.py install
+```
+
+or using [pip](https://pypi.org/project/pip/)
+
+```sh
+pip install .
+```
+
+To install the package in developer mode (needed to make code changes available on the fly) run either
+
+```sh
+python setup.py develop
+```
+
+or
+
+```sh
+pip install -e .
+```
+
+Now, in Python you should be able to run
+
+```python
+import gvpy
+```
+
+which will provide several sub-modules, for example `gvpy.ocean`, as documented here.
+
 ## License
 
 Copyright 2023 Gunnar Voet
@@ -17,45 +53,9 @@ details.
 
 You should have received a copy of the GNU Lesser General Public License along
 with gvpy.  If not, see <http://www.gnu.org/licenses/>.
-
-## Installation
-
-Clone the package from
-[https://github.com/gunnarvoet/gvpy](https://github.com/gunnarvoet/gvpy). Then
-install `gvpy` by changing into the root directory and running
-
-```sh
-python setup.py install
-```
-
-or using [pip](https://pypi.org/project/pip/)
-
-```sh
-pip install .
-```
-
-To install in developer mode run either
-
-```sh
-python setup.py develop
-```
-
-or
-
-```sh
-pip install -e .
-```
-
-Now in python you should be able to run
-
-```python
-import gvpy
-```
-
-which will provide several sub-modules as documented here.
 """
 
-__all__ = ["plot", "ocean", "misc", "signal", "io", "maps", "time", "mp", "trilaterate", "xr"]
+__all__ = ["io", "ocean", "plot", "time", "signal", "maps", "mp", "trilaterate", "xr", "misc", ]
 
 __author__ = "Gunnar Voet"
 __email__ = "gvoet@ucsd.edu"

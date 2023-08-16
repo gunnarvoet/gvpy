@@ -1422,7 +1422,7 @@ def bathy_section(bathy, lon, lat, res=1, ext=0):
     return out
 
 
-def inertial_period(lat, verbose=True):
+def inertial_period(lat: float, verbose: bool=True):
     """
     Return inertial period [days] for a given latitude.
 
@@ -1430,6 +1430,8 @@ def inertial_period(lat, verbose=True):
     ----------
     lat : float
         Latitude [deg]
+    verbose : bool, optional
+        Print result, defaults to True.
 
     Returns
     -------
@@ -1452,7 +1454,7 @@ def inertial_period(lat, verbose=True):
     return Ti
 
 
-def inertial_frequency(lat):
+def inertial_frequency(lat: float):
     r"""Return inertial frequency [rad/s] for a given latitude.
 
     Parameters
@@ -1491,7 +1493,7 @@ def inertial_frequency(lat):
     return f
 
 
-def beta(lat):
+def beta(lat: float):
     """Return the beta plane parameter [rad/s/m] for a given latitude.
 
     Parameters
@@ -1508,7 +1510,7 @@ def beta(lat):
     -----
     Calculate the beta plane approximation as
     $$
-    \beta = 2 \Omega \cos(\phi_0) / r_a
+    \\beta = 2 \Omega \cos(\phi_0) / r_a
     $$
     where $\Omega$ is the angular rotation rate of the earth, $\phi_0$ is the
     central latitude for the beta plane approximation, and $r_a$ the earth's
@@ -1749,7 +1751,7 @@ def lonlatstr(lon, lat):
     slon, slat = lonlatstr(lon, lat)
     print(slon, slat)
     ```
-    168° 54.948' W   9° 42.912' S
+    `>>  168° 54.948' W   9° 42.912' S`
     """
     # Convert from numpy ndarray to float if necessary
     if type(lon) == np.ndarray:

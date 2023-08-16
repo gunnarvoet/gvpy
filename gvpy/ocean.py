@@ -670,13 +670,13 @@ def eps_overturn2(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
 
 def vmodes(z, N, clat, nmodes):
     r"""
-    Calculate vertical modes in a flat-bottomed ocean.
+    Calculate vertical and associated horizontal modes in a flat-bottomed ocean.
 
     Parameters
     ----------
     z : float
         Depth [m]
-    N : array_like
+    N : array-like
         Buoyancy frequency [rad/s]
     clat : float
         Central latitude [deg]
@@ -685,13 +685,13 @@ def vmodes(z, N, clat, nmodes):
 
     Returns
     -------
-    Vert : array_like
+    Vert : array-like
         Vertical velocity modes, normalized
-    Hori : array_like
+    Hori : array-like
         Horizontal velocity modes, normalized
-    Edep : array_like
+    Edep : array-like
         Equivalent depth of the mode [m] (useful for deformation radii)
-    PVel : array_like
+    PVel : array-like
         Phase velocity of the mode [m/s]
 
     Notes
@@ -866,16 +866,16 @@ def wind_stress(u10, v10):
 
     Parameters
     ----------
-    u10 : array_like
+    u10 : array-like
         Eastward wind component at 10m [m/s]
-    v10 : array_like
+    v10 : array-like
         Northward wind component at 10m [m/s]
 
     Returns
     -------
-    Tx : array_like
+    Tx : array-like
         Zonal wind stress [N/m^2]
-    Ty : array_like
+    Ty : array-like
         Meridional wind stress [N/m^2]
 
     Notes
@@ -1147,9 +1147,9 @@ def smith_sandwell_section(lon, lat, res=1, ext=0):
 
     Parameters
     ----------
-    lon : arraylike
+    lon : array-like
         Longitude position along section
-    lat : arraylike
+    lat : array-like
         Latitude position along section
     res : float
         Bathymetry resolution
@@ -1186,9 +1186,9 @@ def bathy_section(bathy, lon, lat, res=1, ext=0):
         Bathymetry in xarray format, either as DataArray or as Dataset
         with only one data variable. Coordinates may either be x/y or
         lon/lat.
-    lon : arraylike
+    lon : array-like
         Longitude position along section
-    lat : arraylike
+    lat : array-like
         Latitude position along section
     res : float
         Bathymetry resolution

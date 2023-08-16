@@ -1,42 +1,28 @@
-# Copyright 2020 Gunnar Voet
-#
-# This file is part of gvpy.
-#
-# gvpy is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or any later version.
-#
-# gvpy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with gvpy.  If not, see <http://www.gnu.org/licenses/>.
-
-
-"""Python package with various little bits and pieces of code that are mostly useful for oceanographic data analysis. Please note that the code changes often and without any warning or notice.
+"""Python package with various little bits and pieces of code that are mostly
+useful for oceanographic data analysis. Please note that the code changes often
+and without any warning or notice.
 
 ## License
 
 Copyright 2023 Gunnar Voet
 
-gvpy is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or any later version.
+gvpy is free software: you can redistribute it and/or modify it under the terms
+of the GNU Lesser General Public License as published by the Free Software
+Foundation, either version 3 of the License, or any later version.
 
-gvpy is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
+gvpy is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
+details.
 
-You should have received a copy of the GNU Lesser General Public License
-along with gvpy.  If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU Lesser General Public License along
+with gvpy.  If not, see <http://www.gnu.org/licenses/>.
 
 ## Installation
 
-Clone the package from https://github.com/gunnarvoet/gvpy. Then install `gvpy`
-by changing into the root directory and running
+Clone the package from
+[https://github.com/gunnarvoet/gvpy](https://github.com/gunnarvoet/gvpy). Then
+install `gvpy` by changing into the root directory and running
 
 ```sh
 python setup.py install

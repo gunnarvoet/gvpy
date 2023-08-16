@@ -1435,9 +1435,12 @@ def inertial_period(lat, verbose=True):
     -------
     omega : float
         Inertial period [days]
+
+    See Also
+    --------
+    inertial_frequency : Returns inertial frequency in rad/s.
     """
-    Omega = 7.292e-5
-    f = 2 * Omega * np.sin(np.deg2rad(lat))
+    f = inertial_frequency(lats)
     Ti = 2 * np.pi / f
     Ti = Ti / 3600 / 24
     if verbose:
@@ -1464,23 +1467,61 @@ def inertial_frequency(lat):
 
     See Also
     --------
-    inertial_period : Inertial period in days
+    inertial_period : Returns inertial period in days
 
     Notes
     -----
-    The inertial frequency or Coriolis frequency \(f\) is equal to twice the rotation rate of \(\Omega\) of the Earth multiplied by the sine of the latitude \(\phi\):
+    The inertial frequency or Coriolis frequency $f$ is equal to twice the
+    rotation rate of $\Omega$ of the Earth multiplied by the sine of the
+    latitude $\phi$:
 
     .. math::
 
-        f = 2\omega \sin \phi
+        f = 2 \Omega \sin(\phi)
 
-    and has units of rad/s. The rotation rate of the Earth can be approximated as \(\Omega=2\pi/T\) with the rotation period of the Earth \(T\) which is approximately one *sidereal day*: 23h, 56m, 4.1s.
+    and has units of rad/s. The rotation rate of the Earth can be approximated
+    as $\Omega=2\pi/T$ with the rotation period of the Earth $T$ which is
+    approximately one *sidereal day*: 23h, 56m, 4.1s.
 
-    The inertial period in days can be calculated from \(f\) as \(T=2\pi/f/24/3600\).
+    The inertial period in days can be calculated from $f$ as
+    $T=2\pi/f/24/3600$.
     """
     Omega = 7.292115e-5  # [1/s] (Groten, 2004)
     f = 2 * Omega * np.sin(np.deg2rad(lat))
     return f
+
+
+def beta(lat):
+    """Return the beta plane parameter [rad/s/m] for a given latitude.
+
+    Parameters
+    ----------
+    lat : float
+        Degree in latitude [deg]
+
+    Returns
+    -------
+    beta : float
+        Beta parameter [rad/s/m]
+
+    Notes
+    -----
+    Calculate the beta plane approximation as
+    $$
+    \beta = 2 \Omega \cos(\phi_0) / r_a
+    $$
+    where $\Omega$ is the angular rotation rate of the earth, $\phi_0$ is the
+    central latitude for the beta plane approximation, and $r_a$ the earth's
+    radius.
+
+    See Also
+    --------
+    inertial_frequency : Returns inertial frequency in rad/s.
+    """
+    Omega = 7.292115e-5  # [1/s] (Groten, 2004)
+    earth_radius = 6.371e6 # [m] [wikipedia](https://en.wikipedia.org/wiki/Earth_radius)
+    beta = 2 * Omega * np.cos(np.deg2rad(lat)) / earth_radius
+    return beta
 
 
 def woce_climatology(lon=None, lat=None, z=None, std=False):

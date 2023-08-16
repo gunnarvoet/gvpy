@@ -73,11 +73,11 @@ coverage: ## check code coverage quickly with the default Python
 
 docs: ## generate documentation using pdoc
 	rm -rf docs
-	pdoc -d numpy -o docs -t .pdoc-theme-gv --math ./gvpy
+	PDOC_ALLOW_EXEC=1 pdoc -d numpy -o docs -t .pdoc-theme-gv --math ./gvpy
 	$(BROWSER) docs/index.html
 
 servedocs: ## compile the docs & watch for changes
-	pdoc -d numpy -t .pdoc-theme-gv --math gvpy
+	PDOC_ALLOW_EXEC=1 pdoc -d numpy -t .pdoc-theme-gv --math gvpy
 	# $(BROWSER) http://localhost:8080
 
 release: dist ## package and upload a release

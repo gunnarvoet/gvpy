@@ -7,18 +7,8 @@ The following colormaps are added:
 - ocean4jbm_r
 
 Thanks to [John Mickett](http://apl.uw.edu/people/profile.php?last_name=Mickett&first_name=John) for `ocean4jbm`!
-
-
 """
-
-#  This script registers the "turbo" colormap to matplotlib, and the reversed
-#  version as "turbo_r".
-#  Reference:
-#  https://ai.googleblog.com/2019/08/turbo-improved-rainbow-colormap-for.html
-
-# Also registers ocean colormap from John Mickett as "ocean4jbm" and
-# "ocean4jbm_r".
-
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
@@ -128,7 +118,6 @@ ocean4jbm = np.array(
 )
 
 
-
 def RGBToPyCmap(rgbdata):
     """
     Convert an array of RGB to Matplotlib colormap.
@@ -163,10 +152,12 @@ def RGBToPyCmap(rgbdata):
 
 
 mpl_data = RGBToPyCmap(ocean4jbm)
-plt.register_cmap(cmap=LinearSegmentedColormap("ocean4jbm", mpl_data, ocean4jbm.shape[0]))
+if "ocean4jbm" not in mpl.colormaps:
+    mpl.colormaps.register(cmap=LinearSegmentedColormap("ocean4jbm", mpl_data, ocean4jbm.shape[0]))
 
 mpl_data_r = RGBToPyCmap(ocean4jbm[::-1, :])
-plt.register_cmap(cmap=LinearSegmentedColormap("ocean4jbm_r", mpl_data_r, ocean4jbm.shape[0]))
+if "ocean4jbm_r" not in mpl.colormaps:
+    mpl.colormaps.register(cmap=LinearSegmentedColormap("ocean4jbm_r", mpl_data_r, ocean4jbm.shape[0]))
 
 if __name__ == "__main__":
 

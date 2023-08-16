@@ -1442,7 +1442,7 @@ def inertial_period(lat: float, verbose: bool=True):
     --------
     inertial_frequency : Returns inertial frequency in rad/s.
     """
-    f = inertial_frequency(lats)
+    f = inertial_frequency(lat)
     Ti = 2 * np.pi / f
     Ti = Ti / 3600 / 24
     if verbose:

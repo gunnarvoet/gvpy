@@ -469,7 +469,7 @@ def vstep(x, y, ax=None, *args, **kwargs):
     return lines
 
 
-def stickplot(ax, times, speeds, directions, units='', scale=0.1):
+def stickplot(ax, times, speeds, directions, units='', scale=0.1, color='k'):
     """
     Create a stick plot of the given data on the given axes.
 
@@ -504,6 +504,7 @@ def stickplot(ax, times, speeds, directions, units='', scale=0.1):
              'headlength': 0,
              'headaxislength': 0,
              'scale' : scale,
+             'color' : color,
              }
 
     # fixme: this should use some smarts to fit the data

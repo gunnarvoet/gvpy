@@ -711,7 +711,10 @@ def vmodes(z, N, clat, nmodes):
 
     where $\Phi$ is the mode function, $\mathrm{ev}$ the eigenvalue, $N^2$ the
     buoyancy frequency squared and $g$ the gravitational constant as a function
-    of latitude.
+    of latitude. The eigenvalue $\mathrm{ev}$ is related to the eigenspeed $c_n$ as
+    $$
+    c_n = \sqrt{\frac{1}{\mathrm{ev}}}
+    $$
 
     `| Originally written by Benno Blumenthal, 23 July 1981, in FORTRAN`<br>
     `| Modified for SUNS by  CC Eriksen, August 1988`<br>

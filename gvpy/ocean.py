@@ -691,8 +691,8 @@ def vmodes(z, N, clat, nmodes):
         Horizontal velocity modes, normalized
     Edep : array-like
         Equivalent depth of the mode [m] (useful for deformation radii)
-    PVel : array-like
-        Phase velocity of the mode [m/s]
+    ESpd : array-like
+        Eigenspeed of the mode [m/s]
 
     Notes
     -----
@@ -796,7 +796,7 @@ def vmodes(z, N, clat, nmodes):
     nptsin = z_in.shape[0]
     Vert = np.zeros((nptsin, nmodes))
     Hori = np.zeros((nptsin, nmodes))
-    PVel = np.zeros(nmodes)
+    ESpd = np.zeros(nmodes)
     Edep = np.zeros(nmodes)
 
     for imode in range(nmodes):
@@ -825,9 +825,9 @@ def vmodes(z, N, clat, nmodes):
         dz = interp1d(z, dz)(z_in)
 
         edepth = grainv / ev[imode]
-        phasev = np.sqrt(np.absolute(1 / ev[imode]))
-        const = nbar / phasev
-        phasev = phasev * np.sign(ev[imode])
+        eigenspeed = np.sqrt(np.absolute(1 / ev[imode]))
+        const = nbar / eigenspeed
+        eigenspeed = eigenspeed * np.sign(ev[imode])
 
         emhor = np.full_like(z_in, np.nan)
         emver = np.full_like(z_in, np.nan)
@@ -850,14 +850,14 @@ def vmodes(z, N, clat, nmodes):
         # put everybody in their matrices
         Vert[0 : len(emver), imode] = emver
         Hori[0 : len(emver), imode] = emhor
-        PVel[imode] = phasev
+        ESpd[imode] = eigenspeed
         Edep[imode] = edepth
 
         # Normalize
         Vert[:, imode] = Vert[:, imode] / np.max(np.absolute(Vert[:, imode]))
         Hori[:, imode] = Hori[:, imode] / np.max(np.absolute(Hori[:, imode]))
 
-    return Vert, Hori, Edep, PVel
+    return Vert, Hori, Edep, ESpd
 
 
 def wind_stress(u10, v10):

@@ -690,9 +690,9 @@ def vmodes(z, N, clat, nmodes):
     Hori : array-like
         Horizontal velocity modes, normalized
     Edep : array-like
-        Equivalent depth of the mode [m] (useful for deformation radii)
+        Equivalent depth of the modes [m] (useful for deformation radii)
     ESpd : array-like
-        Eigenspeed of the mode [m/s]
+        Eigenspeed of the modes [m/s]
 
     Notes
     -----

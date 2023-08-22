@@ -116,7 +116,7 @@ def savemat(out, filename):
     filename : str
         Path to .mat file
     """
-    sio.savemat(filename, out, format="5")
+    spio.savemat(filename, out, format="5")
 
 
 def mtlb2datetime(

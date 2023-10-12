@@ -55,7 +55,7 @@ You should have received a copy of the GNU Lesser General Public License along
 with gvpy.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-__all__ = ["io", "ocean", "plot", "time", "signal", "maps", "mp", "trilaterate", "xr", "misc", ]
+__all__ = ["io", "ocean", "plot", "time", "signal", "maps", "mp", "trilaterate", "xr", "misc", "gm81"]
 
 __author__ = "Gunnar Voet"
 __email__ = "gvoet@ucsd.edu"
@@ -69,4 +69,4 @@ except ImportError:
 
     mpl.use("Agg")
 
-from . import io, misc, ocean, plot, signal, maps, time, mp, trilaterate, xr
+from . import io, misc, ocean, plot, signal, maps, time, mp, trilaterate, xr, gm81

@@ -21,7 +21,7 @@ from gvpy.misc import nearidx2
 
 
 def nsqfcn(s, t, p, p0, dp, lon, lat):
-    """Calculate square of buoyancy frequency [rad/s]^2 for profile of
+    r"""Calculate square of buoyancy frequency [rad/s]^2 for profile of
     temperature, salinity and pressure.
 
     The Function:
@@ -1094,9 +1094,10 @@ def smith_sandwell(lon="all", lat="all", r15=False, subsample=False, lon360=Fals
     """
     if r15:
         resolution = 15
+        nc_file = "/Users/gunnar/Data/bathymetry/smith_sandwell/SRTM15_V2.5.5.nc"
     else:
         resolution = 30
-    nc_file = "/Users/gunnar/Data/bathymetry/smith_sandwell/topo{}.grd".format(
+        nc_file = "/Users/gunnar/Data/bathymetry/smith_sandwell/topo{}.grd".format(
         resolution
     )
     try:
@@ -1497,7 +1498,7 @@ def inertial_frequency(lat: float):
 
 
 def beta(lat: float):
-    """Return the beta plane parameter [rad/s/m] for a given latitude.
+    r"""Return the beta plane parameter [rad/s/m] for a given latitude.
 
     Parameters
     ----------

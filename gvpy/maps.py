@@ -193,7 +193,7 @@ class HillShade:
         for c in h2.collections:
             c.set_rasterized(True)
 
-    def plot_topo_c(self, cmap="Blues"):
+    def plot_topo_c(self, cmap="Blues", ax=None):
         """Plot topography with hill shading using cartopy.
 
         Parameters
@@ -205,12 +205,16 @@ class HillShade:
         """
         projection = ccrs.Mercator()
 
-        fig, ax = plt.subplots(
-            nrows=1,
-            ncols=1,
-            figsize=(8, 8),
-            subplot_kw={"projection": projection},
-        )
+        if ax is None:
+            fig, ax = plt.subplots(
+                nrows=1,
+                ncols=1,
+                figsize=(8, 8),
+                subplot_kw={"projection": projection},
+            )
+            newfig = True
+        else:
+            newfig = False
 
         mindepth = np.min(self.topo)
         maxdepth = np.max(self.topo)
@@ -255,7 +259,11 @@ class HillShade:
 
         ax.set_extent(self.topo_extent, crs=ccrs.PlateCarree())
 
-        return fig, ax
+
+        if newfig:
+            return fig, ax
+        else:
+            return ax
 
 
 def cartopy_scale_bar(

@@ -5,6 +5,7 @@
 
 import datetime
 import numpy as np
+import scipy
 import pandas as pd
 import xarray as xr
 
@@ -366,6 +367,11 @@ def datetime64_to_str(dt, unit="D"):
 def timedelta64_to_s(td):
     assert td.dtype.str[:3] == "<m8"
     return td.astype("<m8[ns]").astype("int") / 1e9
+
+
+def dominant_frequency_in_s(time64):
+    res = scipy.stats.mode(np.diff(time64))
+    return timedelta64_to_s(res.mode)
 
 
 def slice_to_datetime64(ts):

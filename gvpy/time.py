@@ -363,9 +363,9 @@ def datetime64_to_str(dt, unit="D"):
     return np.datetime_as_string(dt, unit=unit)
 
 
-def now_datestr():
-    datestr = datetime64_to_str(np.datetime64(datetime.datetime.now()), strformat="%Y-%m-%d")
-    return datestr
+def timedelta64_to_s(td):
+    assert td.dtype.str[:3] == "<m8"
+    return td.astype("<m8[ns]").astype("int") / 1e9
 
 
 def slice_to_datetime64(ts):
@@ -386,6 +386,11 @@ def slice_to_datetime64(ts):
     start = pd.Timestamp(ts.start).to_datetime64()
     stop = pd.Timestamp(ts.stop).to_datetime64()
     return np.array([start, stop])
+
+
+def now_datestr():
+    datestr = datetime64_to_str(np.datetime64(datetime.datetime.now()), strformat="%Y-%m-%d")
+    return datestr
 
 
 def month_str(one_letter_only=False):

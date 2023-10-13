@@ -364,12 +364,36 @@ def datetime64_to_str(dt, unit="D"):
     return np.datetime_as_string(dt, unit=unit)
 
 
-def timedelta64_to_s(td):
-    assert td.dtype.str[:3] == "<m8"
-    return td.astype("<m8[ns]").astype("int") / 1e9
+def timedelta64_to_s(td64):
+    """Convert np.timedelta64 with any time unit to float [s].
+
+    Parameters
+    ----------
+    td64 : np.timedelta64
+        Time delta.
+
+    Returns
+    -------
+    np.float64
+        Time delta in seconds.
+    """
+    assert td64.dtype.str[:3] == "<m8"
+    return td64.astype("<m8[ns]").astype("float") / 1e9
 
 
 def dominant_period_in_s(time64):
+    """Return the dominant period [s] in a time vector.
+
+    Parameters
+    ----------
+    dt64 : np.datetime64
+        Time vector.
+
+    Returns
+    -------
+    period : float64
+        Dominant period in seconds.
+    """
     res = scipy.stats.mode(np.diff(time64))
     return timedelta64_to_s(res.mode)
 

@@ -369,7 +369,7 @@ def timedelta64_to_s(td):
     return td.astype("<m8[ns]").astype("int") / 1e9
 
 
-def dominant_frequency_in_s(time64):
+def dominant_period_in_s(time64):
     res = scipy.stats.mode(np.diff(time64))
     return timedelta64_to_s(res.mode)
 

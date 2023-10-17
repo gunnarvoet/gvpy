@@ -161,7 +161,7 @@ class GunnarsAccessor:
         return self._obj.coarsen(time=n, boundary="trim").mean()
 
     def plot_spectrum(self, N=None, nwind=2):
-        """Plot power spectral density
+        """Plot power spectral density with respect to cpd.
 
         Parameters
         ----------

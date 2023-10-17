@@ -235,7 +235,7 @@ def newfig(width=7.5, height=5.5, fontsize=12):
 
     # turn grid on
     ax.grid(
-        b=True,
+        # b=True,
         which="major",
         axis="both",
         color="0.7",

@@ -128,9 +128,27 @@ class GunnarsAccessor:
             ax.set(xlabel="")
         return ax
 
+    def zplot(self, **kwargs):
+        grid = kwargs.pop("grid", True)
+        if "ax" not in kwargs:
+            fig, ax = gv.plot.quickfig(w=3.5, h=4, grid=grid)
+        else:
+            ax = kwargs["ax"]
+        if "depth" in self._obj.coords:
+            zvar = "depth"
+        elif "z" in self._obj.coords:
+            zvar = "z"
+        self._obj.plot(y=zvar, **kwargs)
+        ax.set(ylabel="depth [m]", title="")
+        gv.plot.ydecrease(ax)
+        return ax
+
     def plot(self, **kwargs):
         """Shortcut for `tplot`"""
-        self._obj.gv.tplot(**kwargs)
+        if "time" in self._obj.coords:
+            return self._obj.gv.tplot(**kwargs)
+        elif "depth" in self._obj.coords or "z" in self._obj.coords:
+            return self._obj.gv.zplot(**kwargs)
 
     def tcoarsen(self, n=100):
         """Quickly coarsen DataArray along time dimension.

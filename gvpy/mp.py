@@ -47,9 +47,14 @@ def load_proc_mat(file, subvar=None):
     mp.attrs["lon"] = lon
     mp.attrs["lat"] = lat
 
-    if 'time2d' in mp:
-        time2d = np.array([gv.time.mattime_to_datetime64(mpi.time2d.data) for g, mpi in mp.groupby('time')])
-        mp.coords['time2'] = (('z', 'time'), time2d.transpose())
+    if "time2d" in mp:
+        time2d = np.array(
+            [
+                gv.time.mattime_to_datetime64(mpi.time2d.data)
+                for g, mpi in mp.groupby("time")
+            ]
+        )
+        mp.coords["time2"] = (("z", "time"), time2d.transpose())
         mp = mp.drop("time2d")
 
     atts = dict(
@@ -283,26 +288,35 @@ def add_hab(mp, bottom_depth=None):
     return mp
 
 
-def add_overturns(mp):
+def add_overturns(mp, alpha=0.64, dnoise=5e-4, dnoise_CT=2e-3, background_eps=np.nan):
+    """Add Thorpe scale dissipation to MP dataset.
+
+    Parameters
+    ----------
+    mp : xr.Dataset
+        MP dataset
+    alpha : float, optional
+        Coefficient relating the Thorpe and Ozmidov scales. Defaults to 0.64.
+    background_eps : float, optional
+        Background value of epsilon applied where no overturns are detected.
+        Defaults to NaN.
+
+    Returns
+    -------
+    mp : xr.Dataset
+        MP dataset with variables `eps` and `eps_t`
+    """
     epsall = []
     epstall = []
     lon = mp.attrs["lon"]
     lat = mp.attrs["lat"]
     for group, ctd in mp.groupby("time"):
-        notnan = (
-            np.isfinite(ctd["z"])
-            & np.isfinite(ctd["t"])
-            & np.isfinite(ctd["s"])
-        )
+        notnan = np.isfinite(ctd["z"]) & np.isfinite(ctd["t"]) & np.isfinite(ctd["s"])
 
         depth = ctd["z"][notnan].data
         t = ctd["t"][notnan].data
         SP = ctd["s"][notnan].data
 
-        dnoise = 5e-4  # Noise parameter
-        alpha = 0.8  # Coefficient relating the Thorpe and Ozmidov scales.
-        # Background value of epsilon applied where no overturns are detected.
-        background_eps = np.nan
         # Do not use the intermediate profile method
         use_ip = False
         # Critical value of the overturn ratio
@@ -334,7 +348,7 @@ def add_overturns(mp):
             background_eps=background_eps,
             use_ip=use_ip,
             return_diagnostics=True,
-            overturns_from_t=True,
+            overturns_from_CT=True,
         )
 
         eps = ctd["t"].data * np.nan
@@ -344,9 +358,11 @@ def add_overturns(mp):
         epsall.append(eps)
         epstall.append(eps_t)
     mp["eps"] = (["z", "time"], mp.t.data * np.nan)
-    mp["eps_t"] = (["z", "time"], mp.t.data * np.nan)
+    mp.eps.attrs = dict(long_name='$\epsilon$', units='W/kg')
     for i, epsi in enumerate(epsall):
         mp.eps[:, i] = epsi
+    mp["eps_t"] = (["z", "time"], mp.t.data * np.nan)
+    mp.eps_t.attrs = dict(long_name='$\epsilon_\mathrm{T}$', units='W/kg')
     for i, epsi in enumerate(epstall):
         mp.eps_t[:, i] = epsi
     return mp
@@ -375,9 +391,7 @@ def add_nsquared(mp):
     if "SA" not in mp:
         mp = add_gsw_variables(mp)
     N2, pmid = gsw.Nsquared(mp.SA, mp.CT, mp.P)
-    fint = sp.interpolate.interp1d(
-        x=pmid[:, 0], y=N2, axis=0, bounds_error=False
-    )
+    fint = sp.interpolate.interp1d(x=pmid[:, 0], y=N2, axis=0, bounds_error=False)
     N2i = fint(mp.p)
     mp["N2"] = (("z", "time"), N2i)
     mp.N2.attrs["long_name"] = r"N$^2$"

@@ -19,8 +19,7 @@ import gvpy as gv
 @xr.register_dataarray_accessor("gv")
 class GunnarsAccessor:
     def __init__(self, xarray_obj):
-        """This class collects a bunch of methods under `.gv`
-        """
+        """This class collects a bunch of methods under `.gv`"""
         self._obj = xarray_obj
         self._center = None
         self._sampling_period = None
@@ -42,11 +41,12 @@ class GunnarsAccessor:
 
     @property
     def sampling_period(self):
-        """Return sampling period in seconds if one of the dimensions is time.
-        """
+        """Return sampling period in seconds if one of the dimensions is time."""
         if self._sampling_period is None:
             if "time" in self._obj.dims:
-                sampling_period_td = self._obj.time.diff('time').median().data.astype('timedelta64[s]')
+                sampling_period_td = (
+                    self._obj.time.diff("time").median().data.astype("timedelta64[s]")
+                )
                 sampling_period_s = sampling_period_td.astype(np.float64)
                 self._sampling_period = sampling_period_s.item()
         return self._sampling_period
@@ -77,9 +77,7 @@ class GunnarsAccessor:
             )
 
             longname = (
-                t.attrs["long_name"]
-                if "long_name" in t.attrs
-                else "no_long_name"
+                t.attrs["long_name"] if "long_name" in t.attrs else "no_long_name"
             )
             for cmapi, longnames in cmap_dict.items():
                 if longname in longnames:
@@ -110,9 +108,7 @@ class GunnarsAccessor:
                 kwargs.pop("cbar_kwargs", True)
 
             kwargs["cmap"] = (
-                assign_cmap(self._obj)
-                if "cmap" not in kwargs
-                else kwargs["cmap"]
+                assign_cmap(self._obj) if "cmap" not in kwargs else kwargs["cmap"]
             )
         if "hue" in kwargs and "add_legend" not in kwargs:
             kwargs["add_legend"] = False
@@ -163,8 +159,7 @@ class GunnarsAccessor:
 
         """
 
-
-        f_cpd = gv.ocean.inertial_frequency(self.lat)/(2*np.pi) * 3600 * 24
+        f_cpd = gv.ocean.inertial_frequency(self.lat) / (2 * np.pi) * 3600 * 24
 
         # determine sampling period
         sp = self.sampling_period
@@ -175,28 +170,42 @@ class GunnarsAccessor:
             g, sp, ffttype="t", window="hann", tser_window=g.size / nwind
         )
 
-        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(7, 5), constrained_layout=True)
+        fig, ax = plt.subplots(
+            nrows=1, ncols=1, figsize=(7, 5), constrained_layout=True
+        )
         freqs = np.array(
-            [24 / (14 * 24), 24 / 12.4, 2 * 24 / 12.4, 4 * 24 / 12.4, f_cpd, 2 * f_cpd, 1]
+            [
+                24 / (14 * 24),
+                24 / 12.4,
+                2 * 24 / 12.4,
+                4 * 24 / 12.4,
+                f_cpd,
+                2 * f_cpd,
+                1,
+            ]
         )
         freq_labels = ["fortnightly", "M2", "2M2", "4M2", " \nf", " \n2f", "K1"]
         for freq in freqs:
-            ax.vlines(freq, 1e-3, 1e4, color="C0", alpha=0.5, linestyle="-", linewidth=0.75)
+            ax.vlines(
+                freq, 1e-3, 1e4, color="C0", alpha=0.5, linestyle="-", linewidth=0.75
+            )
 
         # Spectrum
         ax.plot(omega * (3600 * 24) / (2 * np.pi), Ptot, linewidth=1, color="0.2")
 
         # GM
         if N is None:
-            print("No N provided, using N=2e-3 reflective of buoyancy frequency at ~1km depth")
+            print(
+                "No N provided, using N=2e-3 reflective of buoyancy frequency at ~1km depth"
+            )
             N = 2e-3
         E = gv.gm81.calc_E_omg(N=N, lat=self.lat)
-        ax.plot(E.omega * 3600 * 24 / (2 * np.pi), E.KE, label="KE", color='C3')
+        ax.plot(E.omega * 3600 * 24 / (2 * np.pi), E.KE, label="KE", color="C3")
 
         # show -2 slope
         ax.plot([5e-2, 5e-1], [5e2, 5e0], color="C6")
 
-        ax.set(xscale="log", yscale="log", xlim=(2.1e-2, 1e2), ylim=(1e-3, 1e5))
+        ax.set(xscale="log", yscale="log", xlim=(2.1e-2, 2e2), ylim=(1e-3, 1e5))
         ax = gv.plot.axstyle(ax, ticks="in", grid=True, spine_offset=10)
         gv.plot.gridstyle(ax, which="both")
         gv.plot.tickstyle(ax, which="both", direction="in")
@@ -208,8 +217,8 @@ class GunnarsAccessor:
         ax2.minorticks_off()
         ax2.xaxis.set_ticks(freqs)
         ax2.xaxis.set_ticklabels(freq_labels)
-        ax.set(ylabel='power spectral density [m$^2$/s$^2$/cps]')
-        ax.set_xlabel('frequency [cpd]', labelpad=35)
+        ax.set(ylabel="power spectral density [m$^2$/s$^2$/cps]")
+        ax.set_xlabel("frequency [cpd]", labelpad=35)
 
         return ax
 

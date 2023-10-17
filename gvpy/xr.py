@@ -240,3 +240,34 @@ class GunnarsAccessor:
 
         return ax
 
+
+# add ADCP methods to xarray Dataset
+@xr.register_dataset_accessor("gadcp")
+class GunnarsADCPAccessor:
+    def __init__(self, xarray_obj):
+        """This class collects a bunch of ADCP related methods under `.gadcp`.
+
+        Assumes that ADCP data are in a Dataset structured by `velosearaptor`
+        processing.
+        """
+        self._obj = xarray_obj
+
+    def pg_filter(self, pg):
+        """Remove ensemble averages smaller than a percent good threshold.
+        Returns an adjusted copy of the dataset instead of filtering in place.
+
+        Parameters
+        ----------
+        pg : float
+            Percent good threshold.
+
+        Returns
+        -------
+        ds : xr.Dataset
+            ADCP dataset with u, v, w filtered.
+        """
+        ds = self._obj.copy()
+        vars = ["u", "v", "w"]
+        for var in vars:
+            ds[var] = ds[var].where(ds.pg > pg)
+        return ds

@@ -478,7 +478,7 @@ def vstep(x, y, ax=None, *args, **kwargs):
     return lines
 
 
-def stickplot(ax, times, speeds, directions, units='', scale=0.1, color='k'):
+def stickplot(ax, times, speeds, directions, units="", scale=0.1, color="k"):
     """
     Create a stick plot of the given data on the given axes.
 
@@ -507,26 +507,35 @@ def stickplot(ax, times, speeds, directions, units='', scale=0.1, color='k'):
     http://matplotlib.1069221.n5.nabble.com/Stick-Plot-td21479.html
     """
 
-    props = {'units' : "dots",
-             'width' : 2,
-             'headwidth': 0,
-             'headlength': 0,
-             'headaxislength': 0,
-             'scale' : scale,
-             'color' : color,
-             }
+    props = {
+        "units": "dots",
+        "width": 2,
+        "headwidth": 0,
+        "headlength": 0,
+        "headaxislength": 0,
+        "scale": scale,
+        "color": color,
+    }
 
     # fixme: this should use some smarts to fit the data
     label_scale = 0.1
-    unit_label = "%3g %s"%(label_scale, units)
+    unit_label = "%3g %s" % (label_scale, units)
 
     y = np.zeros_like(speeds)
-    dir_rad = directions / 180. * np.pi
+    dir_rad = directions / 180.0 * np.pi
     u = np.sin(dir_rad) * speeds
     v = np.cos(dir_rad) * speeds
 
     Q = ax.quiver(times, y, u, v, **props)
-    ax.quiverkey(Q, X=0.1, Y=0.95, U=label_scale, label=unit_label, coordinates='axes', labelpos='S')
+    ax.quiverkey(
+        Q,
+        X=0.1,
+        Y=0.95,
+        U=label_scale,
+        label=unit_label,
+        coordinates="axes",
+        labelpos="S",
+    )
     yaxis = ax.yaxis
     yaxis.set_ticklabels([])
 
@@ -581,13 +590,9 @@ def pcm(*args, **kwargs):
         if "ax" in kwargs:
             pax = kwargs["ax"]
             del kwargs["ax"]
-            h = pax.pcolormesh(
-                np.ma.masked_invalid(z), vmin=vmin, vmax=vmax, **kwargs
-            )
+            h = pax.pcolormesh(np.ma.masked_invalid(z), vmin=vmin, vmax=vmax, **kwargs)
         else:
-            h = plt.pcolormesh(
-                np.ma.masked_invalid(z), vmin=vmin, vmax=vmax, **kwargs
-            )
+            h = plt.pcolormesh(np.ma.masked_invalid(z), vmin=vmin, vmax=vmax, **kwargs)
 
     elif len(args) == 3:
         if "ax" in kwargs:
@@ -997,9 +1002,7 @@ def concise_date(ax=None, minticks=3, maxticks=10, show_offset=True, **kwargs):
     if ax is None:
         ax = plt.gca()
     locator = mdates.AutoDateLocator(minticks=minticks, maxticks=maxticks)
-    formatter = mdates.ConciseDateFormatter(
-        locator, show_offset=show_offset, **kwargs
-    )
+    formatter = mdates.ConciseDateFormatter(locator, show_offset=show_offset, **kwargs)
     ax.xaxis.set_major_locator(locator)
     ax.xaxis.set_major_formatter(formatter)
     # remove axis label "time" if present
@@ -1221,9 +1224,7 @@ def subplotlabel(ax, color="k", fs=10, fw="bold", bg="w", bga=1, x=0, y=0.96):
         color=color,
         fontweight=fw,
         fontsize=fs,
-        bbox=dict(
-            facecolor=bg, edgecolor="none", alpha=bga, boxstyle="circle,pad=0.1"
-        ),
+        bbox=dict(facecolor=bg, edgecolor="none", alpha=bga, boxstyle="circle,pad=0.1"),
     )
     for axi, letter in zip(ax.flatten(), atoz[:n]):
         out.append(axi.annotate(letter, (x, y), **sublabelspecs))

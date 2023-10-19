@@ -857,6 +857,16 @@ def add_cax(fig, width=0.01, pad=0.01):
     return cax
 
 
+def find_cax():
+    fig = plt.gcf()
+    axs = fig.get_axes()
+    cax = []
+    for axi in axs:
+        if "colorbar" in axi.axes.get_label():
+            cax.append(axi)
+    return cax
+
+
 def ydecrease(ax=None):
     """
     Set decreasing yaxis as often desired when plotting a quantity

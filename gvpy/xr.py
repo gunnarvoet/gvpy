@@ -98,7 +98,7 @@ class GunnarsAccessor:
         else:
             ax = kwargs["ax"]
         if self._obj.ndim == 2 and "hue" not in kwargs:
-            cbar_kwargs_new = dict(shrink=0.8, aspect=25)
+            cbar_kwargs_new = dict(shrink=0.8, aspect=25, pad=0.03)
             if "cbar_kwargs" in kwargs:
                 for k, v in kwargs["cbar_kwargs"].items():
                     cbar_kwargs_new[k] = v

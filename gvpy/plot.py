@@ -65,7 +65,7 @@ def helvetica():
     """
     Use Helvetica font for plotting.
     """
-    mpl.rcParams["font.size"] = 12
+    mpl.rcParams["font.size"] = 10
     mpl.rcParams["font.family"] = "Helvetica"
     mpl.rcParams["mathtext.fontset"] = "custom"
     mpl.rcParams["mathtext.rm"] = "Helvetica"

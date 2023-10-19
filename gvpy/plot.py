@@ -164,7 +164,7 @@ def quickfig(fs=10, yi=True, w=6, h=4, fgs=None, r=1, c=1, grid=False, **kwargs)
         axstyle(ax, fontsize=fs, grid=grid)
     if yi is False:
         ax.invert_yaxis()
-    if r == 1 & c == 1:
+    if r == 1 and c == 1:
         ax.autoscale()
 
     # some adjustments when using ipympl

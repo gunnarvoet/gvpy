@@ -421,9 +421,9 @@ def newfigyy(width=7.5, height=5.5, fontsize=12):
         Axis handle
     """
 
-    fig, ax1 = newfig(width, height)
+    fig, ax1 = newfig(width, height, fontsize=fontsize)
     ax2 = ax1.twinx()
-    ax1 = axstyle(ax1)
+    ax1 = axstyle(ax1, fontsize=fontsize)
     spines_to_remove = ["top", "left", "bottom"]
     for spine in spines_to_remove:
         ax2.spines[spine].set_visible(False)
@@ -432,11 +432,20 @@ def newfigyy(width=7.5, height=5.5, fontsize=12):
     almost_black = "#262626"
     spines_to_keep = ["right"]
     for spine in spines_to_keep:
-        ax2.spines[spine].set_linewidth(0.5)
+        ax2.spines[spine].set_linewidth(1.0)
         ax2.spines[spine].set_color(almost_black)
         ax2.spines[spine].set_position(("outward", 5))
     ax2.xaxis.label.set_color(almost_black)
     ax2.yaxis.label.set_color(almost_black)
+    ax2.yaxis.label.set_size(fontsize)
+    ax2.yaxis.offsetText.set_fontsize(fontsize)
+    ax2.xaxis.label.set_size(fontsize)
+    ax2.xaxis.offsetText.set_fontsize(fontsize)
+    ax2.tick_params(labelsize=fontsize)
+
+    ax1.title.set_fontsize(fontsize + 1)
+    ax2.title.set_fontsize(fontsize + 1)
+
     return fig, ax1, ax2
 
 

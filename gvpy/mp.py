@@ -358,11 +358,11 @@ def add_overturns(mp, alpha=0.64, dnoise=5e-4, dnoise_CT=2e-3, background_eps=np
         epsall.append(eps)
         epstall.append(eps_t)
     mp["eps"] = (["z", "time"], mp.t.data * np.nan)
-    mp.eps.attrs = dict(long_name='$\epsilon$', units='W/kg')
+    mp.eps.attrs = dict(long_name=r'$\epsilon$', units='W/kg')
     for i, epsi in enumerate(epsall):
         mp.eps[:, i] = epsi
     mp["eps_t"] = (["z", "time"], mp.t.data * np.nan)
-    mp.eps_t.attrs = dict(long_name='$\epsilon_\mathrm{T}$', units='W/kg')
+    mp.eps_t.attrs = dict(long_name=r'$\epsilon_\mathrm{T}$', units='W/kg')
     for i, epsi in enumerate(epstall):
         mp.eps_t[:, i] = epsi
     return mp

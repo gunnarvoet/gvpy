@@ -32,6 +32,7 @@ setup(
         "requests",
         "mixsea",
         "lat-lon-parser",
+        "cartopy",
     ],
     extras_require={
         "cartopy": ["cartopy"],  # install these with: pip install gvpy[cartopy]

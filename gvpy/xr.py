@@ -11,6 +11,7 @@ xarray](https://docs.xarray.dev/en/stable/internals/extending-xarray.html).
 import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
+import cartopy.crs as ccrs
 
 import gvpy as gv
 
@@ -98,7 +99,7 @@ class GunnarsAccessor:
         else:
             ax = kwargs["ax"]
         if self._obj.ndim == 2 and "hue" not in kwargs:
-            cbar_kwargs_new = dict(shrink=0.8, aspect=25, pad=0.03)
+            cbar_kwargs_new = dict(shrink=0.8, aspect=20, pad=0.03)
             if "cbar_kwargs" in kwargs:
                 for k, v in kwargs["cbar_kwargs"].items():
                     cbar_kwargs_new[k] = v
@@ -143,12 +144,74 @@ class GunnarsAccessor:
         gv.plot.ydecrease(ax)
         return ax
 
+    def llplot(self, **kwargs):
+        da = self._obj
+        grid = kwargs.pop("grid", True)
+        if "ax" not in kwargs:
+            projection = ccrs.Mercator()
+            fig, ax = plt.subplots(
+                figsize=(5, 5),
+                subplot_kw={"projection": projection},
+                constrained_layout=True,
+                dpi=75,
+            )
+        else:
+            ax = kwargs["ax"]
+
+        vmin = da.min().data
+        vmax = da.max().data
+        if "vmin" in kwargs:
+            vmin = kwargs.pop("vmin", vmin)
+        if "vmax" in kwargs:
+            vmax = kwargs.pop("vmax", vmax)
+
+        h = da.plot(
+            x="lon",
+            y="lat",
+            transform=ccrs.PlateCarree(),
+            add_colorbar=False,
+            rasterized=True,
+            vmin=vmin,
+            vmax=vmax,
+            **kwargs,
+        )
+
+        # Adding the colorbar in a hacky way as the usual route for adding a
+        # colorbar appears to conflict with cartopy, leading to over- or
+        # undersized colorbars in many cases.
+
+        # scale colorbar width by axis width
+        pos = ax.get_position()
+        cbar_width = 2 * 1 / pos.width
+
+        from mpl_toolkits.axes_grid1 import make_axes_locatable
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes(
+            "right", size=f"{cbar_width}%", pad=0.08, axes_class=plt.Axes
+        )
+        cax.set_label("<colorbar>")
+
+        if "long_name" in da.attrs:
+            cbar_label = da.attrs["long_name"]
+        else:
+            cbar_label = da.name
+        if "units" in da.attrs:
+            cbar_label = cbar_label + f" [{da.attrs['units']}]"
+
+        plt.colorbar(h, cax=cax, label=f"{cbar_label}")
+
+        gv.plot.cartopy_axes(ax, maxticks=5)
+
+        return ax
+
     def plot(self, **kwargs):
         """Shortcut for `tplot`"""
-        if "time" in self._obj.coords:
+        if "time" in self._obj.coords and self._obj.time.size > 1:
             return self._obj.gv.tplot(**kwargs)
         elif "depth" in self._obj.coords or "z" in self._obj.coords:
             return self._obj.gv.zplot(**kwargs)
+        elif "lon" in self._obj.coords and "lat" in self._obj.coords:
+            return self._obj.gv.llplot(**kwargs)
 
     def tcoarsen(self, n=100):
         """Quickly coarsen DataArray along time dimension.

@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 """Module gvpy.misc with miscellaneous functions"""
 
+import sys
 import ctypes
 import inspect
 import warnings
+from loguru import logger
 import numpy as np
 from IPython import get_ipython
 
@@ -69,6 +71,16 @@ def cmap_div(
         name=name, colors=[mincol, midcol, maxcol], N=numcolors
     )
     return cmap
+
+
+def log():
+    logger.remove()
+    logger.add(
+        sys.stdout,
+        colorize=True,
+        format="<e>{time:YYYY-MM-DD HH:mm:ss}</e> :: {level} :: <level>{message}</level>",
+    )
+    return logger
 
 
 def jupaexit():

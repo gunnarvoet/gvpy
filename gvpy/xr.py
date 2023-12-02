@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Collection of xarray extensions.  Currently, methods are collected under
-`.gv` and automatically attached to xarray `DataArray` objects.
+Collection of xarray extensions. Currently, the following collections are attached to  xarray `DataArray` objects:
+-  `gv` collects various (mostly convenience plotting) methods.
+-  `gadcp` collects ADCP-related methods.
 
 Read more in the xarray docmumentation about [extending
 xarray](https://docs.xarray.dev/en/stable/internals/extending-xarray.html).
@@ -30,7 +31,7 @@ class GunnarsAccessor:
     # @property
     # def center(self):
     #     """Return the geographic center point of this dataset.
-    #     Just an example from the xarray docs.
+    #     Example from the xarray docs.
     #     """
     #     if self._center is None:
     #         # we can use a cache on our accessor objects, because accessors
@@ -41,14 +42,20 @@ class GunnarsAccessor:
     #     return self._center
 
     @property
-    def sampling_period(self):
-        """Return sampling period in seconds if one of the dimensions is time."""
+    def sampling_period(self) -> float:
+        """Sampling period in seconds (with three digit precision) if one of
+        the dataset dimensions is time.
+
+        Returns
+        -------
+        float
+        """
         if self._sampling_period is None:
             if "time" in self._obj.dims:
                 sampling_period_td = (
-                    self._obj.time.diff("time").median().data.astype("timedelta64[s]")
+                    self._obj.time.diff("time").median().data.astype("timedelta64[ms]")
                 )
-                sampling_period_s = sampling_period_td.astype(np.float64)
+                sampling_period_s = sampling_period_td.astype(np.float64) / 1e3
                 self._sampling_period = sampling_period_s.item()
         return self._sampling_period
 
@@ -99,7 +106,7 @@ class GunnarsAccessor:
         else:
             ax = kwargs["ax"]
         if self._obj.ndim == 2 and "hue" not in kwargs:
-            cbar_kwargs_new = dict(shrink=0.8, aspect=20, pad=0.03)
+            cbar_kwargs_new = dict(shrink=0.8, aspect=20, pad=0.01)
             if "cbar_kwargs" in kwargs:
                 for k, v in kwargs["cbar_kwargs"].items():
                     cbar_kwargs_new[k] = v
@@ -201,6 +208,9 @@ class GunnarsAccessor:
         plt.colorbar(h, cax=cax, label=f"{cbar_label}")
 
         gv.plot.cartopy_axes(ax, maxticks=5)
+
+        # No need for axis labels on a map
+        ax.set(xlabel="", ylabel="")
 
         return ax
 

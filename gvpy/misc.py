@@ -78,7 +78,7 @@ def log():
     logger.add(
         sys.stdout,
         colorize=True,
-        format="<e>{time:YYYY-MM-DD HH:mm:ss}</e> :: {level} :: <level>{message}</level>",
+        format="<e>{time:YYYY-MM-DD HH:mm:ss}</e> | {level} | <level>{message}</level>",
     )
     return logger
 

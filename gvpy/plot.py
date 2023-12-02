@@ -1051,6 +1051,13 @@ def cartopy_axes(ax, maxticks="auto"):
     gl.yformatter = LATITUDE_FORMATTER
 
 
+def vlines(x, ax=None, **kwargs):
+    if ax is None:
+        ax = plt.gca()
+    ymin, ymax = ax.get_ylim()
+    ax.vlines(x, ymin, ymax, **kwargs)
+
+
 def multi_line(x, y, z, ax, **kwargs):
     """
     Plot multiple lines with color mapping.

@@ -47,9 +47,7 @@ def loadmat(filename, onevar=False, verbose=False):
                     dict[key] = _todict(dict[key])
             else:
                 for i in range(0, ni):
-                    if isinstance(
-                        dict[key][i], spio.matlab.mio5_params.mat_struct
-                    ):
+                    if isinstance(dict[key][i], spio.matlab.mio5_params.mat_struct):
                         dict[key][i] = _todict(dict[key][i])
         return dict
 
@@ -76,9 +74,7 @@ def loadmat(filename, onevar=False, verbose=False):
         actual_keys = [k for k in dk if k[:2] != "__"]
         if len(actual_keys) == 1:
             if verbose:
-                print(
-                    "found only one variable, returning munchified data structure"
-                )
+                print("found only one variable, returning munchified data structure")
             return munchify(out[actual_keys[0]])
         else:
             out2 = {}
@@ -119,9 +115,7 @@ def savemat(out, filename):
     spio.savemat(filename, out, format="5")
 
 
-def mtlb2datetime(
-    matlab_datenum, strip_microseconds=False, strip_seconds=False
-):
+def mtlb2datetime(matlab_datenum, strip_microseconds=False, strip_seconds=False):
     """
     Convert Matlab datenum format to python datetime.
 
@@ -158,15 +152,10 @@ def mtlb2datetime(
         nonan = np.isfinite(matlab_datenum)
         md = matlab_datenum[nonan]
         day = [dt.datetime.fromordinal(int(tval)) for tval in md]
-        dayfrac = [
-            dt.timedelta(days=tval % 1) - dt.timedelta(days=366) for tval in md
-        ]
+        dayfrac = [dt.timedelta(days=tval % 1) - dt.timedelta(days=366) for tval in md]
         tt = [day1 + dayfrac1 for day1, dayfrac1 in zip(day, dayfrac)]
         if strip_microseconds and strip_seconds:
-            tt = [
-                dt.datetime.replace(tval, microsecond=0, second=0)
-                for tval in tt
-            ]
+            tt = [dt.datetime.replace(tval, microsecond=0, second=0) for tval in tt]
         elif strip_microseconds:
             tt = [dt.datetime.replace(tval, microsecond=0) for tval in tt]
         tt = [np.datetime64(ti) for ti in tt]
@@ -254,9 +243,7 @@ def read_sbe_cnv(file, lat=0, lon=0):
         "SA": dict(long_name="absolute salinity", units=r"kg/m$^3$"),
         "c": dict(long_name="conductivity", units="mS/cm"),
         "SP": dict(long_name="practical salinity", units=""),
-        "sg0": dict(
-            long_name=r"potential density $\sigma_0$", units=r"kg/m$^3$"
-        ),
+        "sg0": dict(long_name=r"potential density $\sigma_0$", units=r"kg/m$^3$"),
     }
     for k, att in attributes.items():
         if k in list(mc.variables.keys()):
@@ -348,8 +335,8 @@ def mat2dataset(m1):
         jj = 0
 
     if "lon" in k and type(m1["lon"]) != float:
-            if len(m1["lon"].shape) == 1:
-                ii = m1["lon"].shape[0]
+        if len(m1["lon"].shape) == 1:
+            ii = m1["lon"].shape[0]
     elif "dnum" in k:
         if len(m1["dnum"].shape) == 1:
             ii = m1["dnum"].shape[0]
@@ -366,13 +353,9 @@ def mat2dataset(m1):
         is2d = True
 
     if is2d:
-        out = xr.Dataset(
-            data_vars={"dummy": (["z", "x"], np.ones((jj, ii)) * np.nan)}
-        )
+        out = xr.Dataset(data_vars={"dummy": (["z", "x"], np.ones((jj, ii)) * np.nan)})
     else:
-        out = xr.Dataset(
-            data_vars={"dummy": (["x"], np.ones(ii) * np.nan)}
-        )
+        out = xr.Dataset(data_vars={"dummy": (["x"], np.ones(ii) * np.nan)})
 
     # Assign 1d variables
     for v in vars1d:
@@ -505,13 +488,13 @@ def mpmat_load(file):
 def mpmat_load_raw(path_raw_mat, n):
     path_raw_mat = _ensure_Path(path_raw_mat)
     file = path_raw_mat.joinpath(f"raw{n:04d}.mat")
-    mpts = gv.io.loadmat(file)
-    mpts_time = gv.io.mtlb2datetime(mpts.engtime)
+    mpts = loadmat(file)
+    mpts_time = mtlb2datetime(mpts.engtime)
 
     tmp = mpts["psdate"] + " " + mpts["pstart"]
-    start_time = gv.io.str_to_datetime64(tmp)
+    start_time = str_to_datetime64(tmp)
     tmp = mpts["pedate"] + " " + mpts["pstop"]
-    stop_time = gv.io.str_to_datetime64(tmp)
+    stop_time = str_to_datetime64(tmp)
 
     mp = xr.Dataset(
         dict(epres=(["etime"], mpts.epres)),

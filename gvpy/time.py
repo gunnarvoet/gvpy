@@ -10,9 +10,7 @@ import pandas as pd
 import xarray as xr
 
 
-def mtlb2datetime(
-    matlab_datenum, strip_microseconds=False, strip_seconds=False
-):
+def mtlb2datetime(matlab_datenum, strip_microseconds=False, strip_seconds=False):
     """
     Convert Matlab datenum format to python datetime.
 
@@ -36,7 +34,9 @@ def mtlb2datetime(
 
     if np.size(matlab_datenum) == 1:
         day = datetime.datetime.fromordinal(int(matlab_datenum))
-        dayfrac = datetime.timedelta(days=matlab_datenum % 1) - datetime.timedelta(days=366)
+        dayfrac = datetime.timedelta(days=matlab_datenum % 1) - datetime.timedelta(
+            days=366
+        )
         t1 = day + dayfrac
         if strip_microseconds and strip_seconds:
             t1 = datetime.datetime.replace(t1, microsecond=0, second=0)
@@ -50,13 +50,13 @@ def mtlb2datetime(
         md = matlab_datenum[nonan]
         day = [datetime.datetime.fromordinal(int(tval)) for tval in md]
         dayfrac = [
-            datetime.timedelta(days=tval % 1) - datetime.timedelta(days=366) for tval in md
+            datetime.timedelta(days=tval % 1) - datetime.timedelta(days=366)
+            for tval in md
         ]
         tt = [day1 + dayfrac1 for day1, dayfrac1 in zip(day, dayfrac)]
         if strip_microseconds and strip_seconds:
             tt = [
-                datetime.datetime.replace(tval, microsecond=0, second=0)
-                for tval in tt
+                datetime.datetime.replace(tval, microsecond=0, second=0) for tval in tt
             ]
         elif strip_microseconds:
             tt = [datetime.datetime.replace(tval, microsecond=0) for tval in tt]
@@ -152,13 +152,14 @@ def mattime_to_datetime64(dnum):
     -----
     In Matlab, datevec(719529) = [1970 1 1 0 0 0]
     """
-    time = pd.to_datetime(dnum-719529, unit='D')
+    time = pd.to_datetime(dnum - 719529, unit="D")
     return time
 
 
 def datevec_to_datetime64(dv):
     def vec2str(dv):
-        return f'{dv[0]:02.0f}-{dv[1]:02.0f}-{dv[2]:02.0f} {dv[3]:02.0f}:{dv[4]:02.0f}:{dv[5]:02.0f}'
+        return f"{dv[0]:02.0f}-{dv[1]:02.0f}-{dv[2]:02.0f} {dv[3]:02.0f}:{dv[4]:02.0f}:{dv[5]:02.0f}"
+
     if isinstance(dv, list):
         dtstr = [vec2str(dvi) for dvi in dv]
         time = np.array([str_to_datetime64(ti) for ti in dtstr])
@@ -257,9 +258,9 @@ def datetime64_to_yday0(time64):
     baseyears = pt.year.to_numpy()
     baseyear = baseyears[0]
     # year day
-    base64 = np.datetime64(f'{baseyear}-01-01 00:00:00')
+    base64 = np.datetime64(f"{baseyear}-01-01 00:00:00")
     delta64 = time64 - base64
-    delta64ns = delta64.astype('timedelta64[ns]')
+    delta64ns = delta64.astype("timedelta64[ns]")
     delta = delta64ns.astype(float)
     yday = delta / 1e9 / 3600 / 24
     # convert back to single value if needed
@@ -281,16 +282,16 @@ def datetime64_to_yday1(time64):
     -------
     baseyear : int
         Base year
-    yday : float
+    yday1 : float
         Year day
     """
     baseyear, yday0 = datetime64_to_yday0(time64)
     yday1 = yday0 + 1
 
-    return baseyear, yday
+    return baseyear, yday1
 
 
-def convert_units(t, unit='s'):
+def convert_units(t, unit="s"):
     if type(t) == xr.DataArray:
         torig = t.copy()
         xa = True
@@ -307,11 +308,11 @@ def convert_units(t, unit='s'):
         elif t_type == np.timedelta64:
             tfun = np.timedelta64
     elif data_type == np.ndarray:
-        if t.dtype == '<M8[ns]':
+        if t.dtype == "<M8[ns]":
             tfun = np.datetime64
-        elif t.dtype == '<M8[ms]':
+        elif t.dtype == "<M8[ms]":
             tfun = np.datetime64
-        elif t.dtype == '<m8[ns]':
+        elif t.dtype == "<m8[ns]":
             tfun = np.timedelta64
     else:
         t0 = t
@@ -320,7 +321,6 @@ def convert_units(t, unit='s'):
             tfun = np.datetime64
         elif t_type == np.timedelta64:
             tfun = np.timedelta64
-
 
     if data_type == np.ndarray and t.size > 1:
         out = np.array([tfun(ti, unit) for ti in t])
@@ -333,9 +333,9 @@ def convert_units(t, unit='s'):
 
     if xa:
         time = out.copy()
-        new_coords = torig.drop('time').coords
+        new_coords = torig.drop("time").coords
         out = xr.DataArray(time, coords=new_coords)
-        kut.coords['time'] = time
+        out.coords["time"] = time
 
     return out
 
@@ -419,7 +419,9 @@ def slice_to_datetime64(ts):
 
 
 def now_datestr():
-    datestr = datetime64_to_str(np.datetime64(datetime.datetime.now()), strformat="%Y-%m-%d")
+    datestr = datetime64_to_str(
+        np.datetime64(datetime.datetime.now()), strformat="%Y-%m-%d"
+    )
     return datestr
 
 
@@ -427,5 +429,18 @@ def month_str(one_letter_only=False):
     if one_letter_only:
         months = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"]
     else:
-        months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        months = [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
+        ]
     return months

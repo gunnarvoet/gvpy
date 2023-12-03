@@ -3,6 +3,7 @@
 """Module gvpy.misc with miscellaneous functions"""
 
 import sys
+import subprocess
 import ctypes
 import inspect
 import warnings
@@ -162,7 +163,7 @@ def extract(prepend="xx"):
 
     frames = inspect.stack()
     caller = frames[1].frame
-    name, ls, gs = caller.f_code.co_name, caller.f_locals, caller.f_globals
+    _name, ls, gs = caller.f_code.co_name, caller.f_locals, caller.f_globals
 
     ipython = [f for f in inspect.stack() if f.filename.startswith("<ipython-input")][
         -1
@@ -269,4 +270,4 @@ def connect_to_server(server, drive):
         Drive to mount
     """
     command = 'mount volume "smb://{}/{}"'.format(server, drive)
-    output = subprocess.run(["osascript", "-e", command], capture_output=True)
+    _output = subprocess.run(["osascript", "-e", command], capture_output=True)

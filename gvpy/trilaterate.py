@@ -2,31 +2,17 @@
 # -*- coding: utf-8 -*-
 """Module gvpy.trilaterate for oceanographic mooring trilateration."""
 
-from pathlib import Path
-from typing import Optional
-
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
-import pandas as pd
 import xarray as xr
-import scipy as sp
 from scipy.optimize import least_squares
 import gsw
 
 import gvpy as gv
 
-try:
-    import cartopy
-    import cartopy.crs as ccrs
-    from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
-    import cartopy.geodesic as cgeo
-    import shapely
-except ImportError:
-    _has_cartopy = False
-else:
-    _has_cartopy = True
+import cartopy.crs as ccrs
+from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
 
 
 class TrilaterationResult:
@@ -198,7 +184,7 @@ class Point:
                 self.ranges = [Range(distance=self.distances, pos=self.pos)]
             else:
                 self.ranges = [
-                    Range(distance=di, pos=pi)
+                    Range(distance=ti, pos=di)
                     for ti, di in zip(self.distances, self.pos)
                 ]
 
@@ -341,7 +327,7 @@ class Trilateration:
 
         mindepth = np.min(self.b)
         maxdepth = np.max(self.b)
-        h = ax.contourf(
+        ax.contourf(
             self.b.lon,
             self.b.lat,
             self.b,

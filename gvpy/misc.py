@@ -75,6 +75,24 @@ def cmap_div(
 
 
 def log():
+    """Set up stdout logger using loguru.
+
+    Returns
+    -------
+    logger : loguru.Logger
+        Logger object. Use to log messages at different levels.
+
+    Info
+    ----
+    For example:
+    ```
+    log = log()
+    log.info("hey there")
+    ```
+
+    [loguru docs](https://loguru.readthedocs.io/en/stable/index.html)
+
+    """
     logger.remove()
     logger.add(
         sys.stdout,

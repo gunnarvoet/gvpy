@@ -3,11 +3,8 @@
 """Module gvpy.mp with functions for McLane Moored Profiler
 """
 
-from pathlib import Path
-
 import gsw
 import numpy as np
-import pandas as pd
 import scipy as sp
 import xarray as xr
 import mixsea as mx
@@ -406,7 +403,7 @@ def add_nsquared_smoothed(mp, dp=16):
         n2, pout = gv.ocean.nsqfcn(mpp.s.data, mpp.t.data, mpp.P.data, p0=0, dp=16, lon=mp.attrs["lon"], lat=mp.attrs["lat"])
         N2 = sp.interpolate.interp1d(pout, n2, bounds_error=False)(mpp.P)
         n2_all[:, i] = N2
-    mp[f"N2s"] = (("z", "time"), n2_all)
+    mp["N2s"] = (("z", "time"), n2_all)
     mp.N2s.attrs["long_name"] = r"N$^2$"
     mp.N2s.attrs["units"] = r"s$^{-2}$"
     return mp

@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """Module gvpy.ocean with oceanography related functions"""
 
-import socket
 import requests
 import json
 import re
@@ -17,7 +16,6 @@ from scipy.signal import filtfilt
 import scipy
 import lat_lon_parser
 
-from gvpy.misc import nearidx2
 
 
 def nsqfcn(s, t, p, p0, dp, lon, lat):
@@ -1127,9 +1125,6 @@ def smith_sandwell(lon="all", lat="all", r15=False, subsample=False, lon360=Fals
     else:
         # for only one point
         if np.ma.size(lon) == 1 and np.ma.size(lat) == 1:
-            # lonmask = nearidx2(b.lon.values, lon)
-            # latmask = nearidx2(b.lat.values, lat)
-            # b = b.isel(lon=lonmask, lat=latmask)
             b = b.interp(dict(lon=lon, lat=lat))
         # for a range of lon/lat
         else:

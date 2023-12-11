@@ -13,11 +13,8 @@ from cycler import cycler
 from matplotlib.collections import LineCollection
 from matplotlib.colors import LinearSegmentedColormap
 import string
-import xarray as xr
 
 from IPython import get_ipython
-
-ipython = get_ipython()
 
 # import cm to register colormaps defined therein
 from . import cm
@@ -30,6 +27,7 @@ except ImportError:
 else:
     _has_cartopy = True
 
+ipython = get_ipython()
 
 def nostalgic():
     """
@@ -353,7 +351,7 @@ def axstyle(
     try:
         plt.setp(ax.get_legend().get_texts(), fontsize=fontsize)
     except AttributeError:
-        noleg = 1
+        _noleg = 1
 
     return ax
 
@@ -924,7 +922,6 @@ def colcyc10(ax=None):
     ax : axis handle
         Handle to axis.
     """
-    from cycler import cycler
 
     if ax is None:
         ax = plt.gca()
@@ -956,7 +953,6 @@ def cycle_cmap(n=10, cmap="viridis", ax=None):
     ax : axis handle, optional
         Handle to axis. Defaults to plt.gca().
     """
-    from cycler import cycler
 
     if ax is None:
         ax = plt.gca()

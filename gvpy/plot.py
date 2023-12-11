@@ -12,20 +12,14 @@ import numpy as np
 from cycler import cycler
 from matplotlib.collections import LineCollection
 from matplotlib.colors import LinearSegmentedColormap
+import cartopy.crs as ccrs
+from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
 import string
 
 from IPython import get_ipython
 
 # import cm to register colormaps defined therein
 from . import cm
-
-try:
-    import cartopy.crs as ccrs
-    from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
-except ImportError:
-    _has_cartopy = False
-else:
-    _has_cartopy = True
 
 ipython = get_ipython()
 
@@ -1025,8 +1019,6 @@ def concise_date_all():
 
 def cartopy_axes(ax, maxticks="auto"):
     """Requires cartopy."""
-    if not _has_cartopy:
-        raise ImportError("cartopy is required to do this.")
     gl = ax.gridlines(
         crs=ccrs.PlateCarree(),
         draw_labels=True,

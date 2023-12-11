@@ -14,17 +14,11 @@ from matplotlib.colors import (
     ListedColormap,
 )
 import xarray as xr
-
-try:
-    import cartopy
-    import cartopy.crs as ccrs
-    from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
-    import cartopy.geodesic as cgeo
-    import shapely
-except ImportError:
-    _has_cartopy = False
-else:
-    _has_cartopy = True
+import cartopy
+import cartopy.crs as ccrs
+from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
+import cartopy.geodesic as cgeo
+import shapely
 
 
 class HillShade:
@@ -310,9 +304,6 @@ def cartopy_scale_bar(
     -----
     [stackoverflow source code](https://stackoverflow.com/questions/32333870/how-can-i-show-a-km-ruler-on-a-cartopy-matplotlib-plot/50674451#50674451)
     """
-    if not _has_cartopy:
-        raise ImportError("Cartopy needs to be installed for this feature.")
-
     # Setup kwargs, update plot_kwargs and text_kwargs.
     if plot_kwargs is None:
         plot_kwargs = {}
@@ -383,8 +374,6 @@ def plot_watch_circle(lon, lat, radius, ax, zorder=50, ec="b", alpha=1):
     ec : color or None or 'auto'
         Edgecolor. Optional, defaults to 'b'.
     """
-    if not _has_cartopy:
-        raise ImportError("Cartopy needs to be installed for this feature.")
     circle_points = cartopy.geodesic.Geodesic().circle(
         lon,
         lat,

@@ -53,9 +53,9 @@ class GunnarsAccessor:
         if self._sampling_period is None:
             if "time" in self._obj.dims:
                 sampling_period_td = (
-                    self._obj.time.diff("time").median().data.astype("timedelta64[ms]")
+                    self._obj.time.diff("time").median().data.astype("timedelta64[ns]")
                 )
-                sampling_period_s = sampling_period_td.astype(np.float64) / 1e3
+                sampling_period_s = np.int64(sampling_period_td.astype(np.float64) / 1e9)
                 self._sampling_period = sampling_period_s.item()
         return self._sampling_period
 
@@ -233,7 +233,7 @@ class GunnarsAccessor:
         """
         return self._obj.coarsen(time=n, boundary="trim").mean()
 
-    def plot_spectrum(self, N=None, nwind=2):
+    def plot_spectrum(self, N=None, nwind=2, lat=None):
         """Plot power spectral density with respect to cpd.
 
         Parameters
@@ -249,8 +249,10 @@ class GunnarsAccessor:
         ax
 
         """
+        if lat is None:
+            lat = self.lat
 
-        f_cpd = gv.ocean.inertial_frequency(self.lat) / (2 * np.pi) * 3600 * 24
+        f_cpd = gv.ocean.inertial_frequency(lat) / (2 * np.pi) * 3600 * 24
 
         # determine sampling period
         sp = self.sampling_period
@@ -290,7 +292,7 @@ class GunnarsAccessor:
                 "No N provided, using N=2e-3 reflective of buoyancy frequency at ~1km depth"
             )
             N = 2e-3
-        E = gv.gm81.calc_E_omg(N=N, lat=self.lat)
+        E = gv.gm81.calc_E_omg(N=N, lat=lat)
         ax.plot(E.omega * 3600 * 24 / (2 * np.pi), E.KE, label="KE", color="C3")
 
         # show -2 slope
@@ -313,6 +315,31 @@ class GunnarsAccessor:
 
         return ax
 
+    def ts_hp(self, cutoff_period, order=3):
+        """Time series high pass filter.
+        Provide cutoff period in s.
+        """
+        cutoff_freq = 1 / cutoff_period
+        fs = 1 / self.sampling_period
+        axis = self._obj.get_axis_num("time")
+        tmp = gv.signal.highpassfilter(self._obj, cutoff_freq, fs, order=order, axis=axis)
+        out = self._obj.copy(data=tmp)
+        if "long_name" in out.attrs:
+            out.attrs["long_name"] = out.attrs["long_name"] + f" hp({cutoff_period}s)"
+        return out
+
+    def ts_lp(self, cutoff_period, order=3, type="butter"):
+        """Time series low pass filter.
+        Provide cutoff period in s.
+        """
+        cutoff_freq = 1 / cutoff_period
+        fs = 1 / self.sampling_period
+        axis = self._obj.get_axis_num("time")
+        tmp = gv.signal.lowpassfilter(self._obj, cutoff_freq, fs, order=order, axis=axis, type=type)
+        out = self._obj.copy(data=tmp)
+        if "long_name" in out.attrs:
+            out.attrs["long_name"] = out.attrs["long_name"] + f" lp({cutoff_period}s)"
+        return out
 
 # add ADCP methods to xarray Dataset
 @xr.register_dataset_accessor("gadcp")

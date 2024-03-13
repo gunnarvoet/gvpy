@@ -345,7 +345,7 @@ def add_overturns(mp, alpha=0.64, dnoise=5e-4, dnoise_CT=2e-3, background_eps=np
             background_eps=background_eps,
             use_ip=use_ip,
             return_diagnostics=True,
-            overturns_from_CT=True,
+            overturns_from_t=True,
         )
 
         eps = ctd["t"].data * np.nan

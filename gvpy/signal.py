@@ -6,10 +6,10 @@ from __future__ import division, print_function
 
 import numpy as np
 import scipy as sp
-from scipy.signal import butter, filtfilt
+from scipy.signal import butter, cheby1, filtfilt, sosfiltfilt
 
 
-def lowpassfilter(x, lowcut, fs, order=3):
+def lowpassfilter(x, lowcut, fs, order=3, axis=-1, type="butter"):
     """Low-pass filter a signal using a butterworth filter.
 
     Parameters
@@ -36,8 +36,14 @@ def lowpassfilter(x, lowcut, fs, order=3):
     For example, if sampling four times per hour, fs=4. A cut-off period of 24
     hours is then expressed as lowcut=1/24.
     """
-    b, a = _butter_lowpass(lowcut, fs, order=order)
-    lpx = filtfilt(b, a, x)
+    if type not in ["butter", "cheby"]:
+        raise ValueError("type must be butter or cheby")
+    if type == "butter":
+        b, a = _butter_lowpass(lowcut, fs, order=order)
+        lpx = filtfilt(b, a, x, axis=axis)
+    elif type == "cheby":
+        sos = _cheby1_lp(lowcut, fs, order=order)
+        lpx = sosfiltfilt(sos, x, axis=axis)
     return lpx
 
 
@@ -487,8 +493,6 @@ def gappy_rotary(Z, nfft, fs, maxgap):
     return f, CW, CCW, Gxx, Gyy, Gxy, n
 
 
-
-
 def _butter_bandpass(lowcut, highcut, fs, order=3):
     nyq = 0.5 * fs
     low = lowcut / nyq
@@ -509,3 +513,9 @@ def _butter_highpass(highcut, fs, order=3):
     high = highcut / nyq
     b, a = butter(order, high, btype="highpass")
     return b, a
+
+
+def _cheby1_lp(cutoff, fs, order=3, rp=5):
+    nyq = 0.5 * fs
+    low = cutoff / nyq
+    return cheby1(N=order, rp=rp, Wn=low, btype='low', analog=False, output='sos')

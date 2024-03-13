@@ -420,7 +420,7 @@ def slice_to_datetime64(ts):
 
 def now_datestr():
     datestr = datetime64_to_str(
-        np.datetime64(datetime.datetime.now()), strformat="%Y-%m-%d"
+        np.datetime64(datetime.datetime.now())
     )
     return datestr
 

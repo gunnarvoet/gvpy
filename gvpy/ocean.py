@@ -1788,6 +1788,32 @@ def lonlat_str_to_dec(ll):
     return lat_lon_parser.parse(ll)
 
 
+def tidal_constituent_period():
+    """Principal tidal constituent periods (in hours).
+
+    Returns
+    -------
+    constit : dict
+        Tidal periods for M2, S2, K1, O1.
+
+    Notes
+    -----
+    Periods have been extracted from `utide` package.
+
+    M2	Lunar	Most energetic, two high and two low tides per lunar day
+    S2	Solar	Two high and two low tides per solar day
+    K1	Lunar	Contributes to diurnal inequality
+    O1	Lunar	Weaker than K1 but important in some regions
+    """
+    constit = dict(
+            M2=12.4206011981605,
+            S2=12.000000004799999,
+            K1=23.934469605045013,
+            O1=25.819341694366,
+            )
+    return constit
+
+
 def _consec_blocks(idx=None, combine_gap=0, combine_run=0):
     """
     block_idx = consec_blocks(idx,combine_gap=0, combine_run=0)

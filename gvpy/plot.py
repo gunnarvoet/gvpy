@@ -151,7 +151,7 @@ def quickfig(fs=10, yi=True, w=6, h=4, fgs=None, r=1, c=1, grid=False, **kwargs)
         **kwargs,
     )
     if isinstance(ax, np.ndarray):
-        [axstyle(axi, fontsize=fs, grid=grid) for axi in ax]
+        [axstyle(axi, fontsize=fs, grid=grid) for axi in ax.flatten()]
     else:
         axstyle(ax, fontsize=fs, grid=grid)
     if yi is False:

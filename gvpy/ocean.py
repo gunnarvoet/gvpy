@@ -17,7 +17,6 @@ import scipy
 import lat_lon_parser
 
 
-
 def nsqfcn(s, t, p, p0, dp, lon, lat):
     r"""Calculate square of buoyancy frequency [rad/s]^2 for profile of
     temperature, salinity and pressure.
@@ -71,11 +70,6 @@ def nsqfcn(s, t, p, p0, dp, lon, lat):
     $$
     """
     G = 9.80655
-    dz = dp
-    # Make sure data comes in rows
-    #     if isrow(s); s = s'; end
-    #     if isrow(t); t = t'; end
-    #     if isrow(p); p = p'; end
 
     # Make sure data has dtype np.ndarray
     if type(s) is not np.ndarray:
@@ -468,7 +462,7 @@ def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000, verbose=False):
             DTDZ2[idx] = local_dtdz
 
         # % Calculate epsilon
-        THepsilon = 0.9 * THsc ** 2.0 * np.sqrt(N2) ** 3
+        THepsilon = 0.9 * THsc**2.0 * np.sqrt(N2) ** 3
         THepsilon[N2 <= 0] = np.nan
         THk = 0.2 * THepsilon / N2
 
@@ -597,7 +591,6 @@ def eps_overturn2(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
     cumTH = np.cumsum(TH)
     # make sure there are any overturns
     if np.sum(cumTH) > 2:
-
         aa = np.where(cumTH > 2)[0]
         blocks = _consec_blocks(aa, combine_gap=2)
 
@@ -653,7 +646,7 @@ def eps_overturn2(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
             DTDZ[idx] = local_dtdz
 
         # % Calculate epsilon
-        THepsilon = 0.9 * THsc ** 2.0 * np.sqrt(N2) ** 3
+        THepsilon = 0.9 * THsc**2.0 * np.sqrt(N2) ** 3
         THepsilon[N2 <= 0] = np.nan
         THk = 0.2 * THepsilon / N2
 
@@ -729,7 +722,7 @@ def vmodes(z, N, clat, nmodes):
         raise (ValueError("Depths need to be all positive"))
     z_in = z.copy()
     N_in = N.copy()
-    nsqin = N_in ** 2
+    nsqin = N_in**2
 
     # pick only valid data
     good = (N > 0) & np.isfinite(N)
@@ -767,7 +760,6 @@ def vmodes(z, N, clat, nmodes):
     u = d.copy()
     d[0] = grainv / dz[1]
     u[1] = d[0]
-    deltaz = np.diff(z)
 
     d[1:-1] = 2 / (nsq[1:-1] * dz[1:-1] * dz[2:])
     l[1:-1] = 2 / (nsq[1:-1] * dz[1:-1] * (dz[2:] + dz[1:-1]))
@@ -898,7 +890,7 @@ def wind_stress(u10, v10):
 
     """
     rho = 1.2  # kg/m^3, air density
-    U = np.sqrt(u10 ** 2 + v10 ** 2)  # wind speed
+    U = np.sqrt(u10**2 + v10**2)  # wind speed
     Cd = np.full_like(U, np.nan)
     Cd[np.where(U <= 1)] = 0.00218
     Cd[np.where((U > 1) & (U <= 3))] = (
@@ -1030,7 +1022,7 @@ def uv2speeddir(u, v):
         Velocity direction CCW from 0 to $2 \pi$ starting East.
     """
 
-    speed = np.sqrt(u ** 2 + v ** 2)
+    speed = np.sqrt(u**2 + v**2)
     direction = np.arctan2(v, u)
     return speed, direction
 
@@ -1058,7 +1050,9 @@ def uv_rotate(u, v, theta):
     return ur, vr
 
 
-def smith_sandwell(lon="all", lat="all", r15=False, subsample=False, lon360=False, pad=0):
+def smith_sandwell(
+    lon="all", lat="all", r15=False, subsample=False, lon360=False, pad=0
+):
     """Load Smith & Sandwell bathymetry
 
     Parameters
@@ -1096,8 +1090,8 @@ def smith_sandwell(lon="all", lat="all", r15=False, subsample=False, lon360=Fals
     else:
         resolution = 30
         nc_file = "/Users/gunnar/Data/bathymetry/smith_sandwell/topo{}.grd".format(
-        resolution
-    )
+            resolution
+        )
     try:
         # by providing a chunk size, the array is loaded lazily via dask
         b = xr.open_dataarray(nc_file, chunks=1000, engine="netcdf4")
@@ -1128,8 +1122,12 @@ def smith_sandwell(lon="all", lat="all", r15=False, subsample=False, lon360=Fals
             b = b.interp(dict(lon=lon, lat=lat))
         # for a range of lon/lat
         else:
-            lonmask = (b.lon > np.nanmin(lon)-pad_lon) & (b.lon < np.nanmax(lon)+pad_lon)
-            latmask = (b.lat > np.nanmin(lat)-pad_lat) & (b.lat < np.nanmax(lat)+pad_lat)
+            lonmask = (b.lon > np.nanmin(lon) - pad_lon) & (
+                b.lon < np.nanmax(lon) + pad_lon
+            )
+            latmask = (b.lat > np.nanmin(lat) - pad_lat) & (
+                b.lat < np.nanmax(lat) + pad_lat
+            )
             b = b.isel(lon=lonmask, lat=latmask)
     # Transforming lon from 0:360 to -180:180 means we also have to sort the
     # dataset along the new coordinate.
@@ -1354,7 +1352,6 @@ def bathy_section(bathy, lon, lat, res=1, ext=0):
         # Create evenly spaced points between lon and lat
         # for i = 1:length(lon)-1
         for i in np.arange(0, len(lon) - 1, 1):
-
             n = dist2[i] / res
 
             dlon = lon[i + 1] - lon[i]
@@ -1421,7 +1418,7 @@ def bathy_section(bathy, lon, lat, res=1, ext=0):
     return out
 
 
-def inertial_period(lat: float, verbose: bool=True):
+def inertial_period(lat: float, verbose: bool = True):
     """
     Return inertial period [days] for a given latitude.
 
@@ -1520,7 +1517,9 @@ def beta(lat: float):
     inertial_frequency : Returns inertial frequency in rad/s.
     """
     Omega = 7.292115e-5  # [1/s] (Groten, 2004)
-    earth_radius = 6.371e6 # [m] [wikipedia](https://en.wikipedia.org/wiki/Earth_radius)
+    earth_radius = (
+        6.371e6  # [m] [wikipedia](https://en.wikipedia.org/wiki/Earth_radius)
+    )
     beta = 2 * Omega * np.cos(np.deg2rad(lat)) / earth_radius
     return beta
 
@@ -1806,11 +1805,11 @@ def tidal_constituent_period():
     O1	Lunar	Weaker than K1 but important in some regions
     """
     constit = dict(
-            M2=12.4206011981605,
-            S2=12.000000004799999,
-            K1=23.934469605045013,
-            O1=25.819341694366,
-            )
+        M2=12.4206011981605,
+        S2=12.000000004799999,
+        K1=23.934469605045013,
+        O1=25.819341694366,
+    )
     return constit
 
 

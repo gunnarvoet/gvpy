@@ -271,7 +271,7 @@ def tzfcn(CT, z, z0, dz):
 
 
 def hydrostatic_depth(ctd, t="t1", s="s1"):
-    """Calculate maximum depth of a CTD profile via density integration.
+    r"""Calculate maximum depth of a CTD profile via density integration.
 
     Parameters
     ----------
@@ -292,7 +292,10 @@ def hydrostatic_depth(ctd, t="t1", s="s1"):
     The hydrostatic equation is a particular solution of the Navier-Stokes
     equation without lateral pressure gradients (and velocities). This leaves
     only the vertical equation
-    $$\frac{\partial p}{\partial z} + \rho g = 0 .$$
+
+    $$
+     \frac{\partial p}{\partial z} + \rho g = 0
+    $$
     """
     return hydrostatic_depth_base(
         ctd[s].data, ctd[t].data, ctd["p"].data, ctd.lon.data, ctd.lat.data

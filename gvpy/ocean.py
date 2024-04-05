@@ -270,6 +270,51 @@ def tzfcn(CT, z, z0, dz):
     return tzout
 
 
+def hydrostatic_depth(ctd, t="t1", s="s1"):
+    """Calculate maximum depth of a CTD profile via density integration.
+
+    Parameters
+    ----------
+    ctd : xr.Dataset
+        CTD cast.
+    t : str
+        Key for in-situ temperature variable. Defaults to "t1".
+    s : str
+        Key for practical salinity variable. Defaults to "s1".
+
+    Returns
+    -------
+    depth : float
+        Depth [m] corresponding to deepest observation in CTD cast.
+
+    Notes
+    -----
+    The hydrostatic equation is a particular solution of the Navier-Stokes
+    equation without lateral pressure gradients (and velocities). This leaves
+    only the vertical equation
+    $$\frac{\partial p}{\partial z} + \rho g = 0 .$$
+    """
+    return hydrostatic_depth_base(
+        ctd[s].data, ctd[t].data, ctd["p"].data, ctd.lon.data, ctd.lat.data
+    )
+
+
+def hydrostatic_depth_base(s, t, p, lon, lat):
+    SA = gsw.SA_from_SP(s, p, lon, lat)
+    CT = gsw.CT_from_t(SA, t, p)
+    rho = gsw.rho(SA, CT, p)
+    # inject surface values (assume rho constant in the upper few meters)
+    rho = np.insert(rho, 0, rho[0])
+    p = np.insert(p, 0, 0)
+    # mask nan values in rho
+    mask = np.where(~np.isnan(rho))
+    rho = rho[mask]
+    p = p[mask]
+    # calculate depth from hydrostatic equation
+    int_depth = np.trapz((1 / (rho[mask])), p * 1e4) / 9.81
+    return int_depth
+
+
 def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000, verbose=False):
     """
     Calculate profile of turbulent dissipation epsilon from structure of a ctd

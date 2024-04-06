@@ -42,17 +42,6 @@ def nostalgic():
     mpl.rcParams["axes.titlesize"] = "x-large"
 
 
-def font_sue_ellen():
-    """
-    Use a font (Sue Ellen Francisco) that looks somewhat hand-written.
-    """
-    mpl.rcParams["font.size"] = 12
-    mpl.rcParams["font.family"] = "Sue Ellen Francisco"
-    mpl.rcParams["mathtext.fontset"] = "custom"
-    mpl.rcParams["mathtext.rm"] = "Helvetica"
-    mpl.rcParams["axes.titlesize"] = "x-large"
-
-
 def helvetica():
     """
     Use Helvetica font for plotting.
@@ -65,19 +54,6 @@ def helvetica():
     mpl.rcParams["mathtext.bf"] = "Helvetica:bold"
     mpl.rcParams["axes.titlesize"] = "medium"
     mpl.rcParams["legend.fontsize"] = "small"
-
-
-def stix():
-    """
-    Use STIX fonts
-    """
-    mpl.rcParams["font.size"] = 11
-    mpl.rcParams["font.family"] = "STIX Two Text"
-    mpl.rcParams["mathtext.fontset"] = "custom"
-    mpl.rcParams["mathtext.rm"] = "STIX Two Math"
-    mpl.rcParams["mathtext.it"] = "STIX Two Math:italic"
-    mpl.rcParams["mathtext.bf"] = "STIX Two Math:bold"
-    mpl.rcParams["axes.titlesize"] = "large"
 
 
 def back2future():

@@ -21,7 +21,6 @@ from IPython import get_ipython
 # import cm to register colormaps defined therein
 from . import cm
 
-ipython = get_ipython()
 
 def nostalgic():
     """
@@ -69,13 +68,14 @@ def switch_backend():
     """
     Use to switch between regular inline and ipympl backend.
     """
+    ipython = get_ipython()
     backend_list = [
-        "module://ipykernel.pylab.backend_inline",
+        "module://matplotlib_inline.backend_inline",
         "module://ipympl.backend_nbagg",
     ]
     current_backend = mpl.get_backend()
     if current_backend == backend_list[0]:
-        ipython.magic("matplotlib ipympl")
+        ipython.magic("matplotlib widget")
         print("switched to ipympl plots")
     else:
         ipython.magic("matplotlib inline")

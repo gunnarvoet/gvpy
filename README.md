@@ -6,3 +6,5 @@ Please note that the code changes often and may do so without any warning or pri
 Consider copying snippets you find helpful to your own library.
 
 Documentation is at [gunnarvoet.github.io/gvpy](https://gunnarvoet.github.io/gvpy/).
+
+Update 04/2024: For a bit of sanity I am changing to pushing updates to the `dev` branch. Changes will be occasionally merged into `main` and tagged.

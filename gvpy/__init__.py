@@ -1,6 +1,7 @@
 """Python package with various little bits and pieces of code that are mostly
-useful for oceanographic data analysis. Please note that the code changes often
-and without any warning or notice.
+useful for oceanographic data analysis.  Use with caution and at your own risk.
+Please note that the code changes often and may do so without any warning or
+prior notice.  Consider copying snippets you find helpful to your own library.
 
 ## Installation
 
@@ -40,7 +41,7 @@ which will provide several sub-modules, for example `gvpy.ocean`, as documented 
 
 ## License
 
-Copyright 2023 Gunnar Voet
+Copyright 2024 Gunnar Voet
 
 gvpy is free software: you can redistribute it and/or modify it under the terms
 of the GNU Lesser General Public License as published by the Free Software
@@ -59,7 +60,7 @@ __all__ = ["io", "ocean", "plot", "time", "signal", "maps", "mp", "trilaterate",
 
 __author__ = "Gunnar Voet"
 __email__ = "gvoet@ucsd.edu"
-__version__ = "0.2.0"
+__version__ = "2024.04"
 
 # workaround for when whatever is defined as the default backend is not around:
 try:

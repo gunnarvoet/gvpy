@@ -1,10 +1,15 @@
 # gvpy
 
-Python module data analysis and visualization.
+Python package with various little bits and pieces of code that are mostly useful for oceanographic data analysis.
 Use with caution and at your own risk.
-Consider copying snippets you find helpful to your own library as this module may change without warning.
+Please note that the code changes often and may do so without any warning or prior notice.
+Consider copying snippets you find helpful to your own library.
 
 Documentation is at [gunnarvoet.github.io/gvpy](https://gunnarvoet.github.io/gvpy/).
+
+## Installation
+
+First, clone the repository.  
 
 To install in regular mode:
 
@@ -24,7 +29,7 @@ or using pip:
 $ pip install -e .
 ```
 
-To import run:
+To import in python, run:
 
 ``` python
 import gvpy as gv

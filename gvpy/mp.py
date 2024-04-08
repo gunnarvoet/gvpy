@@ -92,6 +92,7 @@ def load_raw_mat_file(file):
     # file = path_raw_mat.joinpath(f"raw{n:04d}.mat")
     mpts = io.loadmat(file)
     mpts_time = io.mtlb2datetime(mpts.engtime)
+    mpts_time = mpts_time.astype("<M8[ns]")
 
     tmp = mpts["psdate"] + " " + mpts["pstart"]
     start_time = io.str_to_datetime64(tmp)
@@ -157,7 +158,7 @@ def load_raw_mat(path_raw_mat, n):
     Parameters
     ----------
     path_raw_mat : Path or str
-        Path to raw .mat files (usually raw/ in the data directory).
+        Path to raw .mat files (usually mat/ in the data directory).
     n : int or list[int] or range or 'all'
         Profile number or range or all.
 
@@ -268,10 +269,10 @@ def acm_path_to_instrument_coordinate(mp):
     is Vz1 and vice versa.
     """
 
-    mp["Vx"] = (["asnum"], -(mp.Vab + mp.Vef) / (2 * 0.707))
-    mp["Vy"] = (["asnum"], (mp.Vab - mp.Vef) / (2 * 0.707))
-    mp["Vz1"] = (["asnum"], mp.Vx - mp.Vgh / 0.707)
-    mp["Vz2"] = (["asnum"], -mp.Vx + mp.Vcd / 0.707)
+    mp["Vx"] = (["asnum"], (-(mp.Vab + mp.Vef) / (2 * 0.707)).data)
+    mp["Vy"] = (["asnum"], ((mp.Vab - mp.Vef) / (2 * 0.707)).data)
+    mp["Vz1"] = (["asnum"],( mp.Vx - mp.Vgh / 0.707).data)
+    mp["Vz2"] = (["asnum"],( -mp.Vx + mp.Vcd / 0.707).data)
     return mp
 
 

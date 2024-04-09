@@ -13,11 +13,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
 import cartopy.crs as ccrs
+from pathlib import Path
 
 import gvpy as gv
 
 
-# extend and/or modify xarray's plotting capabilities
+# Extend and/or modify xarray's DataArray capabilities
 @xr.register_dataarray_accessor("gv")
 class GunnarsAccessor:
     def __init__(self, xarray_obj):
@@ -341,7 +342,26 @@ class GunnarsAccessor:
             out.attrs["long_name"] = out.attrs["long_name"] + f" lp({cutoff_period}s)"
         return out
 
-# add ADCP methods to xarray Dataset
+    def to_netcdf(self, path, overwrite=True, confirm_overwrite=True):
+        return _to_netcdf(self._obj, path, overwrite, confirm_overwrite)
+
+
+# Extend and/or modify xarray's Dataset capabilities.
+# Naming this `gv` just as the DataArray accessor above.
+# Let's hope this doesn't cause any issues.
+@xr.register_dataset_accessor("gv")
+class GunnarsDatasetAccessor:
+    def __init__(self, xarray_obj):
+        """This class collects a bunch of methods under `.gv`"""
+        self._obj = xarray_obj
+        # self.to_netcdf.__doc__ = _to_netcdf.__doc__
+
+    def to_netcdf(self, path, overwrite=True, confirm_overwrite=True):
+        return _to_netcdf(self._obj, path, overwrite, confirm_overwrite)
+
+
+
+# Add ADCP methods to xarray Dataset.
 @xr.register_dataset_accessor("gadcp")
 class GunnarsADCPAccessor:
     def __init__(self, xarray_obj):
@@ -371,3 +391,74 @@ class GunnarsADCPAccessor:
         for var in vars:
             ds[var] = ds[var].where(ds.pg > pg)
         return ds
+
+
+def _to_netcdf(ds, path, overwrite=True, confirm_overwrite=True):
+    """Wrapper for xarray's to_netcdf().
+
+    Parameters
+    ----------
+    path : str or pathlib.Path()
+        path can be just a filename (will be saved to current dir) or a
+        Path() object defining a full path.
+    overwrite : bool, optional
+        Whether to overwrite an existing file at this location. Defaults to
+        True.
+    confirm_overwrite : bool, optional
+        Whether to additionally confirm overwriting an existing file.
+        Defaults to True.
+
+    Returns
+    -------
+    path : pathlib.Path
+        Path to netcdf file.
+
+    Notes
+    -----
+    - If overwriting existing file, file will be deleted first. This is to
+        get around the annoyance of files being locked that I have always
+        been stupid to grasp and am now getting around with this. I am sure
+        there would be a better and cleaner solution.
+    - If time is a coordinate, it will be saved in cf-compliant format (seconds since 1970).
+    """
+    # note: the docstring above omits the first parameter, `ds`, since I am
+    # wrapping this function with dataset and dataarray accessors and want to
+    # be able to reuse the docstring.
+
+    if isinstance(path, str):
+        path = Path.cwd().joinpath(path)
+    if not isinstance(path, Path):
+        raise TypeError("Input must be a string or Path() object")
+    if path.suffix == "":
+        path = path.with_suffix(".nc")
+    if path.suffix != ".nc":
+        raise ValueError("File name must have either no suffix or end with '.nc'")
+
+    exists = path.exists()
+    if exists and not overwrite:
+        print("File exists; set overwrite=True to replace")
+        return
+
+    if exists and overwrite:
+        if confirm_overwrite:
+            if gv.misc.yes_or_no("Confirm replacing existing file"):
+                path.unlink()
+            else:
+                print("Aborting.")
+                return
+        else:
+            path.unlink()
+
+    opts = dict()
+
+    if "time" in ds.coords:
+        opts["encoding"] = {"time": {"units": "seconds since 1970-01-01", "dtype": "float"}}
+
+    ds.to_netcdf(path, **opts)
+
+    return path
+
+# Assign the original function's docstring to the wrapped method
+GunnarsDatasetAccessor.to_netcdf.__doc__ = _to_netcdf.__doc__
+GunnarsAccessor.to_netcdf.__doc__ = _to_netcdf.__doc__
+

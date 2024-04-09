@@ -2,10 +2,13 @@
 # -*- coding: utf-8 -*-
 """
 Collection of xarray extensions. Currently, the following collections are attached to  xarray `DataArray` objects:
--  `gv` collects various (mostly convenience plotting) methods.
--  `gadcp` collects ADCP-related methods.
+-  `gv` collects various methods that can be applied to individual DataArrays. A number of them are convenience plotting methods
 
-Read more in the xarray docmumentation about [extending
+The following are attached to xarray `Dataset` objects:
+-  `gv` with miscellaneous Dataset methods. Note the same namespace as for the DataArray accessor above. This seems to work out okay.
+-  `gadcp` collects ADCP-related methods. Mostly helpful for ADCP data processed with [velosearaptor](https://modscripps.github.io/velosearaptor/velosearaptor.html).
+
+Accessors are a really neat way of attaching methods to xarray objects. Read more in the xarray docmumentation about [extending
 xarray](https://docs.xarray.dev/en/stable/internals/extending-xarray.html).
 """
 
@@ -153,6 +156,13 @@ class GunnarsAccessor:
         return ax
 
     def llplot(self, **kwargs):
+        """Lon-lat-plot with cartopy GeoAxes. Needs lon/lat coordinates.
+
+        Returns
+        -------
+        ax : GeoAxes
+
+        """
         da = self._obj
         grid = kwargs.pop("grid", True)
         if "ax" not in kwargs:
@@ -393,6 +403,7 @@ class GunnarsADCPAccessor:
         return ds
 
 
+# Helper function - this is wrapped with the accessor methods above
 def _to_netcdf(ds, path, overwrite=True, confirm_overwrite=True):
     """Wrapper for xarray's to_netcdf().
 

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Module gvpy.mp with functions for McLane Moored Profiler
-"""
+"""Module gvpy.mp with functions for McLane Moored Profiler"""
 
 import gsw
 import numpy as np
@@ -271,8 +270,8 @@ def acm_path_to_instrument_coordinate(mp):
 
     mp["Vx"] = (["asnum"], (-(mp.Vab + mp.Vef) / (2 * 0.707)).data)
     mp["Vy"] = (["asnum"], ((mp.Vab - mp.Vef) / (2 * 0.707)).data)
-    mp["Vz1"] = (["asnum"],( mp.Vx - mp.Vgh / 0.707).data)
-    mp["Vz2"] = (["asnum"],( -mp.Vx + mp.Vcd / 0.707).data)
+    mp["Vz1"] = (["asnum"], (mp.Vx - mp.Vgh / 0.707).data)
+    mp["Vz2"] = (["asnum"], (-mp.Vx + mp.Vcd / 0.707).data)
     return mp
 
 
@@ -356,11 +355,11 @@ def add_overturns(mp, alpha=0.64, dnoise=5e-4, dnoise_CT=2e-3, background_eps=np
         epsall.append(eps)
         epstall.append(eps_t)
     mp["eps"] = (["z", "time"], mp.t.data * np.nan)
-    mp.eps.attrs = dict(long_name=r'$\epsilon$', units='W/kg')
+    mp.eps.attrs = dict(long_name=r"$\epsilon$", units="W/kg")
     for i, epsi in enumerate(epsall):
         mp.eps[:, i] = epsi
     mp["eps_t"] = (["z", "time"], mp.t.data * np.nan)
-    mp.eps_t.attrs = dict(long_name=r'$\epsilon_\mathrm{T}$', units='W/kg')
+    mp.eps_t.attrs = dict(long_name=r"$\epsilon_\mathrm{T}$", units="W/kg")
     for i, epsi in enumerate(epstall):
         mp.eps_t[:, i] = epsi
     return mp
@@ -401,11 +400,18 @@ def add_nsquared_smoothed(mp, dp=16):
     n2_all = np.zeros_like(mp.t) * np.nan
     for i in range(mp.time.size):
         mpp = mp.isel(time=i)
-        n2, pout = gv.ocean.nsqfcn(mpp.s.data, mpp.t.data, mpp.P.data, p0=0, dp=16, lon=mp.attrs["lon"], lat=mp.attrs["lat"])
+        n2, pout = gv.ocean.nsqfcn(
+            mpp.s.data,
+            mpp.t.data,
+            mpp.P.data,
+            p0=0,
+            dp=16,
+            lon=mp.attrs["lon"],
+            lat=mp.attrs["lat"],
+        )
         N2 = sp.interpolate.interp1d(pout, n2, bounds_error=False)(mpp.P)
         n2_all[:, i] = N2
     mp["N2s"] = (("z", "time"), n2_all)
     mp.N2s.attrs["long_name"] = r"N$^2$"
     mp.N2s.attrs["units"] = r"s$^{-2}$"
     return mp
-

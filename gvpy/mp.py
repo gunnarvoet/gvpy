@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Module gvpy.mp with functions for McLane Moored Profiler"""
+"""Module gvpy.mp with functions for data collected with McLane Moored Profilers."""
 
 import gsw
 import numpy as np
@@ -278,7 +278,7 @@ def acm_path_to_instrument_coordinate(mp):
 def add_hab(mp, bottom_depth=None):
     if bottom_depth is None:
         bottom_depth = mp.H.median(dim="time").data
-    hab = bottom_depth - mp.z
+    hab = bottom_depth - mp.depth
     mp.coords["hab"] = hab
     mp.hab.attrs["long_name"] = "height above bottom"
     mp.hab.attrs["units"] = "m"

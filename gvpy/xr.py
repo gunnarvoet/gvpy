@@ -59,7 +59,9 @@ class GunnarsAccessor:
                 sampling_period_td = (
                     self._obj.time.diff("time").median().data.astype("timedelta64[ns]")
                 )
-                sampling_period_s = np.int64(sampling_period_td.astype(np.float64) / 1e9)
+                sampling_period_s = np.int64(
+                    sampling_period_td.astype(np.float64) / 1e9
+                )
                 self._sampling_period = sampling_period_s.item()
         return self._sampling_period
 
@@ -76,8 +78,11 @@ class GunnarsAccessor:
             # set a default cmap
             cmap = "viridis"
             cmap_dict = dict(
-                Spectral_r=[
+                # Spectral_r=[
+                RdYlBu_r=[
                     "temperature",
+                    "potential temperature",
+                    "in-situ temperature",
                     "temp",
                     "t",
                     "th",
@@ -127,14 +132,23 @@ class GunnarsAccessor:
         self._obj.plot(x="time", **kwargs)
         gv.plot.concise_date(ax, minticks=4)
         ax.set(xlabel="", title="")
+
+        # determine whether the y-axis should be increasing
+        invert_yaxis = False
         if "depth" in self._obj.dims:
-            ax.invert_yaxis()
+            invert_yaxis = True
         if "pressure" in self._obj.dims:
-            ax.invert_yaxis()
+            invert_yaxis = True
         if "p" in self._obj.dims:
-            ax.invert_yaxis()
+            invert_yaxis = True
         if "z" in self._obj.dims and self._obj.z.median() > 0:
+            invert_yaxis = True
+        if "y" in kwargs:
+            if kwargs["y"] == "hab":
+                invert_yaxis = False
+        if invert_yaxis:
             ax.invert_yaxis()
+
         xlab = ax.get_xlabel()
         if xlab[:4] == "time":
             ax.set(xlabel="")
@@ -203,6 +217,7 @@ class GunnarsAccessor:
         cbar_width = 2 * 1 / pos.width
 
         from mpl_toolkits.axes_grid1 import make_axes_locatable
+
         divider = make_axes_locatable(ax)
         cax = divider.append_axes(
             "right", size=f"{cbar_width}%", pad=0.08, axes_class=plt.Axes
@@ -333,7 +348,9 @@ class GunnarsAccessor:
         cutoff_freq = 1 / cutoff_period
         fs = 1 / self.sampling_period
         axis = self._obj.get_axis_num("time")
-        tmp = gv.signal.highpassfilter(self._obj, cutoff_freq, fs, order=order, axis=axis)
+        tmp = gv.signal.highpassfilter(
+            self._obj, cutoff_freq, fs, order=order, axis=axis
+        )
         out = self._obj.copy(data=tmp)
         if "long_name" in out.attrs:
             out.attrs["long_name"] = out.attrs["long_name"] + f" hp({cutoff_period}s)"
@@ -346,7 +363,9 @@ class GunnarsAccessor:
         cutoff_freq = 1 / cutoff_period
         fs = 1 / self.sampling_period
         axis = self._obj.get_axis_num("time")
-        tmp = gv.signal.lowpassfilter(self._obj, cutoff_freq, fs, order=order, axis=axis, type=type)
+        tmp = gv.signal.lowpassfilter(
+            self._obj, cutoff_freq, fs, order=order, axis=axis, type=type
+        )
         out = self._obj.copy(data=tmp)
         if "long_name" in out.attrs:
             out.attrs["long_name"] = out.attrs["long_name"] + f" lp({cutoff_period}s)"
@@ -368,7 +387,6 @@ class GunnarsDatasetAccessor:
 
     def to_netcdf(self, path, overwrite=True, confirm_overwrite=True):
         return _to_netcdf(self._obj, path, overwrite, confirm_overwrite)
-
 
 
 # Add ADCP methods to xarray Dataset.
@@ -463,13 +481,15 @@ def _to_netcdf(ds, path, overwrite=True, confirm_overwrite=True):
     opts = dict()
 
     if "time" in ds.coords:
-        opts["encoding"] = {"time": {"units": "seconds since 1970-01-01", "dtype": "float"}}
+        opts["encoding"] = {
+            "time": {"units": "seconds since 1970-01-01", "dtype": "float"}
+        }
 
     ds.to_netcdf(path, **opts)
 
     return path
 
+
 # Assign the original function's docstring to the wrapped method
 GunnarsDatasetAccessor.to_netcdf.__doc__ = _to_netcdf.__doc__
 GunnarsAccessor.to_netcdf.__doc__ = _to_netcdf.__doc__
-

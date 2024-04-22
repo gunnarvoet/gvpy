@@ -82,6 +82,7 @@ class GunnarsAccessor:
                 RdYlBu_r=[
                     "temperature",
                     "potential temperature",
+                    "conservative temperature",
                     "in-situ temperature",
                     "temp",
                     "t",
@@ -155,6 +156,7 @@ class GunnarsAccessor:
         return ax
 
     def zplot(self, **kwargs):
+        decrease_y = True
         grid = kwargs.pop("grid", True)
         if "ax" not in kwargs:
             fig, ax = gv.plot.quickfig(w=3.5, h=4, grid=grid)
@@ -164,9 +166,17 @@ class GunnarsAccessor:
             zvar = "depth"
         elif "z" in self._obj.coords:
             zvar = "z"
+        ylabel = "depth [m]"
+        if "y" in kwargs:
+            zvar = kwargs.pop("y", True)
+        if zvar == "hab":
+            ylabel = "hab [m]"
+            decrease_y = False
+
         self._obj.plot(y=zvar, **kwargs)
-        ax.set(ylabel="depth [m]", title="")
-        gv.plot.ydecrease(ax)
+        ax.set(ylabel=ylabel, title="")
+        if decrease_y:
+            gv.plot.ydecrease(ax)
         return ax
 
     def llplot(self, **kwargs):

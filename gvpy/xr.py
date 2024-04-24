@@ -384,6 +384,9 @@ class GunnarsAccessor:
     def to_netcdf(self, path, overwrite=True, confirm_overwrite=True):
         return _to_netcdf(self._obj, path, overwrite, confirm_overwrite)
 
+    def duration(self, time_format="h"):
+        return _duration(self._obj, time_format=time_format)
+
 
 # Extend and/or modify xarray's Dataset capabilities.
 # Naming this `gv` just as the DataArray accessor above.
@@ -397,6 +400,9 @@ class GunnarsDatasetAccessor:
 
     def to_netcdf(self, path, overwrite=True, confirm_overwrite=True):
         return _to_netcdf(self._obj, path, overwrite, confirm_overwrite)
+
+    def duration(self, time_format="h"):
+        return _duration(self._obj, time_format=time_format)
 
 
 # Add ADCP methods to xarray Dataset.
@@ -431,7 +437,8 @@ class GunnarsADCPAccessor:
         return ds
 
 
-# Helper function - this is wrapped with the accessor methods above
+# Helper functions for cases where I want them accessible both in Datasets and DataArrays.
+# These are wrapped with the accessor methods above.
 def _to_netcdf(ds, path, overwrite=True, confirm_overwrite=True):
     """Wrapper for xarray's to_netcdf().
 
@@ -498,6 +505,14 @@ def _to_netcdf(ds, path, overwrite=True, confirm_overwrite=True):
     ds.to_netcdf(path, **opts)
 
     return path
+
+def _duration(ds, time_format="h"):
+    assert "time" in ds, "no time coordinate"
+    time = ds.time
+    assert time.dtype.str[:3] == "<M8"
+    dt = time[-1] - time[0]
+    dt = dt.data.astype(f"<m8[{time_format}]")
+    return dt
 
 
 # Assign the original function's docstring to the wrapped method

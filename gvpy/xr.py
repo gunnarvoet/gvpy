@@ -507,7 +507,7 @@ def _to_netcdf(ds, path, overwrite=True, confirm_overwrite=True):
     return path
 
 def _duration(ds, time_format="h"):
-    assert "time" in ds, "no time coordinate"
+    assert "time" in ds.coords, "no time coordinate"
     time = ds.time
     assert time.dtype.str[:3] == "<M8"
     dt = time[-1] - time[0]

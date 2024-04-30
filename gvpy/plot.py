@@ -693,7 +693,7 @@ def _figure_name(fname, figdir, extension, verbose=True):
     elif isinstance(fname, str):
         tmpname = Path(fname)
         if tmpname.is_absolute():
-            savedir = tmpname.parent()
+            savedir = tmpname.parent
         else:
             savedir = cwd.joinpath(figdir)
         name = tmpname.stem

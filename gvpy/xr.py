@@ -189,10 +189,14 @@ class GunnarsAccessor:
         """
         da = self._obj
         grid = kwargs.pop("grid", True)
+        if "fgs" in kwargs:
+            fgs = kwargs.pop("fgs")
+        else:
+            fgs = (7, 7)
         if "ax" not in kwargs:
             projection = ccrs.Mercator()
             fig, ax = plt.subplots(
-                figsize=(5, 5),
+                figsize=fgs,
                 subplot_kw={"projection": projection},
                 constrained_layout=True,
                 dpi=75,

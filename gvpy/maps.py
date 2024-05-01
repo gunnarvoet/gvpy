@@ -19,6 +19,7 @@ import cartopy.crs as ccrs
 from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
 import cartopy.geodesic as cgeo
 import shapely
+import gsw
 
 
 class HillShade:
@@ -508,3 +509,44 @@ def _point_along_line(ax, start, distance, angle=0, tol=0.01):
     end = _upper_bound(start, direction, distance, dist_func)
 
     return _distance_along_line(start, end, distance, dist_func, tol)
+
+
+def add_dist_coords(ds, units="m"):
+    """
+
+    Parameters
+    ----------
+    ds : xr.DataArray or xr.Dataset
+        Input data with coordinates "lon" and "lat".
+
+    Returns
+    -------
+    ds : xr.DataArray or xr.Dataset
+        Output data with coordinates "xdist" and "ydist" added.
+    """
+    assert units in ["m", "km"], "units must be m or km"
+    # this will cause trouble if having coords like "longitude" but oh well
+    assert "lon" in ds.coords and "lat" in ds.coords, "input must have coordinates lon & lat"
+
+    lon = ds.lon.data
+    lat = ds.lat.data
+    lat0 = ds.lat.mean().data * np.ones_like(lon)
+
+    x_dist_delta = gsw.distance(lon, lat0)
+    x_dist = np.cumsum(x_dist_delta)
+    x_dist = np.insert(x_dist, 0, 0)
+
+    y_dist_delta = gsw.distance(lat, np.zeros_like(lat))
+    y_dist = np.cumsum(y_dist_delta)
+    y_dist = np.insert(y_dist, 0, 0)
+
+    if units == "km":
+        x_dist = x_dist / 1e3
+        y_dist = y_dist / 1e3
+
+    ds.coords["xdist"] = ds.lon.copy(data=x_dist)
+    ds.xdist.attrs = dict(units=units, long_name="distance")
+    ds.coords["ydist"] = ds.lat.copy(data=y_dist)
+    ds.ydist.attrs = dict(units=units, long_name="distance")
+
+    return ds

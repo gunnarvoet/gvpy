@@ -2,10 +2,13 @@
 # -*- coding: utf-8 -*-
 """
 Collection of xarray extensions. Currently, the following collections are attached to  xarray `DataArray` objects:
--  `gv` collects various (mostly convenience plotting) methods.
--  `gadcp` collects ADCP-related methods.
+-  `gv` collects various methods that can be applied to individual DataArrays. A number of them are convenience plotting methods
 
-Read more in the xarray docmumentation about [extending
+The following are attached to xarray `Dataset` objects:
+-  `gv` with miscellaneous Dataset methods. Note the same namespace as for the DataArray accessor above. This seems to work out okay.
+-  `gadcp` collects ADCP-related methods. Mostly helpful for ADCP data processed with [velosearaptor](https://modscripps.github.io/velosearaptor/velosearaptor.html).
+
+Accessors are a really neat way of attaching methods to xarray objects. Read more in the xarray docmumentation about [extending
 xarray](https://docs.xarray.dev/en/stable/internals/extending-xarray.html).
 """
 
@@ -13,11 +16,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
 import cartopy.crs as ccrs
+from pathlib import Path
 
 import gvpy as gv
 
 
-# extend and/or modify xarray's plotting capabilities
+# Extend and/or modify xarray's DataArray capabilities
 @xr.register_dataarray_accessor("gv")
 class GunnarsAccessor:
     def __init__(self, xarray_obj):
@@ -55,7 +59,9 @@ class GunnarsAccessor:
                 sampling_period_td = (
                     self._obj.time.diff("time").median().data.astype("timedelta64[ns]")
                 )
-                sampling_period_s = np.int64(sampling_period_td.astype(np.float64) / 1e9)
+                sampling_period_s = np.int64(
+                    sampling_period_td.astype(np.float64) / 1e9
+                )
                 self._sampling_period = sampling_period_s.item()
         return self._sampling_period
 
@@ -72,8 +78,12 @@ class GunnarsAccessor:
             # set a default cmap
             cmap = "viridis"
             cmap_dict = dict(
-                Spectral_r=[
+                # Spectral_r=[
+                RdYlBu_r=[
                     "temperature",
+                    "potential temperature",
+                    "conservative temperature",
+                    "in-situ temperature",
                     "temp",
                     "t",
                     "th",
@@ -99,10 +109,10 @@ class GunnarsAccessor:
 
         change_cf_labels()
 
-        grid = kwargs.pop("grid", True)
-
         if "ax" not in kwargs:
-            fig, ax = gv.plot.quickfig(w=8, h=3.5, grid=grid)
+            fgs = kwargs.pop("fgs", (8, 3.5))
+            grid = kwargs.pop("grid", True)
+            fig, ax = gv.plot.quickfig(fgs=fgs, grid=grid)
         else:
             ax = kwargs["ax"]
         if self._obj.ndim == 2 and "hue" not in kwargs:
@@ -123,20 +133,30 @@ class GunnarsAccessor:
         self._obj.plot(x="time", **kwargs)
         gv.plot.concise_date(ax, minticks=4)
         ax.set(xlabel="", title="")
+
+        # determine whether the y-axis should be increasing
+        invert_yaxis = False
         if "depth" in self._obj.dims:
-            ax.invert_yaxis()
+            invert_yaxis = True
         if "pressure" in self._obj.dims:
-            ax.invert_yaxis()
+            invert_yaxis = True
         if "p" in self._obj.dims:
-            ax.invert_yaxis()
+            invert_yaxis = True
         if "z" in self._obj.dims and self._obj.z.median() > 0:
+            invert_yaxis = True
+        if "y" in kwargs:
+            if kwargs["y"] == "hab":
+                invert_yaxis = False
+        if invert_yaxis:
             ax.invert_yaxis()
+
         xlab = ax.get_xlabel()
         if xlab[:4] == "time":
             ax.set(xlabel="")
         return ax
 
     def zplot(self, **kwargs):
+        decrease_y = True
         grid = kwargs.pop("grid", True)
         if "ax" not in kwargs:
             fig, ax = gv.plot.quickfig(w=3.5, h=4, grid=grid)
@@ -146,18 +166,37 @@ class GunnarsAccessor:
             zvar = "depth"
         elif "z" in self._obj.coords:
             zvar = "z"
+        ylabel = "depth [m]"
+        if "y" in kwargs:
+            zvar = kwargs.pop("y", True)
+        if zvar == "hab":
+            ylabel = "hab [m]"
+            decrease_y = False
+
         self._obj.plot(y=zvar, **kwargs)
-        ax.set(ylabel="depth [m]", title="")
-        gv.plot.ydecrease(ax)
+        ax.set(ylabel=ylabel, title="")
+        if decrease_y:
+            gv.plot.ydecrease(ax)
         return ax
 
     def llplot(self, **kwargs):
+        """Lon-lat-plot with cartopy GeoAxes. Needs lon/lat coordinates.
+
+        Returns
+        -------
+        ax : GeoAxes
+
+        """
         da = self._obj
         grid = kwargs.pop("grid", True)
+        if "fgs" in kwargs:
+            fgs = kwargs.pop("fgs")
+        else:
+            fgs = (7, 7)
         if "ax" not in kwargs:
             projection = ccrs.Mercator()
             fig, ax = plt.subplots(
-                figsize=(5, 5),
+                figsize=fgs,
                 subplot_kw={"projection": projection},
                 constrained_layout=True,
                 dpi=75,
@@ -192,6 +231,7 @@ class GunnarsAccessor:
         cbar_width = 2 * 1 / pos.width
 
         from mpl_toolkits.axes_grid1 import make_axes_locatable
+
         divider = make_axes_locatable(ax)
         cax = divider.append_axes(
             "right", size=f"{cbar_width}%", pad=0.08, axes_class=plt.Axes
@@ -215,7 +255,8 @@ class GunnarsAccessor:
         return ax
 
     def plot(self, **kwargs):
-        """Shortcut for `tplot`"""
+        """Shortcut for `tplot`, `zplot` and `llplot`.
+        """
         if "time" in self._obj.coords and self._obj.time.size > 1:
             return self._obj.gv.tplot(**kwargs)
         elif "depth" in self._obj.coords or "z" in self._obj.coords:
@@ -322,7 +363,9 @@ class GunnarsAccessor:
         cutoff_freq = 1 / cutoff_period
         fs = 1 / self.sampling_period
         axis = self._obj.get_axis_num("time")
-        tmp = gv.signal.highpassfilter(self._obj, cutoff_freq, fs, order=order, axis=axis)
+        tmp = gv.signal.highpassfilter(
+            self._obj, cutoff_freq, fs, order=order, axis=axis
+        )
         out = self._obj.copy(data=tmp)
         if "long_name" in out.attrs:
             out.attrs["long_name"] = out.attrs["long_name"] + f" hp({cutoff_period}s)"
@@ -335,13 +378,39 @@ class GunnarsAccessor:
         cutoff_freq = 1 / cutoff_period
         fs = 1 / self.sampling_period
         axis = self._obj.get_axis_num("time")
-        tmp = gv.signal.lowpassfilter(self._obj, cutoff_freq, fs, order=order, axis=axis, type=type)
+        tmp = gv.signal.lowpassfilter(
+            self._obj, cutoff_freq, fs, order=order, axis=axis, type=type
+        )
         out = self._obj.copy(data=tmp)
         if "long_name" in out.attrs:
             out.attrs["long_name"] = out.attrs["long_name"] + f" lp({cutoff_period}s)"
         return out
 
-# add ADCP methods to xarray Dataset
+    def to_netcdf(self, path, overwrite=True, confirm_overwrite=True):
+        return _to_netcdf(self._obj, path, overwrite, confirm_overwrite)
+
+    def duration(self, time_format="h"):
+        return _duration(self._obj, time_format=time_format)
+
+
+# Extend and/or modify xarray's Dataset capabilities.
+# Naming this `gv` just as the DataArray accessor above.
+# Let's hope this doesn't cause any issues.
+@xr.register_dataset_accessor("gv")
+class GunnarsDatasetAccessor:
+    def __init__(self, xarray_obj):
+        """This class collects a bunch of methods under `.gv`"""
+        self._obj = xarray_obj
+        # self.to_netcdf.__doc__ = _to_netcdf.__doc__
+
+    def to_netcdf(self, path, overwrite=True, confirm_overwrite=True):
+        return _to_netcdf(self._obj, path, overwrite, confirm_overwrite)
+
+    def duration(self, time_format="h"):
+        return _duration(self._obj, time_format=time_format)
+
+
+# Add ADCP methods to xarray Dataset.
 @xr.register_dataset_accessor("gadcp")
 class GunnarsADCPAccessor:
     def __init__(self, xarray_obj):
@@ -371,3 +440,86 @@ class GunnarsADCPAccessor:
         for var in vars:
             ds[var] = ds[var].where(ds.pg > pg)
         return ds
+
+
+# Helper functions for cases where I want them accessible both in Datasets and DataArrays.
+# These are wrapped with the accessor methods above.
+def _to_netcdf(ds, path, overwrite=True, confirm_overwrite=True):
+    """Wrapper for xarray's to_netcdf().
+
+    Parameters
+    ----------
+    path : str or pathlib.Path()
+        path can be just a filename (will be saved to current dir) or a
+        Path() object defining a full path.
+    overwrite : bool, optional
+        Whether to overwrite an existing file at this location. Defaults to
+        True.
+    confirm_overwrite : bool, optional
+        Whether to additionally confirm overwriting an existing file.
+        Defaults to True.
+
+    Returns
+    -------
+    path : pathlib.Path
+        Path to netcdf file.
+
+    Notes
+    -----
+    - If overwriting existing file, file will be deleted first. This is to
+        get around the annoyance of files being locked that I have always
+        been stupid to grasp and am now getting around with this. I am sure
+        there would be a better and cleaner solution.
+    - If time is a coordinate, it will be saved in cf-compliant format (seconds since 1970).
+    """
+    # note: the docstring above omits the first parameter, `ds`, since I am
+    # wrapping this function with dataset and dataarray accessors and want to
+    # be able to reuse the docstring.
+
+    if isinstance(path, str):
+        path = Path.cwd().joinpath(path)
+    if not isinstance(path, Path):
+        raise TypeError("Input must be a string or Path() object")
+    if path.suffix == "":
+        path = path.with_suffix(".nc")
+    if path.suffix != ".nc":
+        raise ValueError("File name must have either no suffix or end with '.nc'")
+
+    exists = path.exists()
+    if exists and not overwrite:
+        print("File exists; set overwrite=True to replace")
+        return
+
+    if exists and overwrite:
+        if confirm_overwrite:
+            if gv.misc.yes_or_no("Confirm replacing existing file"):
+                path.unlink()
+            else:
+                print("Aborting.")
+                return
+        else:
+            path.unlink()
+
+    opts = dict()
+
+    if "time" in ds.coords:
+        opts["encoding"] = {
+            "time": {"units": "seconds since 1970-01-01", "dtype": "float"}
+        }
+
+    ds.to_netcdf(path, **opts)
+
+    return path
+
+def _duration(ds, time_format="h"):
+    assert "time" in ds.coords, "no time coordinate"
+    time = ds.time
+    assert time.dtype.str[:3] == "<M8"
+    dt = time[-1] - time[0]
+    dt = dt.data.astype(f"<m8[{time_format}]")
+    return dt
+
+
+# Assign the original function's docstring to the wrapped method
+GunnarsDatasetAccessor.to_netcdf.__doc__ = _to_netcdf.__doc__
+GunnarsAccessor.to_netcdf.__doc__ = _to_netcdf.__doc__

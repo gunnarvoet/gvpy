@@ -330,29 +330,30 @@ def gappy_rotary(Z, nfft, fs, maxgap):
 
     Returns
     -------
-# %outputs:
-# %out is a structure containg nfft/2 data points.
-# %   Gxx is the PSD of the real part of x
-# %   Gyy is the PSD of the imag part of x
-# %   Gxy is the total PSD of x (equivalent to Gxx + Gyy)
-# %   CW is the Clockwise PSD of x
-# %   CCW is counterclockwise PSD of x
-# %---
-# %f contains the frequencies (nfft/2 points)
-# %---
-# %spec is a strcture containing data nfft points.  These data are the
-# %full length PSD (nfft data points).
-# %   Gxx is the PSD of the real part of x
-# %   Gyy is the PSD of the imag part of y
-# %   Gxy (imaginary) is the PSD of x
-# %   Cxy is the co-spectra of x (note Cxy is symmetric)
-# %   Qxy is the quad-spectra of x (note Qxy is anti-symmetric).
-# %---------
+    outputs:
+    out is a structure containg nfft/2 data points.
+       Gxx is the PSD of the real part of x
+       Gyy is the PSD of the imag part of x
+       Gxy is the total PSD of x (equivalent to Gxx + Gyy)
+       CW is the Clockwise PSD of x
+       CCW is counterclockwise PSD of x
+
+    f contains the frequencies (nfft/2 points)
+
+    spec is a strcture containing data nfft points.  These data are the
+    full length PSD (nfft data points).
+       Gxx is the PSD of the real part of x
+       Gyy is the PSD of the imag part of y
+       Gxy (imaginary) is the PSD of x
+       Cxy is the co-spectra of x (note Cxy is symmetric)
+       Qxy is the quad-spectra of x (note Qxy is anti-symmetric).
 
     Notes
     -----
     Adapted from `gappy_rotary.m` Matlab® code written by Greg Avicola based on
-    prior code from Jody Klymak and Jonathan Nash.
+    prior code from Jody Klymak and Jonathan Nash. The file can be found in the
+    OSU mixingsoftware repository on Github at
+    https://github.com/OceanMixingGroup/mixingsoftware/blob/master/general/gappy_rotary.m
     """
 
     x = np.real(Z)
@@ -491,6 +492,133 @@ def gappy_rotary(Z, nfft, fs, maxgap):
     n = 2 * lencount / nfft
 
     return f, CW, CCW, Gxx, Gyy, Gxy, n
+
+
+def gappy_rotary_phind_translation(x, nfft, fs, maxgap):
+    """
+    Computes power spectral density (PSD) estimates for a given time series, handling gaps in the data.
+
+    This function is designed to process complex time series data, where the input is a 2D array with the
+    first row containing the real part of the data and the second row containing the imaginary part. It
+    calculates PSD estimates, taking into account gaps in the data, and returns the PSD of the real part,
+    the imaginary part, and the total PSD of the data. It also provides estimates of the clockwise and
+    counterclockwise PSD of the data.
+
+    Parameters:
+    ----------
+    x : numpy.ndarray
+        A 2D array where the first row contains the real part of the time series data and the second row
+        contains the imaginary part.
+    nfft : int
+        The number of points to be used in each PSD estimate. It must be an even number.
+    fs : float
+        The sample frequency of the time series data.
+    maxgap : float
+        The maximum length of a gap in the time series data to be interpolated over.
+
+    Returns:
+    -------
+    out : dict
+        A dictionary containing the PSD of the real part (Gxx), the PSD of the imaginary part (Gyy), the
+        total PSD of the data (Gxy), the clockwise PSD (CW), and the counterclockwise PSD (CCW).
+    f : numpy.ndarray
+        An array of frequencies (nfft/2 points) used in the PSD calculations.
+    spec : dict
+        A dictionary containing the full-length PSD data, including the PSD of the real part (Gxx), the
+        PSD of the imaginary part (Gyy), the PSD of the data (Gxy), the co-spectra (Cxy), and the
+        quad-spectra (Qxy).
+    n : float
+        An estimate of the degrees of freedom in the output spectral data, useful for calculating
+        confidence limits.
+
+    Notes:
+    -----
+    The function assumes that the input time series data is complex, with the real and imaginary parts
+    provided in separate rows of the input array. The function handles gaps in the data by interpolating
+    across them and computes PSD estimates using a Hanning window.
+    """
+    # Ensure x is a complex array
+    x = np.array(x, dtype=complex)
+
+    # Adjust nfft to be an even number
+    nfft = int(nfft)
+    if nfft % 2 != 0:
+        nfft -= 1
+
+    # Ensure x is a column vector
+    if x.shape[0] > x.shape[1]:
+        x = x.T
+
+    # Separate real and imaginary parts
+    real_x = np.real(x)
+    imag_x = np.imag(x)
+
+    # Combine real and imaginary parts
+    combined_x = np.vstack([real_x, imag_x])
+
+    # Find non-NaN values
+    good_indices = np.where(~np.isnan(combined_x))[0]
+    combined_x = combined_x[:, good_indices]
+
+    # Interpolate across gaps
+    t = np.arange(combined_x.shape[1])
+    f = scipy.interpolate.interp1d(t[good_indices], combined_x, axis=1, fill_value='extrapolate')
+    combined_x = f(t)
+
+    # Initialize output arrays
+    Gxx = np.zeros(nfft)
+    Gyy = np.zeros(nfft)
+    Gxy = np.zeros(nfft)
+    Cxy = np.zeros(nfft)
+    Qxy = np.zeros(nfft)
+
+    # Window function
+    wind = scipy.signal.hanning(nfft)
+    W1 = 2 / np.linalg.norm(wind)**2
+
+    # FFT and processing
+    for i in range(combined_x.shape[1]):
+        xdat = combined_x[:, i]
+        if len(xdat) >= nfft:
+            X = scipy.fft.fft(np.real(xdat[:nfft]) * wind)
+            Y = scipy.fft.fft(np.imag(xdat[:nfft]) * wind)
+            Z = scipy.fft.fft(xdat[:nfft] * wind)
+
+            Gxx += np.abs(X)**2
+            Gyy += np.abs(Y)**2
+            Gxy += np.abs(Z)**2
+            Cxy += np.real(X) * np.real(Y) + np.imag(X) * np.imag(Y)
+            Qxy += np.real(X) * np.imag(Y) - np.imag(X) * np.real(Y)
+
+    # Normalization and frequency array
+    Gxx = W1 * Gxx / len(good_indices) / fs
+    Gyy = W1 * Gyy / len(good_indices) / fs
+    Gxy = W1 * Gxy / len(good_indices) / fs
+    Cxy = 2 * W1 * Cxy / len(good_indices) / fs
+    Qxy = 2 * W1 * Qxy / len(good_indices) / fs
+
+    f = np.linspace(fs / nfft, fs / 2, nfft // 2)
+
+    # Output structure
+    out = {
+        'Gxx': Gxx[:nfft // 2],
+        'Gyy': Gyy[:nfft // 2],
+        'Gxy': np.sqrt(Cxy[:nfft // 2]**2 + Qxy[:nfft // 2]**2),
+        'CW': 0.5 * (Gxx[:nfft // 2] + Gyy[:nfft // 2] + Qxy[:nfft // 2]),
+        'CCW': 0.5 * (Gxx[:nfft // 2] + Gyy[:nfft // 2] - Qxy[:nfft // 2])
+    }
+
+    spec = {
+        'Gxx': Gxx,
+        'Gyy': Gyy,
+        'Gxy': Gxy,
+        'Cxy': Cxy,
+        'Qxy': Qxy
+    }
+
+    n = 2 * len(good_indices) / nfft
+
+    return out, f, spec, n
 
 
 def _butter_bandpass(lowcut, highcut, fs, order=3):

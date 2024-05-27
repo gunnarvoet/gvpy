@@ -56,18 +56,34 @@ You should have received a copy of the GNU Lesser General Public License along
 with gvpy.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-__all__ = ["io", "ocean", "plot", "time", "signal", "maps", "mp", "trilaterate", "xr", "misc", "gm81"]
+import importlib.metadata
+import importlib.util
+
+__all__ = [
+    "io",
+    "ocean",
+    "plot",
+    "time",
+    "signal",
+    "maps",
+    "mp",
+    "trilaterate",
+    "xr",
+    "misc",
+    "gm81",
+]
 
 __author__ = "Gunnar Voet"
 __email__ = "gvoet@ucsd.edu"
-__version__ = "2024.04"
+# version is defined in pyproject.toml
+__version__ = importlib.metadata.version("gvpy")
 
 # workaround for when whatever is defined as the default backend is not around:
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
+if importlib.util.find_spec("matplotlib.pyplot") is None:
     import matplotlib as mpl
 
     mpl.use("Agg")
+else:
+    pass
 
 from . import io, misc, ocean, plot, signal, maps, time, mp, trilaterate, xr, gm81

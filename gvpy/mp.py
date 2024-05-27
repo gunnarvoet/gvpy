@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Module gvpy.mp with functions for McLane Moored Profiler
-"""
+"""Module gvpy.mp with functions for data collected with McLane Moored Profilers."""
 
 import gsw
 import numpy as np
@@ -92,6 +91,7 @@ def load_raw_mat_file(file):
     # file = path_raw_mat.joinpath(f"raw{n:04d}.mat")
     mpts = io.loadmat(file)
     mpts_time = io.mtlb2datetime(mpts.engtime)
+    mpts_time = mpts_time.astype("<M8[ns]")
 
     tmp = mpts["psdate"] + " " + mpts["pstart"]
     start_time = io.str_to_datetime64(tmp)
@@ -157,7 +157,7 @@ def load_raw_mat(path_raw_mat, n):
     Parameters
     ----------
     path_raw_mat : Path or str
-        Path to raw .mat files (usually raw/ in the data directory).
+        Path to raw .mat files (usually mat/ in the data directory).
     n : int or list[int] or range or 'all'
         Profile number or range or all.
 
@@ -268,17 +268,17 @@ def acm_path_to_instrument_coordinate(mp):
     is Vz1 and vice versa.
     """
 
-    mp["Vx"] = (["asnum"], -(mp.Vab + mp.Vef) / (2 * 0.707))
-    mp["Vy"] = (["asnum"], (mp.Vab - mp.Vef) / (2 * 0.707))
-    mp["Vz1"] = (["asnum"], mp.Vx - mp.Vgh / 0.707)
-    mp["Vz2"] = (["asnum"], -mp.Vx + mp.Vcd / 0.707)
+    mp["Vx"] = (["asnum"], (-(mp.Vab + mp.Vef) / (2 * 0.707)).data)
+    mp["Vy"] = (["asnum"], ((mp.Vab - mp.Vef) / (2 * 0.707)).data)
+    mp["Vz1"] = (["asnum"], (mp.Vx - mp.Vgh / 0.707).data)
+    mp["Vz2"] = (["asnum"], (-mp.Vx + mp.Vcd / 0.707).data)
     return mp
 
 
 def add_hab(mp, bottom_depth=None):
     if bottom_depth is None:
         bottom_depth = mp.H.median(dim="time").data
-    hab = bottom_depth - mp.z
+    hab = bottom_depth - mp.depth
     mp.coords["hab"] = hab
     mp.hab.attrs["long_name"] = "height above bottom"
     mp.hab.attrs["units"] = "m"
@@ -355,11 +355,11 @@ def add_overturns(mp, alpha=0.64, dnoise=5e-4, dnoise_CT=2e-3, background_eps=np
         epsall.append(eps)
         epstall.append(eps_t)
     mp["eps"] = (["z", "time"], mp.t.data * np.nan)
-    mp.eps.attrs = dict(long_name=r'$\epsilon$', units='W/kg')
+    mp.eps.attrs = dict(long_name=r"$\epsilon$", units="W/kg")
     for i, epsi in enumerate(epsall):
         mp.eps[:, i] = epsi
     mp["eps_t"] = (["z", "time"], mp.t.data * np.nan)
-    mp.eps_t.attrs = dict(long_name=r'$\epsilon_\mathrm{T}$', units='W/kg')
+    mp.eps_t.attrs = dict(long_name=r"$\epsilon_\mathrm{T}$", units="W/kg")
     for i, epsi in enumerate(epstall):
         mp.eps_t[:, i] = epsi
     return mp
@@ -400,11 +400,18 @@ def add_nsquared_smoothed(mp, dp=16):
     n2_all = np.zeros_like(mp.t) * np.nan
     for i in range(mp.time.size):
         mpp = mp.isel(time=i)
-        n2, pout = gv.ocean.nsqfcn(mpp.s.data, mpp.t.data, mpp.P.data, p0=0, dp=16, lon=mp.attrs["lon"], lat=mp.attrs["lat"])
+        n2, pout = gv.ocean.nsqfcn(
+            mpp.s.data,
+            mpp.t.data,
+            mpp.P.data,
+            p0=0,
+            dp=16,
+            lon=mp.attrs["lon"],
+            lat=mp.attrs["lat"],
+        )
         N2 = sp.interpolate.interp1d(pout, n2, bounds_error=False)(mpp.P)
         n2_all[:, i] = N2
     mp["N2s"] = (("z", "time"), n2_all)
     mp.N2s.attrs["long_name"] = r"N$^2$"
     mp.N2s.attrs["units"] = r"s$^{-2}$"
     return mp
-

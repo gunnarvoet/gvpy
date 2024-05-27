@@ -446,7 +446,7 @@ def vstep(x, y, ax=None, *args, **kwargs):
     return lines
 
 
-def stickplot(ax, times, speeds, directions, units="", scale=0.1, color="k"):
+def stickplot(ax, times, data, uv=True, units="", scale=0.1, color="k"):
     """
     Create a stick plot of the given data on the given axes.
 
@@ -455,15 +455,15 @@ def stickplot(ax, times, speeds, directions, units="", scale=0.1, color="k"):
 
     Parameters
     ----------
-    axes: matplotlib.axis.Axis
-        The axes object to plot on.
+    axis: matplotlib.axis.Axis
+        The axis object to plot on.
     times: array-like
-        An array of datetime objects giving the time of the observations.
-    speeds: array-like
-        An array of the velocities of the observations.
-    directions: array-like
-        An array of the directions of the observations (in degrees from North,
-        where North is up on the plot)
+        Time vector
+    data : tuple
+        Input data as a tuple of either (u, v) or (speed, direction).
+        Directions are in degrees from North, where North is up on the plot)
+    uv : bool, optional
+        Indicates whether input data are (u, v) or (speed, direction).
     units: str, optional
         Units of the observation. Defaults to empty string.
     scale: float, optional
@@ -489,10 +489,14 @@ def stickplot(ax, times, speeds, directions, units="", scale=0.1, color="k"):
     label_scale = 0.1
     unit_label = "%3g %s" % (label_scale, units)
 
-    y = np.zeros_like(speeds)
-    dir_rad = directions / 180.0 * np.pi
-    u = np.sin(dir_rad) * speeds
-    v = np.cos(dir_rad) * speeds
+    if uv:
+        u, v = data
+    else:
+        directions, speeds = data
+        dir_rad = directions / 180.0 * np.pi
+        u = np.sin(dir_rad) * speeds
+        v = np.cos(dir_rad) * speeds
+    y = np.zeros_like(u)
 
     Q = ax.quiver(times, y, u, v, **props)
     ax.quiverkey(

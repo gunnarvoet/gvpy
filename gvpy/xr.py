@@ -109,10 +109,10 @@ class GunnarsAccessor:
 
         change_cf_labels()
 
-        grid = kwargs.pop("grid", True)
-
         if "ax" not in kwargs:
-            fig, ax = gv.plot.quickfig(w=8, h=3.5, grid=grid)
+            fgs = kwargs.pop("fgs", (8, 3.5))
+            grid = kwargs.pop("grid", True)
+            fig, ax = gv.plot.quickfig(fgs=fgs, grid=grid)
         else:
             ax = kwargs["ax"]
         if self._obj.ndim == 2 and "hue" not in kwargs:
@@ -255,7 +255,8 @@ class GunnarsAccessor:
         return ax
 
     def plot(self, **kwargs):
-        """Shortcut for `tplot`"""
+        """Shortcut for `tplot`, `zplot` and `llplot`.
+        """
         if "time" in self._obj.coords and self._obj.time.size > 1:
             return self._obj.gv.tplot(**kwargs)
         elif "depth" in self._obj.coords or "z" in self._obj.coords:

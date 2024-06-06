@@ -291,6 +291,22 @@ def datetime64_to_yday1(time64):
     return baseyear, yday1
 
 
+def datetime64_to_unix_time(dt64):
+    """Convert numpy's datetime64 format to Unix time (seconds since 1970-01-01).
+
+    Parameters
+    ----------
+    time64 : np.datetime64
+        Time in numpy datetime64 format
+
+    Returns
+    -------
+    baseyear : int
+        Unix time [seconds since 1970-01-01]
+    """
+    return dt64.astype("datetime64[s]").astype("int")
+
+
 def convert_units(t, unit="s"):
     if type(t) == xr.DataArray:
         torig = t.copy()

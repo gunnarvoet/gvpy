@@ -3,7 +3,7 @@ import datetime
 import numpy as np
 import pytest
 
-import gvpy
+import gvpy as gv
 
 
 def test_datetime64_to_unix_time():
@@ -15,5 +15,5 @@ def test_datetime64_to_unix_time():
         ).stdout.decode("utf-8")
         return int(result)
 
-    unix_time = get_unixtime(np.datetime64(datetime.datetime.utcnow()))
+    unix_time = gv.time.datetime64_to_unix_time(np.datetime64(datetime.datetime.utcnow()))
     assert unix_time == command_line_unix_time()

@@ -208,8 +208,8 @@ def yday1_to_datetime64(baseyear, yday):
     base = datetime.datetime(baseyear, 1, 1, 0, 0, 0)
     time = [base + datetime.timedelta(days=ti) for ti in yday - 1]
     # convert to numpy datetime64
-    time64 = np.array([np.datetime64(ti, "ms") for ti in time])
-    return time64
+    dt64 = np.array([np.datetime64(ti, "ms") for ti in time])
+    return dt64
 
 
 def yday0_to_datetime64(baseyear, yday):
@@ -231,16 +231,16 @@ def yday0_to_datetime64(baseyear, yday):
     base = datetime.datetime(baseyear, 1, 1, 0, 0, 0)
     time = [base + datetime.timedelta(days=ti) for ti in yday]
     # convert to numpy datetime64
-    time64 = np.array([np.datetime64(ti, "ms") for ti in time])
-    return time64
+    dt64 = np.array([np.datetime64(ti, "ms") for ti in time])
+    return dt64
 
 
-def datetime64_to_yday0(time64):
+def datetime64_to_yday0(dt64):
     """Convert numpy's datetime64 format to year day (starting at yday 0).
 
     Parameters
     ----------
-    time64 : np.datetime64
+    dt64 : np.datetime64
         Time in numpy datetime64 format
 
     Returns
@@ -251,15 +251,15 @@ def datetime64_to_yday0(time64):
         Year day
     """
     # convert single value to list
-    if type(time64) == np.datetime64:
-        time64 = [time64]
+    if type(dt64) == np.datetime64:
+        dt64 = [dt64]
     # base year
-    pt = pd.to_datetime(time64)
+    pt = pd.to_datetime(dt64)
     baseyears = pt.year.to_numpy()
     baseyear = baseyears[0]
     # year day
     base64 = np.datetime64(f"{baseyear}-01-01 00:00:00")
-    delta64 = time64 - base64
+    delta64 = dt64 - base64
     delta64ns = delta64.astype("timedelta64[ns]")
     delta = delta64ns.astype(float)
     yday = delta / 1e9 / 3600 / 24
@@ -270,12 +270,12 @@ def datetime64_to_yday0(time64):
     return baseyear, yday
 
 
-def datetime64_to_yday1(time64):
+def datetime64_to_yday1(dt64):
     """Convert numpy's datetime64 format to year day (starting at yday 1).
 
     Parameters
     ----------
-    time64 : np.datetime64
+    dt64 : np.datetime64
         Time in numpy datetime64 format
 
     Returns
@@ -285,7 +285,7 @@ def datetime64_to_yday1(time64):
     yday1 : float
         Year day
     """
-    baseyear, yday0 = datetime64_to_yday0(time64)
+    baseyear, yday0 = datetime64_to_yday0(dt64)
     yday1 = yday0 + 1
 
     return baseyear, yday1
@@ -296,7 +296,7 @@ def datetime64_to_unix_time(dt64):
 
     Parameters
     ----------
-    time64 : np.datetime64
+    dt64 : np.datetime64
         Time in numpy datetime64 format
 
     Returns
@@ -356,12 +356,12 @@ def convert_units(t, unit="s"):
     return out
 
 
-def datetime64_to_str(dt, unit="D"):
+def datetime64_to_str(dt64, unit="D"):
     """Convert numpy datetime64 object or array to str or array of str.
 
     Parameters
     ----------
-    dt : np.datetime64 or array-like
+    dt64 : np.datetime64 or array-like
         Time in numpy datetime64 format
     unit : str, optional
         Date unit. Defaults to "D".
@@ -377,7 +377,7 @@ def datetime64_to_str(dt, unit="D"):
 
     """
 
-    return np.datetime_as_string(dt, unit=unit)
+    return np.datetime_as_string(dt64, unit=unit)
 
 
 def timedelta64_to_s(td64):
@@ -397,7 +397,7 @@ def timedelta64_to_s(td64):
     return td64.astype("<m8[ns]").astype("float") / 1e9
 
 
-def dominant_period_in_s(time64):
+def dominant_period_in_s(dt64):
     """Return the dominant period [s] in a time vector.
 
     Parameters
@@ -410,7 +410,7 @@ def dominant_period_in_s(time64):
     period : float64
         Dominant period in seconds.
     """
-    res = scipy.stats.mode(np.diff(time64))
+    res = scipy.stats.mode(np.diff(dt64))
     return timedelta64_to_s(res.mode)
 
 

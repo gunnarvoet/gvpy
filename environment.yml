@@ -27,7 +27,7 @@ dependencies:
   - pip:
     - pyrsktools
     - lat-lon-parser
-    - seabird
+    # - seabird
     - watchmagic
     - jupytext
     - mixsea

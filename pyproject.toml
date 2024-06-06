@@ -30,7 +30,6 @@ dependencies = [
     "scipy",
     "xarray",
     "matplotlib",
-    "seabird",
     "munch",
     "pandas",
     "IPython",

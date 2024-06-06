@@ -11,7 +11,7 @@ def test_trilateration():
     pos = [(loni, lati) for loni, lati in zip(lon, lat)]
     ranges = np.array([2146, 2204, 2221])
 
-    plan_lon, plan_lat = -11-56.958/60, 54 + 14.334/60
+    plan_lon, plan_lat = -11 - 56.958 / 60, 54 + 14.334 / 60
     bottom_depth = 2034
     mp1 = trilaterate.Trilateration(
         "MP1",

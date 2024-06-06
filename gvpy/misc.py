@@ -291,13 +291,12 @@ def connect_to_server(server, drive):
     _output = subprocess.run(["osascript", "-e", command], capture_output=True)
 
 
-def yes_or_no(prompt, default='y'):
+def yes_or_no(prompt, default="y"):
     while True:
         response = input(prompt + " [Y/n]:").lower()
-        if response == 'y' or response == 'n':
-            return response == 'y'
-        elif response == '':
-            return default == 'y'
+        if response == "y" or response == "n":
+            return response == "y"
+        elif response == "":
+            return default == "y"
         else:
             print("Invalid input. Please enter 'y' or 'n'.")
-

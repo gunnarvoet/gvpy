@@ -160,19 +160,15 @@ class Point:
             Bottom depth
         """
 
-        self.hdist = np.sqrt(self.distances ** 2 - bottom_depth ** 2)
-        self.hdist = (
-            np.array([self.hdist]) if self.hdist.size == 1 else self.hdist
-        )
+        self.hdist = np.sqrt(self.distances**2 - bottom_depth**2)
+        self.hdist = np.array([self.hdist]) if self.hdist.size == 1 else self.hdist
 
     def _input_to_ranges(self):
         """Convert input to Point into Ranges."""
         if self.pos is None:
             if self.distances.size == 1:
                 self.ranges = [
-                    Range(
-                        time=self.times, distance=self.distances, pos=self.nav
-                    )
+                    Range(time=self.times, distance=self.distances, pos=self.nav)
                 ]
             else:
                 self.ranges = [
@@ -216,16 +212,12 @@ class Trilateration:
         if drop_time is not None:
             self.drop_time = np.datetime64(drop_time)
             self.drop_pos = self.nav.interp(time=self.drop_time)
-            deltat = slice(
-                self.drop_time - np.timedelta64(20, "m"), self.drop_time
-            )
+            deltat = slice(self.drop_time - np.timedelta64(20, "m"), self.drop_time)
             self.drop_approach = self.nav.sel(time=deltat)
 
     def add_ranges(self, distances, times=None, pos=None):
         if pos is None:
-            p = Point(
-                self.mooring, distances=distances, times=times, nav=self.nav
-            )
+            p = Point(self.mooring, distances=distances, times=times, nav=self.nav)
         elif times is None:
             p = Point(self.mooring, distances=distances, pos=pos)
         p.horizontal_distance(self.bottom_depth)
@@ -251,9 +243,7 @@ class Trilateration:
         lon = [p.lon[i] for p in self.points]
         lat = [p.lat[i] for p in self.points]
         hdist = [p.hdist[i] for p in self.points]
-        res = trifun(
-            lon, lat, hdist, planlon=self.plan_lon, planlat=self.plan_lat
-        )
+        res = trifun(lon, lat, hdist, planlon=self.plan_lon, planlat=self.plan_lat)
         # add offset
         res.calculate_offset(self.plan_lon, self.plan_lat)
         self.result = res
@@ -264,9 +254,7 @@ class Trilateration:
             lon = [self.points[x].lon[i] for x in pair]
             lat = [self.points[x].lat[i] for x in pair]
             hdist = [self.points[x].hdist[i] for x in pair]
-            res2 = trifun(
-                lon, lat, hdist, planlon=self.plan_lon, planlat=self.plan_lat
-            )
+            res2 = trifun(lon, lat, hdist, planlon=self.plan_lon, planlat=self.plan_lat)
             # calculate distances between 2 point solutions and the full 3 point solution
             res2.calculate_offset(res.lon, res.lat)
             reserr.append(res2)
@@ -371,12 +359,8 @@ class Trilateration:
         ax.set_extent(topo_extent, crs=ccrs.PlateCarree())
         for p in self.points:
             for lon, lat, radius in zip(p.lon, p.lat, p.hdist):
-                gv.maps.plot_watch_circle(
-                    lon, lat, radius, ax, ec="0.1", alpha=0.3
-                )
-        gv.maps.cartopy_scale_bar(
-            ax, (0.2, 0.1), 100, metres_per_unit=1, unit_name="m"
-        )
+                gv.maps.plot_watch_circle(lon, lat, radius, ax, ec="0.1", alpha=0.3)
+        gv.maps.cartopy_scale_bar(ax, (0.2, 0.1), 100, metres_per_unit=1, unit_name="m")
         ax.plot(
             self.plan_lon,
             self.plan_lat,

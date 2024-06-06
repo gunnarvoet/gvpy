@@ -744,9 +744,7 @@ def figsave(fname, dirname="fig"):
 \\includegraphics[width=1.0\\textwidth]{{{fname}}}
 \\caption{{  \\newline \\hspace{{\\linewidth}}   {{\\footnotesize {pwd}{fname}.pdf}}}}
 \\label{{fig:{fname}}}
-\\end{{figure*}}""".format(
-        pwd=pwd, fname=fname
-    )
+\\end{{figure*}}""".format(pwd=pwd, fname=fname)
     fout.write(str)
     fout.close()
 
@@ -1262,4 +1260,3 @@ def remove_axis_labels(ax):
     else:
         ax.set(xlabel="", ylabel="")
     return
-

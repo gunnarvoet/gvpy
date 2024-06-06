@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Module gvpy.time with time conversion functions. A few of these also still live in io.py for backwards compatibility.
-"""
+"""Module gvpy.time with time conversion functions. A few of these also still live in io.py for backwards compatibility."""
 
 import datetime
 import numpy as np
@@ -435,9 +434,7 @@ def slice_to_datetime64(ts):
 
 
 def now_datestr():
-    datestr = datetime64_to_str(
-        np.datetime64(datetime.datetime.now())
-    )
+    datestr = datetime64_to_str(np.datetime64(datetime.datetime.now()))
     return datestr
 
 

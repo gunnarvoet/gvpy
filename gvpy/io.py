@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Module gvpy.io with in/out functions
-"""
+"""Module gvpy.io with in/out functions"""
 
 import datetime as dt
 import re

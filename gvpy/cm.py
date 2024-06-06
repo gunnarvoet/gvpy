@@ -8,6 +8,7 @@ The following colormaps are added:
 
 Thanks to [John Mickett](http://apl.uw.edu/people/profile.php?last_name=Mickett&first_name=John) for `ocean4jbm`!
 """
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
@@ -153,16 +154,19 @@ def RGBToPyCmap(rgbdata):
 
 mpl_data = RGBToPyCmap(ocean4jbm)
 if "ocean4jbm" not in mpl.colormaps:
-    mpl.colormaps.register(cmap=LinearSegmentedColormap("ocean4jbm", mpl_data, ocean4jbm.shape[0]))
+    mpl.colormaps.register(
+        cmap=LinearSegmentedColormap("ocean4jbm", mpl_data, ocean4jbm.shape[0])
+    )
 
 mpl_data_r = RGBToPyCmap(ocean4jbm[::-1, :])
 if "ocean4jbm_r" not in mpl.colormaps:
-    mpl.colormaps.register(cmap=LinearSegmentedColormap("ocean4jbm_r", mpl_data_r, ocean4jbm.shape[0]))
+    mpl.colormaps.register(
+        cmap=LinearSegmentedColormap("ocean4jbm_r", mpl_data_r, ocean4jbm.shape[0])
+    )
 
 if __name__ == "__main__":
-
     XX, YY = np.meshgrid(np.linspace(0, 1, 100), np.linspace(0, 1, 100))
-    ZZ = np.sqrt(XX ** 2 + YY ** 2)
+    ZZ = np.sqrt(XX**2 + YY**2)
 
     plt.figure()
     plt.imshow(ZZ, cmap="ocean4jbm")

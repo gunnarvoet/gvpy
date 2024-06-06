@@ -49,7 +49,7 @@ js = 3
 r"""Mode scale number $j^\star$.
 """
 
-jsum = (np.pi*js/np.tanh(np.pi*js)-1)/(2*js**2)
+jsum = (np.pi * js / np.tanh(np.pi * js) - 1) / (2 * js**2)
 r"""
 Sum over a sufficient number of modes such that $j_u \gg j^\star = 3$
 $$
@@ -60,6 +60,7 @@ $$
 g = 9.81
 """Gravitational acceleration."""
 
+
 def omg_k_j(k, j, f, N0, b):
     r"""Frequency $\omega$ as a function of horizontal wavenumber $k$ and mode number $j$.
 
@@ -67,7 +68,10 @@ def omg_k_j(k, j, f, N0, b):
     \omega = \sqrt{N_0^2 k^2 +f^2(\pi j / b)^2} / (k^2 + (\pi j / b)^2)
     $$
     """
-    return np.sqrt((N0**2*k**2+f**2*(np.pi*j/b)**2)/(k**2+(np.pi*j/b)**2))
+    return np.sqrt(
+        (N0**2 * k**2 + f**2 * (np.pi * j / b) ** 2) / (k**2 + (np.pi * j / b) ** 2)
+    )
+
 
 def k_omg_j(omg, j, f, N0, b):
     r"""Horizontal wavenumber as a function of frequency omg and mode number j.
@@ -76,7 +80,8 @@ def k_omg_j(omg, j, f, N0, b):
     k = \sqrt{\\frac{\omega^2 -f^2}{N_0^2 - \omega^2}} \\frac{\pi j}{b}
     $$
     """
-    return np.sqrt((omg**2-f**2)/(N0**2-omg**2))*np.pi*j/b
+    return np.sqrt((omg**2 - f**2) / (N0**2 - omg**2)) * np.pi * j / b
+
 
 def B(omg, f):
     r"""Munk's $B(\omega)$ describing the frequency distribution.
@@ -85,54 +90,78 @@ def B(omg, f):
     B(\omega) = 2 \pi^{-1} f \omega^{-1} (\omega^2 - f^2)^{-1/2}
     $$
     """
-    return 2/np.pi*f/omg/np.sqrt(omg**2-f**2)
+    return 2 / np.pi * f / omg / np.sqrt(omg**2 - f**2)
+
 
 def H(j):
     # Munk's H(j) describing the mode distribution
-    return 1./(j**2+js**2)/jsum
+    return 1.0 / (j**2 + js**2) / jsum
+
 
 def E_omg_j(omg, j, f):
     # Munk's E(omg,j)
-    return B(omg, f)*H(j)*E
+    return B(omg, f) * H(j) * E
+
 
 def E_k_j(k, j, f, N, N0, b):
     # Munk's E(omg,j) transformed into hor. wavenumber space:
     # E(k,j) = E(omg,j) domg/dk. The transformation is achieved using the
     # dispersion relation (9.23a) in Munk (1981).
     omg = omg_k_j(k, j, f, N0, b)
-    domgdk = (N0**2-omg**2)/omg*k/(k**2+(np.pi*j/b)**2)
-    return E_omg_j(omg, j, f)*domgdk
+    domgdk = (N0**2 - omg**2) / omg * k / (k**2 + (np.pi * j / b) ** 2)
+    return E_omg_j(omg, j, f) * domgdk
+
 
 def P_k_j(k, j, f, N, N0, b):
     # potential energy spectrum (N^2 times displacement spectrum) as a function
     # of hor. wavenumber k and mode number j
     omg = omg_k_j(k, j, f, N0, b)
-    return b**2*N0*N*(omg**2-f**2)/omg**2*E_k_j(k, j, f, N, N0, b)
+    return b**2 * N0 * N * (omg**2 - f**2) / omg**2 * E_k_j(k, j, f, N, N0, b)
+
 
 def K_k_j(k, j, f, N, N0, b):
     # kinetic energy spectrum as a function of hor. wavenumber k and mode
     # number j
     omg = omg_k_j(k, j, f, N0, b)
-    return b**2*N0*N*(omg**2+f**2)/omg**2*E_k_j(k, j, f, N, N0, b)
+    return b**2 * N0 * N * (omg**2 + f**2) / omg**2 * E_k_j(k, j, f, N, N0, b)
+
 
 def eta_k_j(k, j, f, N, N0, b):
     # SSH spectrum as a function of hor. wavenumber k and mode number j
     omg = omg_k_j(k, j, f, N0, b)
-    return (omg**2-f**2)**2/(f**2*(omg**2+f**2))*K_k_j(k, j, f, N, N0, b)/k**2*f**2/g**2
+    return (
+        (omg**2 - f**2) ** 2
+        / (f**2 * (omg**2 + f**2))
+        * K_k_j(k, j, f, N, N0, b)
+        / k**2
+        * f**2
+        / g**2
+    )
+
 
 def P_omg_j(omg, j, f, N, N0, b):
     # potential energy spectrum (N^2 times displacement spectrum) as a function
     # of frequency omg and mode number j
-    return b**2*N0*N*(omg**2-f**2)/omg**2*E_omg_j(omg, j, f)
+    return b**2 * N0 * N * (omg**2 - f**2) / omg**2 * E_omg_j(omg, j, f)
+
 
 def K_omg_j(omg, j, f, N, N0, b):
     # kinetic energy spectrum as a function of frequency omg and mode number j
-    return b**2*N0*N*(omg**2+f**2)/omg**2*E_omg_j(omg, j, f)
+    return b**2 * N0 * N * (omg**2 + f**2) / omg**2 * E_omg_j(omg, j, f)
+
 
 def eta_omg_j(omg, j, f, N, N0, b):
     # SSH spectrum as a function of frequency omg and mode number j
     k = k_omg_j(omg, j, f, N0, b)
-    return (omg**2-f**2)**2/(f**2*(omg**2+f**2))*K_omg_j(omg, j, f, N, N0, b)/k**2*f**2/g**2
+    return (
+        (omg**2 - f**2) ** 2
+        / (f**2 * (omg**2 + f**2))
+        * K_omg_j(omg, j, f, N, N0, b)
+        / k**2
+        * f**2
+        / g**2
+    )
+
 
 def sqrt_trapz(kh, S):
     # integrate S/sqrt(kh^2-k^2) over all kh, approximating S as piecewise
@@ -142,7 +171,15 @@ def sqrt_trapz(kh, S):
     A = S[:-1]
     B = S[1:]
     k = kh[0]
-    return np.sum(((A-B)*(np.sqrt(a**2-k**2)-np.sqrt(b**2-k**2))+(a*B-b*A)*np.log((a+np.sqrt(a**2-k**2))/(b+np.sqrt(b**2-k**2))))/(b-a))
+    return np.sum(
+        (
+            (A - B) * (np.sqrt(a**2 - k**2) - np.sqrt(b**2 - k**2))
+            + (a * B - b * A)
+            * np.log((a + np.sqrt(a**2 - k**2)) / (b + np.sqrt(b**2 - k**2)))
+        )
+        / (b - a)
+    )
+
 
 def calc_1d(k, S):
     # calculate 1D wavenumber spectrum from 2D isotropic wavenumber spectrum:
@@ -150,8 +187,9 @@ def calc_1d(k, S):
     # (The normalization is such that int_0^infty S1d dk = int_0^infty S2d dkh.)
     S1d = np.empty(k.size)
     for i in range(k.size):
-        S1d[i] = 2/np.pi*sqrt_trapz(k[i:], S[i:])
+        S1d[i] = 2 / np.pi * sqrt_trapz(k[i:], S[i:])
     return S1d
+
 
 def plot_E_omg(N, lat):
     """Plot energy (PE & KE) spectra in frequency space.
@@ -176,18 +214,18 @@ def plot_E_omg(N, lat):
     b = 1.3e3
 
     # frequency
-    omg = np.logspace(np.log10(1.01*f), np.log10(N), 401)
+    omg = np.logspace(np.log10(1.01 * f), np.log10(N), 401)
 
     # horizontal wavenumber
-    k = 2*np.pi*np.logspace(-6, -2, 401)
+    k = 2 * np.pi * np.logspace(-6, -2, 401)
 
     # mode number
     j = np.arange(1, 100)
 
     # reshape to allow multiplication into 2D array
-    Omg = np.reshape(omg, (omg.size,1))
-    K = np.reshape(k, (k.size,1))
-    J = np.reshape(j, (1,j.size))
+    Omg = np.reshape(omg, (omg.size, 1))
+    K = np.reshape(k, (k.size, 1))
+    J = np.reshape(j, (1, j.size))
 
     # frequency spectra (KE and PE)
     K_omg_j = gv.gm81.K_omg_j(Omg, J, f, N, N0, b)
@@ -205,13 +243,14 @@ def plot_E_omg(N, lat):
 
     # plot frequency spectra
     fig, ax = plt.subplots()
-    ax.loglog(omg/(2*np.pi), 2*np.pi*K_omg, label='KE')
-    ax.loglog(omg/(2*np.pi), 2*np.pi*P_omg, label='PE')
+    ax.loglog(omg / (2 * np.pi), 2 * np.pi * K_omg, label="KE")
+    ax.loglog(omg / (2 * np.pi), 2 * np.pi * P_omg, label="PE")
     ax.legend(frameon=False)
-    ax.set_title('frequency spectra')
-    ax.set_xlabel('frequency (cps)')
-    ax.set_ylabel('power spectral density (m$^2$/s$^2$/cps)')
+    ax.set_title("frequency spectra")
+    ax.set_xlabel("frequency (cps)")
+    ax.set_ylabel("power spectral density (m$^2$/s$^2$/cps)")
     return ax, omg, K_omg, P_omg
+
 
 def calc_E_omg(N, lat):
     """Calculate energy (PE & KE) spectra in frequency space.
@@ -237,18 +276,18 @@ def calc_E_omg(N, lat):
     b = 1.3e3
 
     # frequency
-    omg = np.logspace(np.log10(1.01*f), np.log10(N), 401)
+    omg = np.logspace(np.log10(1.01 * f), np.log10(N), 401)
 
     # horizontal wavenumber
-    k = 2*np.pi*np.logspace(-6, -2, 401)
+    k = 2 * np.pi * np.logspace(-6, -2, 401)
 
     # mode number
     j = np.arange(1, 100)
 
     # reshape to allow multiplication into 2D array
-    Omg = np.reshape(omg, (omg.size,1))
-    K = np.reshape(k, (k.size,1))
-    J = np.reshape(j, (1,j.size))
+    Omg = np.reshape(omg, (omg.size, 1))
+    K = np.reshape(k, (k.size, 1))
+    J = np.reshape(j, (1, j.size))
 
     # frequency spectra (KE and PE)
     K_omg_j = gv.gm81.K_omg_j(Omg, J, f, N, N0, b)
@@ -263,9 +302,7 @@ def calc_E_omg(N, lat):
             KE=(("omega"), K_omg),
             PE=(("omega"), P_omg),
         ),
-        coords=dict(
-            omega=(("omega"), omg)
-        ),
+        coords=dict(omega=(("omega"), omg)),
     )
 
     return E

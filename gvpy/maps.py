@@ -23,9 +23,7 @@ import gsw
 
 
 class HillShade:
-    def __init__(
-        self, topo, lon=None, lat=None, smoothtopo=5, shading_factor=0.2
-    ):
+    def __init__(self, topo, lon=None, lat=None, smoothtopo=5, shading_factor=0.2):
         """Generate parameters for hill shading for an elevation model.
 
         Parameters
@@ -76,7 +74,7 @@ class HillShade:
 
         self.topo = topo
         if type(topo) == xr.DataArray or type(topo) == xr.Dataset:
-            if 'lon' in topo:
+            if "lon" in topo:
                 self.lon = topo.lon
                 self.lat = topo.lat
         if lon is not None and lat is not None:
@@ -127,9 +125,7 @@ class HillShade:
         """
         Smoothes topography using a gaussian filter in 2D.
         """
-        stopo = ndimage.gaussian_filter(
-            self.topo, sigma=(sigma, sigma), order=0
-        )
+        stopo = ndimage.gaussian_filter(self.topo, sigma=(sigma, sigma), order=0)
         return stopo
 
     def _generate_hill_shade(self, topo, root=1, azdeg=275, altdeg=145):
@@ -254,7 +250,6 @@ class HillShade:
 
         ax.set_extent(self.topo_extent, crs=ccrs.PlateCarree())
 
-
         if newfig:
             return fig, ax
         else:
@@ -332,9 +327,7 @@ def cartopy_scale_bar(
     angle_rad = angle * np.pi / 180
 
     # End-point of bar.
-    end = _point_along_line(
-        ax, location, length_metres, angle=angle_rad, tol=tol
-    )
+    end = _point_along_line(ax, location, length_metres, angle=angle_rad, tol=tol)
 
     # Coordinates are currently in axes coordinates, so use transAxes to
     # put into data coordinates. *zip(a, b) produces a list of x-coords,
@@ -526,7 +519,9 @@ def add_dist_coords(ds, units="m"):
     """
     assert units in ["m", "km"], "units must be m or km"
     # this will cause trouble if having coords like "longitude" but oh well
-    assert "lon" in ds.coords and "lat" in ds.coords, "input must have coordinates lon & lat"
+    assert (
+        "lon" in ds.coords and "lat" in ds.coords
+    ), "input must have coordinates lon & lat"
 
     lon = ds.lon.data
     lat = ds.lat.data

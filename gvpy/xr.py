@@ -255,8 +255,7 @@ class GunnarsAccessor:
         return ax
 
     def plot(self, **kwargs):
-        """Shortcut for `tplot`, `zplot` and `llplot`.
-        """
+        """Shortcut for `tplot`, `zplot` and `llplot`."""
         if "time" in self._obj.coords and self._obj.time.size > 1:
             return self._obj.gv.tplot(**kwargs)
         elif "depth" in self._obj.coords or "z" in self._obj.coords:
@@ -510,6 +509,7 @@ def _to_netcdf(ds, path, overwrite=True, confirm_overwrite=True):
     ds.to_netcdf(path, **opts)
 
     return path
+
 
 def _duration(ds, time_format="h"):
     assert "time" in ds.coords, "no time coordinate"

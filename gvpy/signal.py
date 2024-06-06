@@ -192,9 +192,7 @@ def psd(
         g = g_ext
         M = g.shape
     if ffttype == "c":
-        g_ext = np.concatenate(
-            (g, np.flip(g[:, 1 : int(M[1]) - 1], axis=1)), axis=1
-        )
+        g_ext = np.concatenate((g, np.flip(g[:, 1 : int(M[1]) - 1], axis=1)), axis=1)
         g = g_ext
         M = g.shape
 
@@ -253,9 +251,7 @@ def psd(
         # is what amy suggests works.
         f0 = np.fft.fftshift(f0) + np.abs(f0).max()
 
-        Pxx0 = sp.interpolate.interp1d(
-            f0, Pxx0, bounds_error=False, axis=-1
-        )(f_full)
+        Pxx0 = sp.interpolate.interp1d(f0, Pxx0, bounds_error=False, axis=-1)(f_full)
         Pxx = Pxx0.copy()
         Pxx = Pxx / 2 / np.pi  # normalize by radial wavenumber/frequency
     # Separate into cw and ccw spectra
@@ -361,7 +357,7 @@ def gappy_rotary(Z, nfft, fs, maxgap):
 
     nfft = np.floor(nfft)
     if nfft / 2 != np.floor(nfft / 2):
-        nfft=nfft-1
+        nfft = nfft - 1
     nfft = nfft.astype("int")
     nfft_half = (nfft / 2).astype("int")
 
@@ -395,7 +391,7 @@ def gappy_rotary(Z, nfft, fs, maxgap):
     bad = np.append(bad, gapt.size - 1)
     goodstart = 0
 
-    fnom = np.linspace(fs/nfft, fs/2, nfft_half)
+    fnom = np.linspace(fs / nfft, fs / 2, nfft_half)
 
     wind = sp.signal.windows.hann(nfft)
     W1 = 2 / (wind @ wind)
@@ -418,8 +414,12 @@ def gappy_rotary(Z, nfft, fs, maxgap):
             repeats = (np.fix(2 * xdat.size / nfft)).astype("int")
             if len(xdat) == nfft:
                 repeats = 1
-            X = np.fft.fft(sp.signal.detrend(np.real(xdat[:nfft]), type="linear") * wind)
-            Y = np.fft.fft(sp.signal.detrend(np.imag(xdat[:nfft]), type="linear") * wind)
+            X = np.fft.fft(
+                sp.signal.detrend(np.real(xdat[:nfft]), type="linear") * wind
+            )
+            Y = np.fft.fft(
+                sp.signal.detrend(np.imag(xdat[:nfft]), type="linear") * wind
+            )
             Z = np.fft.fft(
                 sp.signal.detrend(
                     np.real(xdat[:nfft]) + 1j * np.imag(xdat[:nfft]), type="linear"
@@ -438,10 +438,12 @@ def gappy_rotary(Z, nfft, fs, maxgap):
                 for m in np.arange(step, (len(xdat) - nfft).astype("int"), step):
                     mi = m.astype("int")
                     X = np.fft.fft(
-                        sp.signal.detrend(xdat[mi : mi + nfft].real, type="linear") * wind
+                        sp.signal.detrend(xdat[mi : mi + nfft].real, type="linear")
+                        * wind
                     )
                     Y = np.fft.fft(
-                        sp.signal.detrend(xdat[mi : mi + nfft].imag, type="linear") * wind
+                        sp.signal.detrend(xdat[mi : mi + nfft].imag, type="linear")
+                        * wind
                     )
                     Z = np.fft.fft(
                         sp.signal.detrend(
@@ -456,21 +458,23 @@ def gappy_rotary(Z, nfft, fs, maxgap):
                     Cxy = Cxy + X.real * Y.real + X.imag * Y.imag
                     Qxy = Qxy + X.real * Y.imag - X.imag * Y.real
                     count = count + 1
-        goodstart = gapt[bad[n]] # I think this is nested too far down in gappy_rotary.m
+        goodstart = gapt[
+            bad[n]
+        ]  # I think this is nested too far down in gappy_rotary.m
     #         goodstart = gapt(min(bad(n)+1,length(gapt)));
 
     # get the cw and acw components....
-    Gxx=W1*Gxx/count/fs
-    Gyy=W1*Gyy/count/fs
-    Gxy=W1*Gxy/count/fs
-    Cxy=2*W1*Cxy/count/fs
-    Qxy=2*W1*Qxy/count/fs
+    Gxx = W1 * Gxx / count / fs
+    Gyy = W1 * Gyy / count / fs
+    Gxy = W1 * Gxy / count / fs
+    Cxy = 2 * W1 * Cxy / count / fs
+    Qxy = 2 * W1 * Qxy / count / fs
 
-    Gxx[:nfft_half] = Gxx[1:nfft_half+1]
-    Gyy[:nfft_half] = Gyy[1:nfft_half+1]
-    Gxy[:nfft_half] = Gxy[1:nfft_half+1]
-    Cxy[:nfft_half] = Cxy[1:nfft_half+1]
-    Qxy[:nfft_half] = Qxy[1:nfft_half+1]
+    Gxx[:nfft_half] = Gxx[1 : nfft_half + 1]
+    Gyy[:nfft_half] = Gyy[1 : nfft_half + 1]
+    Gxy[:nfft_half] = Gxy[1 : nfft_half + 1]
+    Cxy[:nfft_half] = Cxy[1 : nfft_half + 1]
+    Qxy[:nfft_half] = Qxy[1 : nfft_half + 1]
 
     f = np.linspace(fs / nfft, fs / 2, nfft_half)
 
@@ -486,7 +490,7 @@ def gappy_rotary(Z, nfft, fs, maxgap):
 
     Gxx = Gxx[:nfft_half]
     Gyy = Gyy[:nfft_half]
-    Gxy = np.sqrt(Cxy[:nfft_half]**2 + Qxy[:nfft_half]**2)
+    Gxy = np.sqrt(Cxy[:nfft_half] ** 2 + Qxy[:nfft_half] ** 2)
     CW = 0.5 * (Gxx[:nfft_half] + Gyy[:nfft_half] + Qxy[:nfft_half])
     CCW = 0.5 * (Gxx[:nfft_half] + Gyy[:nfft_half] - Qxy[:nfft_half])
     n = 2 * lencount / nfft
@@ -562,7 +566,9 @@ def gappy_rotary_phind_translation(x, nfft, fs, maxgap):
 
     # Interpolate across gaps
     t = np.arange(combined_x.shape[1])
-    f = scipy.interpolate.interp1d(t[good_indices], combined_x, axis=1, fill_value='extrapolate')
+    f = scipy.interpolate.interp1d(
+        t[good_indices], combined_x, axis=1, fill_value="extrapolate"
+    )
     combined_x = f(t)
 
     # Initialize output arrays
@@ -574,7 +580,7 @@ def gappy_rotary_phind_translation(x, nfft, fs, maxgap):
 
     # Window function
     wind = scipy.signal.hanning(nfft)
-    W1 = 2 / np.linalg.norm(wind)**2
+    W1 = 2 / np.linalg.norm(wind) ** 2
 
     # FFT and processing
     for i in range(combined_x.shape[1]):
@@ -584,9 +590,9 @@ def gappy_rotary_phind_translation(x, nfft, fs, maxgap):
             Y = scipy.fft.fft(np.imag(xdat[:nfft]) * wind)
             Z = scipy.fft.fft(xdat[:nfft] * wind)
 
-            Gxx += np.abs(X)**2
-            Gyy += np.abs(Y)**2
-            Gxy += np.abs(Z)**2
+            Gxx += np.abs(X) ** 2
+            Gyy += np.abs(Y) ** 2
+            Gxy += np.abs(Z) ** 2
             Cxy += np.real(X) * np.real(Y) + np.imag(X) * np.imag(Y)
             Qxy += np.real(X) * np.imag(Y) - np.imag(X) * np.real(Y)
 
@@ -601,20 +607,14 @@ def gappy_rotary_phind_translation(x, nfft, fs, maxgap):
 
     # Output structure
     out = {
-        'Gxx': Gxx[:nfft // 2],
-        'Gyy': Gyy[:nfft // 2],
-        'Gxy': np.sqrt(Cxy[:nfft // 2]**2 + Qxy[:nfft // 2]**2),
-        'CW': 0.5 * (Gxx[:nfft // 2] + Gyy[:nfft // 2] + Qxy[:nfft // 2]),
-        'CCW': 0.5 * (Gxx[:nfft // 2] + Gyy[:nfft // 2] - Qxy[:nfft // 2])
+        "Gxx": Gxx[: nfft // 2],
+        "Gyy": Gyy[: nfft // 2],
+        "Gxy": np.sqrt(Cxy[: nfft // 2] ** 2 + Qxy[: nfft // 2] ** 2),
+        "CW": 0.5 * (Gxx[: nfft // 2] + Gyy[: nfft // 2] + Qxy[: nfft // 2]),
+        "CCW": 0.5 * (Gxx[: nfft // 2] + Gyy[: nfft // 2] - Qxy[: nfft // 2]),
     }
 
-    spec = {
-        'Gxx': Gxx,
-        'Gyy': Gyy,
-        'Gxy': Gxy,
-        'Cxy': Cxy,
-        'Qxy': Qxy
-    }
+    spec = {"Gxx": Gxx, "Gyy": Gyy, "Gxy": Gxy, "Cxy": Cxy, "Qxy": Qxy}
 
     n = 2 * len(good_indices) / nfft
 
@@ -646,4 +646,4 @@ def _butter_highpass(highcut, fs, order=3):
 def _cheby1_lp(cutoff, fs, order=3, rp=5):
     nyq = 0.5 * fs
     low = cutoff / nyq
-    return cheby1(N=order, rp=rp, Wn=low, btype='low', analog=False, output='sos')
+    return cheby1(N=order, rp=rp, Wn=low, btype="low", analog=False, output="sos")

@@ -58,5 +58,5 @@ xfail_strict = true
 filterwarnings = ["error"]
 log_cli_level = "info"
 testpaths = [
-    "tests",
+    "gvpy/tests",
     ]

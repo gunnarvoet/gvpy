@@ -62,14 +62,14 @@ style-check: ## check code style using isort & black, then check style using fla
 test: ## run tests quickly with the default Python
 	pytest
 
-test-all: ## run tests on every Python version with tox
-	tox
+# test-all: ## run tests on every Python version with tox
+# 	tox
 
-coverage: ## check code coverage quickly with the default Python
-	coverage run --source gvpy -m pytest
-	coverage report -m
-	coverage html
-	$(BROWSER) htmlcov/index.html
+# coverage: ## check code coverage quickly with the default Python
+# 	coverage run --source gvpy -m pytest
+# 	coverage report -m
+# 	coverage html
+# 	$(BROWSER) htmlcov/index.html
 
 docs: ## generate documentation using pdoc
 	rm -rf docs

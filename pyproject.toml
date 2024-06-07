@@ -52,7 +52,8 @@ Issues = "https://github.com/gunnarvoet/gvpy/issues"
 # options are explained here:
 # https://learn.scientific-python.org/development/guides/pytest/
 minversion = "6.0"
-addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
+# addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
+addopts = []
 xfail_strict = true
 filterwarnings = ["error"]
 log_cli_level = "info"

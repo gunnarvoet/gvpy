@@ -5,6 +5,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
+import netCDF4 # noqa: F401 (need this to avoid bug in pytest)
 import xarray as xr
 from scipy.optimize import least_squares
 import gsw

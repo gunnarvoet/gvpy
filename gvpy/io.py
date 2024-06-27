@@ -170,7 +170,7 @@ def mtlb2datetime(matlab_datenum, strip_microseconds=False, strip_seconds=False)
 
 
 def read_sbe_cnv(file, lat=0, lon=0):
-    """
+    r"""
     Read Seabird SBE37 .cnv file and return as xarray.Dataset.
 
     Parameters

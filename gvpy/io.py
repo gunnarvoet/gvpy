@@ -385,7 +385,7 @@ def mat2dataset(m1):
     # get 2d variables
     for v in vars2d:
         if m1[v].shape[0] == ii and m1[v].shape[1] == jj:
-            out[v] = (["z", "x"], m1[v])
+            out[v] = (["x", "z"], m1[v])
         elif m1[v].shape[0] == jj and m1[v].shape[1] == ii:
             out[v] = (["z", "x"], m1[v])
 

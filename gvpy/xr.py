@@ -109,6 +109,11 @@ class GunnarsAccessor:
 
         change_cf_labels()
 
+        # set x-axis coordinate if not provided
+        if "x" not in kwargs:
+            kwargs["x"] = "time"
+
+        # create figure & axis if not provided
         if "ax" not in kwargs:
             fgs = kwargs.pop("fgs", (8, 3.5))
             grid = kwargs.pop("grid", True)
@@ -130,9 +135,11 @@ class GunnarsAccessor:
             )
         if "hue" in kwargs and "add_legend" not in kwargs:
             kwargs["add_legend"] = False
-        self._obj.plot(x="time", **kwargs)
-        gv.plot.concise_date(ax, minticks=4)
-        ax.set(xlabel="", title="")
+        self._obj.plot(**kwargs)
+        ax.set(title="")
+        if kwargs["x"] == "time":
+            gv.plot.concise_date(ax, minticks=4)
+            # ax.set(xlabel="", title="")
 
         # determine whether the y-axis should be increasing
         invert_yaxis = False

@@ -42,11 +42,11 @@ def loadmat(filename, onevar=False, verbose=False):
         for key in dict:
             ni = np.size(dict[key])
             if ni <= 1:
-                if isinstance(dict[key], spio.matlab.mio5_params.mat_struct):
+                if isinstance(dict[key], spio.matlab.mat_struct):
                     dict[key] = _todict(dict[key])
             else:
                 for i in range(0, ni):
-                    if isinstance(dict[key][i], spio.matlab.mio5_params.mat_struct):
+                    if isinstance(dict[key][i], spio.matlab.mat_struct):
                         dict[key][i] = _todict(dict[key][i])
         return dict
 
@@ -57,7 +57,7 @@ def loadmat(filename, onevar=False, verbose=False):
         dict = {}
         for strg in matobj._fieldnames:
             elem = matobj.__dict__[strg]
-            if isinstance(elem, spio.matlab.mio5_params.mat_struct):
+            if isinstance(elem, spio.matlab.mat_struct):
                 dict[strg] = _todict(elem)
             else:
                 dict[strg] = elem

@@ -30,5 +30,6 @@ dependencies:
     # - seabird
     - watchmagic
     - jupytext
-    - mixsea
+    # - mixsea
+    # - "git+https://github.com/modscripps/mixsea@main"
     - "-e ."

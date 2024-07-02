@@ -29,6 +29,7 @@ dependencies = [
     "gsw",
     "scipy",
     "xarray",
+    "netcdf4",
     "matplotlib",
     "munch",
     "pandas",

@@ -12,7 +12,6 @@ dependencies:
   - flake8
   - matplotlib
   - munch
-  - netcdf4
   - numpy
   - pandas
   - pandoc

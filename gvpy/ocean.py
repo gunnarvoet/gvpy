@@ -1099,7 +1099,7 @@ def uv_rotate(u, v, theta):
 
 
 def smith_sandwell(
-    lon="all", lat="all", r15=False, subsample=False, lon360=False, pad=0
+    lon="all", lat="all", r15=True, subsample=False, lon360=False, pad=0, return_sid=False, sid_as_bool=True,
 ):
     """Load Smith & Sandwell bathymetry
 
@@ -1113,28 +1113,43 @@ def smith_sandwell(
     lat : float, list or 'all'
         Latitude. Same options as lon.
     r15 : bool, optional
-        Set to True for reading the latest 15sec bathymetry. Otherwise reads
-        the 30sec bathymetry (default).
+        Set to True for reading the latest 15sec bathymetry (default).
+        Otherwise reads the 30sec bathymetry.
+        Will remove this option in the near future.
     subsample : int, optional
         Downsample over this many points.
     lon360 : bool
         Return longitude [0...360]. Defaults to False.
     pad : float or (float, float), optional
         Pad lon/lat range by this much. Defaults to zero.
+    return_sid : bool, optional
+        Return xr.DataArray with source indicator. Defaults to False.
+    sid_as_bool : bool, optional
+        Return source indicator as boolean array with True for multibeam and
+        False for altimetry. Defaults to True.
 
     Returns
     -------
     b : xarray.DataArray
-        Bathymetry in an xarray.DataArray using dask for quick access.
+        Bathymetry in form of an xarray.DataArray. Returns a lazily evaluated
+        dask array. Run b.load() to load data into memory.
+    sid : xarray.DataArray, optional
+        Source indicator (if requested).
 
     Notes
     -----
-    Returns a lazily evaluated dask array. Run b.load() to load data into
-    memory.
+    Download data files at https://topex.ucsd.edu/marine_topo/
     """
+    if type(lon) is slice:
+        lon = [lon.start, lon.stop]
+    if type(lat) is slice:
+        lat = [lat.start, lat.stop]
     if r15:
         resolution = 15
-        nc_file = "/Users/gunnar/Data/bathymetry/smith_sandwell/SRTM15_V2.5.5.nc"
+        # nc_file = "/Users/gunnar/Data/bathymetry/smith_sandwell/SRTM15_V2.5.5.nc"
+        # use the newer version of the 15s bathy based on ML
+        # see https://doi.org/10.1029/2023EA003199 for details
+        nc_file = "/Users/gunnar/Data/bathymetry/smith_sandwell/SRTM15_V2.6.nc"
     else:
         resolution = 30
         nc_file = "/Users/gunnar/Data/bathymetry/smith_sandwell/topo{}.grd".format(
@@ -1142,7 +1157,10 @@ def smith_sandwell(
         )
     try:
         # by providing a chunk size, the array is loaded lazily via dask
-        b = xr.open_dataarray(nc_file, chunks=1000, engine="netcdf4")
+        # b = xr.open_dataarray(nc_file, chunks=1000, engine="netcdf4")
+        # update: the files have preferred chunk sizes. Use those with
+        # `chunks={}`.
+        b = xr.open_dataarray(nc_file, engine="netcdf4", chunks={})
     except FileNotFoundError as e:
         print(
             "Download Smith&Sandwell bathymetry at https://topex.ucsd.edu/marine_topo/"
@@ -1153,6 +1171,14 @@ def smith_sandwell(
         print(e)
         return
 
+    # Load SID file if requested
+    if return_sid:
+        sid_file = "/Users/gunnar/Data/bathymetry/smith_sandwell/SID_V2.6.nc"
+        sid = xr.open_dataarray(sid_file, chunks={})
+    else:
+        sid = None
+
+    # Select data subset
     if type(pad) is tuple:
         pad_lon = pad[0]
         pad_lat = pad[1]
@@ -1165,10 +1191,12 @@ def smith_sandwell(
     if type(lon) is str and lon == "all":
         print("returning whole dataset")
     else:
-        # for only one point
+        # If only one point
         if np.ma.size(lon) == 1 and np.ma.size(lat) == 1:
             b = b.interp(dict(lon=lon, lat=lat))
-        # for a range of lon/lat
+            if sid is not None:
+                sid = sid.interp(dict(lon=lon, lat=lat))
+        # For a range of lon/lat
         else:
             lonmask = (b.lon > np.nanmin(lon) - pad_lon) & (
                 b.lon < np.nanmax(lon) + pad_lon
@@ -1177,13 +1205,25 @@ def smith_sandwell(
                 b.lat < np.nanmax(lat) + pad_lat
             )
             b = b.isel(lon=lonmask, lat=latmask)
+            if sid is not None:
+                sid = sid.isel(lon=lonmask, lat=latmask)
+
+    # Change SID to boolean array
+    if sid_as_bool and sid is not None:
+        sid = sid.copy(data=np.bool(sid))
+
     # Transforming lon from 0:360 to -180:180 means we also have to sort the
     # dataset along the new coordinate.
     if not lon360:
         b = b.sortby("lon")
+
     if subsample:
         b = b.coarsen({"lon": subsample, "lat": subsample}, boundary="trim").mean()
-    return b
+
+    if return_sid:
+        return b, sid
+    else:
+        return b
 
 
 def smith_sandwell_section(lon, lat, res=1, ext=0):

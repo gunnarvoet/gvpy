@@ -196,6 +196,7 @@ class GunnarsAccessor:
         """
         da = self._obj
         grid = kwargs.pop("grid", True)
+        add_colorbar = kwargs.pop("add_colorbar", True)
         if "fgs" in kwargs:
             fgs = kwargs.pop("fgs")
         else:
@@ -211,8 +212,11 @@ class GunnarsAccessor:
         else:
             ax = kwargs["ax"]
 
-        vmin = da.min().data
-        vmax = da.max().data
+        if da.dtype=="bool":
+            vmin, vmax = 0, 1
+        else:
+            vmin = da.min().data
+            vmax = da.max().data
         if "vmin" in kwargs:
             vmin = kwargs.pop("vmin", vmin)
         if "vmax" in kwargs:
@@ -234,25 +238,26 @@ class GunnarsAccessor:
         # undersized colorbars in many cases.
 
         # scale colorbar width by axis width
-        pos = ax.get_position()
-        cbar_width = 2 * 1 / pos.width
+        if add_colorbar:
+            pos = ax.get_position()
+            cbar_width = 2 * 1 / pos.width
 
-        from mpl_toolkits.axes_grid1 import make_axes_locatable
+            from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-        divider = make_axes_locatable(ax)
-        cax = divider.append_axes(
-            "right", size=f"{cbar_width}%", pad=0.08, axes_class=plt.Axes
-        )
-        cax.set_label("<colorbar>")
+            divider = make_axes_locatable(ax)
+            cax = divider.append_axes(
+                "right", size=f"{cbar_width}%", pad=0.08, axes_class=plt.Axes
+            )
+            cax.set_label("<colorbar>")
 
-        if "long_name" in da.attrs:
-            cbar_label = da.attrs["long_name"]
-        else:
-            cbar_label = da.name
-        if "units" in da.attrs:
-            cbar_label = cbar_label + f" [{da.attrs['units']}]"
+            if "long_name" in da.attrs:
+                cbar_label = da.attrs["long_name"]
+            else:
+                cbar_label = da.name
+            if "units" in da.attrs:
+                cbar_label = cbar_label + f" [{da.attrs['units']}]"
 
-        plt.colorbar(h, cax=cax, label=f"{cbar_label}")
+            plt.colorbar(h, cax=cax, label=f"{cbar_label}")
 
         gv.plot.cartopy_axes(ax, maxticks=5)
 

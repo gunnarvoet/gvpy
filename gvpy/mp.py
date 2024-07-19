@@ -7,6 +7,7 @@ import numpy as np
 import scipy as sp
 import xarray as xr
 import mixsea as mx
+import pandas as pd
 
 import gvpy as gv
 from . import io
@@ -202,6 +203,115 @@ def separate_raw(mpraw):
     eng = mpraw[engvars]
     acm = mpraw.drop(ctdvars).drop(engvars)
     return ctd, acm, eng
+
+
+def read_eng(file):
+    """Read MP engineering file."""
+    def test_for_header(file):
+        with open(file, "r") as f:
+            count = 1
+            a = f.readline().strip()
+            if a == "":
+                a = f.readline().strip().strip("\n")
+                count += 1
+            if a.startswith("Profile"):
+                has_header = True
+                while a.startswith("Date") is False:
+                    a = f.readline().strip().strip("\n")
+                    count += 1
+            else:
+                has_header = False
+        return has_header, count
+    def test_for_footer(file):
+        with open(file, "r") as f:
+            lines = f.readlines()
+            fcount = 1
+            a = lines[-fcount]
+            if len(a)> 2 and a.strip()[2] == "/":
+                has_footer = False
+            else:
+                has_footer = True
+                searching_last_row = True
+                while searching_last_row:
+                    fcount += 1
+                    a = lines[-fcount]
+                    if len(a)> 2 and a.strip()[2] == "/":
+                        searching_last_row = False
+                        fcount -= 1
+        return has_footer, fcount
+    has_header, count = test_for_header(file)
+    has_footer, fcount = test_for_footer(file)
+    skiprows = count if has_header else 0
+    skipfooter = fcount if has_footer else 0
+    # delimiter = "   " if has_header else " "
+    df = pd.read_csv(
+        file,
+        names=["datestr", "timestr", "current", "voltage", "pressure"],
+        skiprows=skiprows,
+        skipfooter=skipfooter,
+        engine="python",
+        sep='\s+',
+    )
+    df["time"] = pd.to_datetime(df["datestr"] + ' ' + df["timestr"])
+    ds = df.to_xarray()
+    ds = ds.swap_dims(index="time")
+    ds.current.attrs = dict(long_name='current', units='mA')
+    ds.voltage.attrs = dict(long_name='voltage', units='V')
+    ds.pressure.attrs = dict(long_name='pressure', units='dbar')
+    return ds
+
+
+def read_ctd(file):
+    def test_for_header(file):
+        with open(file, "r") as f:
+            count = 1
+            a = f.readline().strip()
+            while a == "":
+                a = f.readline().strip().strip("\n")
+                count += 1
+            if a.startswith("Profile"):
+                has_header = True
+                while "." not in a:
+                    a = f.readline().strip().strip("\n")
+                    count += 1
+            else:
+                has_header = False
+        return has_header, count
+    def test_for_footer(file):
+        with open(file, "r") as f:
+            lines = f.readlines()
+            fcount = 1
+            a = lines[-fcount]
+            if len(a)> 2 and "." in a:
+                has_footer = False
+            else:
+                has_footer = True
+                searching_last_row = True
+                while searching_last_row:
+                    fcount += 1
+                    a = lines[-fcount]
+                    if len(a)> 2 and "." in a:
+                        searching_last_row = False
+                        fcount -= 1
+        return has_footer, fcount
+    has_header, count = test_for_header(file)
+    has_footer, fcount = test_for_footer(file)
+    skiprows = count if has_header else 0
+    skipfooter = fcount if has_footer else 0
+    df = pd.read_csv(
+        file,
+        names=["c", "t", "p", "freq"],
+        skiprows=skiprows,
+        skipfooter=skipfooter,
+        engine="python",
+        sep='\s+',
+    )
+    ds = df.to_xarray()
+    ds.c.attrs = dict(long_name='conductivity', units='mS/cm')
+    ds.t.attrs = dict(long_name='temperature', units='°C')
+    ds.p.attrs = dict(long_name='pressure', units='dbar')
+    ds.freq.attrs = dict(long_name='frequency', units='Hz')
+    return ds
 
 
 def ctd_time(mpraw):

@@ -438,6 +438,9 @@ def now_datestr():
     return datestr
 
 
+def now_utc():
+    return np.datetime64(datetime.datetime.utcnow())
+
 def month_str(one_letter_only=False):
     if one_letter_only:
         months = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"]

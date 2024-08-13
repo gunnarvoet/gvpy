@@ -79,7 +79,7 @@ class Range:
             Serial number of the acoustic release.
         """
 
-        self.time = np.datetime64(time, "s")
+        self.time = np.datetime64(time, "ns")
         self.distance = distance
         self.sn = sn
         # unpack position information or extract from navigational data
@@ -211,7 +211,7 @@ class Trilateration:
         self.drop_time = drop_time
 
         if drop_time is not None:
-            self.drop_time = np.datetime64(drop_time)
+            self.drop_time = np.datetime64(drop_time, "ns")
             self.drop_pos = self.nav.interp(time=self.drop_time)
             deltat = slice(self.drop_time - np.timedelta64(20, "m"), self.drop_time)
             self.drop_approach = self.nav.sel(time=deltat)

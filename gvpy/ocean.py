@@ -1140,6 +1140,11 @@ def smith_sandwell(
     -----
     Download data files at https://topex.ucsd.edu/marine_topo/
     """
+    if type(lon) != type(lat):
+        raise ValueError("lon and lat must be of same type")
+    if not isinstance(lon, (list, np.ndarray)):
+        lon = [lon]
+        lat = [lat]
     if type(lon) is slice:
         lon = [lon.start, lon.stop]
     if type(lat) is slice:
@@ -1193,11 +1198,13 @@ def smith_sandwell(
     else:
         # If only one point
         if np.ma.size(lon) == 1 and np.ma.size(lat) == 1:
+            only_one = True
             b = b.interp(dict(lon=lon, lat=lat))
             if sid is not None:
                 sid = sid.interp(dict(lon=lon, lat=lat))
         # For a range of lon/lat
         else:
+            only_one = False
             lonmask = (b.lon > np.nanmin(lon) - pad_lon) & (
                 b.lon < np.nanmax(lon) + pad_lon
             )
@@ -1219,6 +1226,9 @@ def smith_sandwell(
 
     if subsample:
         b = b.coarsen({"lon": subsample, "lat": subsample}, boundary="trim").mean()
+
+    if only_one:
+        b = b.load().item()
 
     if return_sid:
         return b, sid
@@ -1748,10 +1758,14 @@ def woce_argo_profile(lon, lat, interp=False, load=True):
         longitude="lon",
         temperature="t",
         salinity="s",
-        depth="z",
+        # depth="z",
     )
     prf = prf.rename(newnames)
-    prf.z.attrs["units"] = "m"
+    prf.depth.attrs["units"] = "m"
+    # Calculate pressure since I often want that
+    p = gsw.p_from_z(-prf.depth, prf.lat)
+    prf.coords["p"] = p
+    prf.p.attrs = dict(long_name='pressure', units='dbar', note='from depth using gsw.p_from_z')
     return prf
 
 

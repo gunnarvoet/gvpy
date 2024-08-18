@@ -151,7 +151,11 @@ def mattime_to_datetime64(dnum):
     -----
     In Matlab, datevec(719529) = [1970 1 1 0 0 0]
     """
-    time = pd.to_datetime(dnum - 719529, unit="D")
+    t = pd.to_datetime(dnum - 719529, unit="D")
+    if isinstance(t, pd.Timestamp):
+        time = t.to_datetime64()
+    elif isinstance(t, pd.DatetimeIndex):
+        time = t.values
     return time
 
 

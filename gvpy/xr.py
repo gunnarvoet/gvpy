@@ -197,10 +197,8 @@ class GunnarsAccessor:
         da = self._obj
         grid = kwargs.pop("grid", True)
         add_colorbar = kwargs.pop("add_colorbar", True)
-        if "fgs" in kwargs:
-            fgs = kwargs.pop("fgs")
-        else:
-            fgs = (7, 7)
+        cbar_kwargs = kwargs.pop("cbar_kwargs", dict())
+        fgs = kwargs.pop("fgs", (7, 7))
         if "ax" not in kwargs:
             projection = ccrs.Mercator()
             fig, ax = plt.subplots(
@@ -239,8 +237,15 @@ class GunnarsAccessor:
 
         # scale colorbar width by axis width
         if add_colorbar:
+            # shrink = cbar_kwargs.pop("shrink", 0.7)
             pos = ax.get_position()
             cbar_width = 2 * 1 / pos.width
+            cbar_width = 1
+            # cbar_height_orig = pos.height
+            # cbar_height = cbar_height_orig * shrink
+            # cbar_y0 = pos.y0 + (cbar_height_orig - cbar_height) / 2
+
+            # import ipdb; ipdb.set_trace()
 
             from mpl_toolkits.axes_grid1 import make_axes_locatable
 
@@ -249,16 +254,18 @@ class GunnarsAccessor:
                 "right", size=f"{cbar_width}%", pad=0.08, axes_class=plt.Axes
             )
             cax.set_label("<colorbar>")
+            # cax.set_position([pos.x0, cbar_y0, cbar_width, cbar_height])
 
-            if "long_name" in da.attrs:
+            if "label" in cbar_kwargs:
+                cbar_label = cbar_kwargs.pop("label",  "")
+            elif "long_name" in da.attrs:
                 cbar_label = da.attrs["long_name"]
             else:
                 cbar_label = da.name
             if "units" in da.attrs:
                 cbar_label = cbar_label + f" [{da.attrs['units']}]"
 
-            plt.colorbar(h, cax=cax, label=f"{cbar_label}")
-
+            cb = plt.colorbar(h, cax=cax, label=f"{cbar_label}")
         gv.plot.cartopy_axes(ax, maxticks=5)
 
         # No need for axis labels on a map
@@ -285,22 +292,29 @@ class GunnarsAccessor:
         """
         return self._obj.coarsen(time=n, boundary="trim").mean()
 
-    def plot_spectrum(self, N=None, nwind=2, lat=None):
+    def plot_spectrum(self, ax=None, N=None, nwind=2, lat=None, color="0.2", show_gm=True):
         """Plot power spectral density with respect to cpd.
 
         Parameters
         ----------
+        ax : optional
+            Pass existing axis. A new figure will be created if None is passed
+            (default).
         N : float, optional
             Buoyancy frequency used for calculating GM spectrum.
-
         nwind : int, optional
             Number of windows (more windows more smoothing). Defaults to 2.
+        color : str, optional
+            Line color.
+        show_gm : bool
+            Show gm level for given latitude and N.
 
         Returns
         -------
         ax
 
         """
+        newax = True if ax is None else False
         if lat is None:
             lat = self.lat
 
@@ -315,9 +329,10 @@ class GunnarsAccessor:
             g, sp, ffttype="t", window="hann", tser_window=g.size / nwind
         )
 
-        fig, ax = plt.subplots(
-            nrows=1, ncols=1, figsize=(7, 5), constrained_layout=True
-        )
+        if newax:
+            fig, ax = plt.subplots(
+                nrows=1, ncols=1, figsize=(7, 5), constrained_layout=True
+            )
         freqs = np.array(
             [
                 24 / (14 * 24),
@@ -330,13 +345,14 @@ class GunnarsAccessor:
             ]
         )
         freq_labels = ["fortnightly", "M2", "2M2", "4M2", " \nf", " \n2f", "K1"]
-        for freq in freqs:
-            ax.vlines(
-                freq, 1e-3, 1e4, color="C0", alpha=0.5, linestyle="-", linewidth=0.75
-            )
+        if newax:
+            for freq in freqs:
+                ax.vlines(
+                    freq, 1e-3, 1e4, color="C0", alpha=0.5, linestyle="-", linewidth=0.75
+                )
 
         # Spectrum
-        ax.plot(omega * (3600 * 24) / (2 * np.pi), Ptot, linewidth=1, color="0.2")
+        ax.plot(omega * (3600 * 24) / (2 * np.pi), Ptot, linewidth=1, color=color)
 
         # GM
         if N is None:
@@ -345,25 +361,26 @@ class GunnarsAccessor:
             )
             N = 2e-3
         E = gv.gm81.calc_E_omg(N=N, lat=lat)
-        ax.plot(E.omega * 3600 * 24 / (2 * np.pi), E.KE, label="KE", color="C3")
+        if newax and show_gm:
+            ax.plot(E.omega * 3600 * 24 / (2 * np.pi), E.KE, label="KE", color="C3")
+            # show -2 slope
+            ax.plot([5e-2, 5e-1], [5e2, 5e0], color="C6")
 
-        # show -2 slope
-        ax.plot([5e-2, 5e-1], [5e2, 5e0], color="C6")
-
-        ax.set(xscale="log", yscale="log", xlim=(2.1e-2, 2e2), ylim=(1e-3, 1e5))
-        ax = gv.plot.axstyle(ax, ticks="in", grid=True, spine_offset=10)
-        gv.plot.gridstyle(ax, which="both")
-        gv.plot.tickstyle(ax, which="both", direction="in")
-        # ax2 = ax.twinx()
-        ax2 = ax.secondary_xaxis(location="bottom")
-        ax2 = gv.plot.axstyle(ax2, ticks="in", grid=False, spine_offset=30)
-        ax2.xaxis.set_ticks([])
-        ax2.xaxis.set_ticklabels([])
-        ax2.minorticks_off()
-        ax2.xaxis.set_ticks(freqs)
-        ax2.xaxis.set_ticklabels(freq_labels)
-        ax.set(ylabel="power spectral density [m$^2$/s$^2$/cps]")
-        ax.set_xlabel("frequency [cpd]", labelpad=35)
+        if newax:
+            ax.set(xscale="log", yscale="log", xlim=(2.1e-2, 2e2), ylim=(1e-3, 1e5))
+            ax = gv.plot.axstyle(ax, ticks="in", grid=True, spine_offset=10)
+            gv.plot.gridstyle(ax, which="both")
+            gv.plot.tickstyle(ax, which="both", direction="in")
+            # ax2 = ax.twinx()
+            ax2 = ax.secondary_xaxis(location="bottom")
+            ax2 = gv.plot.axstyle(ax2, ticks="in", grid=False, spine_offset=30)
+            ax2.xaxis.set_ticks([])
+            ax2.xaxis.set_ticklabels([])
+            ax2.minorticks_off()
+            ax2.xaxis.set_ticks(freqs)
+            ax2.xaxis.set_ticklabels(freq_labels)
+            ax.set(ylabel="power spectral density [m$^2$/s$^2$/cps]")
+            ax.set_xlabel("frequency [cpd]", labelpad=35)
 
         return ax
 

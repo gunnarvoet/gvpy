@@ -61,6 +61,7 @@ import importlib.util
 
 __all__ = [
     "io",
+    "mod",
     "ocean",
     "plot",
     "time",
@@ -86,4 +87,4 @@ if importlib.util.find_spec("matplotlib.pyplot") is None:
 else:
     pass
 
-from . import io, misc, ocean, plot, signal, maps, time, mp, trilaterate, xr, gm81
+from . import io, mod, misc, ocean, plot, signal, maps, time, mp, trilaterate, xr, gm81

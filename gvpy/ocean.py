@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 """Module gvpy.ocean with oceanography related functions"""
 
+KM2NM = 0.5399568
+
 import requests
 import json
 import re
@@ -1776,6 +1778,25 @@ def argo_mld_climatology():
     newnames = dict(iLAT="lat", iLON="lon", iMONTH="month")
     a = a.swap_dims(newnames)
     return a
+
+
+def dist_nm(lon, lat):
+    """Calculate distance between points in nautical miles.
+
+    Wrapper for `gsw.distance()`.
+
+    Parameters
+    ----------
+    lon, lat : array-like, 1-D or 2-D (shapes must match)
+        Longitude, latitude, in degrees.
+
+    Returns
+    -------
+    distance : 1-D or 2-D array
+        Distance in nautical miles between adjacent points.
+    """
+    dist = gsw.distance(lon, lat)
+    return dist * 1e-3 * KM2NM
 
 
 def search_marineregions_by_name(name: str, parse=True):

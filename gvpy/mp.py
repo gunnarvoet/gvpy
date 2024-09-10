@@ -250,7 +250,7 @@ def read_eng(file):
         skiprows=skiprows,
         skipfooter=skipfooter,
         engine="python",
-        sep='\s+',
+        sep='\\s+',
     )
     df["time"] = pd.to_datetime(df["datestr"] + ' ' + df["timestr"])
     ds = df.to_xarray()
@@ -304,7 +304,7 @@ def read_ctd(file):
         skiprows=skiprows,
         skipfooter=skipfooter,
         engine="python",
-        sep='\s+',
+        sep='\\s+',
     )
     ds = df.to_xarray()
     ds.c.attrs = dict(long_name='conductivity', units='mS/cm')

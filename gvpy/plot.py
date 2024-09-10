@@ -44,13 +44,37 @@ def nostalgic():
 def helvetica():
     """
     Use Helvetica font for plotting.
+
+    Note
+    ----
+    Leaving this here for backward compatiblity but now calling font_inter()
+    instead.
     """
-    mpl.rcParams["font.size"] = 10
-    mpl.rcParams["font.family"] = "Helvetica"
+    font_inter()
+    # mpl.rcParams["font.size"] = 10
+    # mpl.rcParams["font.family"] = "Helvetica"
+    # mpl.rcParams["mathtext.fontset"] = "custom"
+    # mpl.rcParams["mathtext.rm"] = "Helvetica"
+    # mpl.rcParams["mathtext.it"] = "Helvetica:italic"
+    # mpl.rcParams["mathtext.bf"] = "Helvetica:bold"
+    # mpl.rcParams["axes.titlesize"] = "medium"
+    # mpl.rcParams["legend.fontsize"] = "small"
+
+
+def font_inter():
+    """Use Inter font for plotting.
+
+    Notes
+    -----
+    [Inter](https://rsms.me/inter/) looks like Helvetica but is free and open
+    source.
+    """
+    mpl.rcParams["font.size"] = 11
+    mpl.rcParams["font.family"] = "Inter"
     mpl.rcParams["mathtext.fontset"] = "custom"
-    mpl.rcParams["mathtext.rm"] = "Helvetica"
-    mpl.rcParams["mathtext.it"] = "Helvetica:italic"
-    mpl.rcParams["mathtext.bf"] = "Helvetica:bold"
+    mpl.rcParams["mathtext.rm"] = "Inter"
+    mpl.rcParams["mathtext.it"] = "Inter:italic"
+    mpl.rcParams["mathtext.bf"] = "Inter:bold"
     mpl.rcParams["axes.titlesize"] = "medium"
     mpl.rcParams["legend.fontsize"] = "small"
 
@@ -82,7 +106,7 @@ def switch_backend():
         print("switched to inline plots")
 
 
-def quickfig(fs=10, yi=True, w=6, h=4, fgs=None, r=1, c=1, grid=False, **kwargs):
+def quickfig(fs=11, yi=True, w=6, h=4, fgs=None, r=1, c=1, grid=False, **kwargs):
     """
     Quick single pane figure.
 
@@ -1077,6 +1101,7 @@ def annotate_corner(
     background_circle=False,
     text_bg=None,
     text_bg_alpha=0.5,
+    **kwargs,
 ):
     """Add text to axis corner.
 
@@ -1143,6 +1168,7 @@ def annotate_corner(
                 edgecolor=background_circle,
                 facecolor=background_circle,
             ),
+            **kwargs,
         )
     elif text_bg:
         h = ax.annotate(
@@ -1158,6 +1184,7 @@ def annotate_corner(
                 facecolor=text_bg,
                 alpha=text_bg_alpha,
             ),
+            **kwargs,
         )
     else:
         h = ax.annotate(
@@ -1168,6 +1195,7 @@ def annotate_corner(
             fontsize=fs,
             color=col,
             ha=ha,
+            **kwargs,
         )
     return h
 

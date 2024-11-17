@@ -2007,3 +2007,13 @@ def _parse_marineregions_response_by_name(response, name):
         return list(compress(response, pick))[0]
     else:
         return response[0]
+
+
+def km_to_nm(km):
+    nm = km / 1.852
+    return nm
+
+
+def nm_to_km(nm):
+    km = nm * 1.852
+    return km

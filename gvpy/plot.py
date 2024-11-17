@@ -783,6 +783,14 @@ def contourf_hide_edges(h):
         c.set_edgecolor("face")
 
 
+def quickmap():
+    projection = ccrs.Mercator()
+    fig, ax = quickfig(
+        subplot_kw={"projection": projection},
+    )
+    return fig, ax
+
+
 def quickbasemap(ax, lon, lat, field=None):
     """
     Plot a quick map using basemap.

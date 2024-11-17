@@ -380,7 +380,7 @@ def datetime64_to_str(dt64, unit="D"):
 
     """
 
-    return np.datetime_as_string(dt64, unit=unit)
+    return np.datetime_as_string(dt64, unit=unit).replace("T", " ")
 
 
 def timedelta64_to_s(td64):
@@ -443,7 +443,8 @@ def now_datestr():
 
 
 def now_utc():
-    return np.datetime64(datetime.datetime.utcnow())
+    return np.datetime64(datetime.datetime.now(datetime.UTC).replace(tzinfo=None))
+
 
 def month_str(one_letter_only=False):
     if one_letter_only:

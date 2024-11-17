@@ -30,6 +30,7 @@ dependencies = [
     "scipy",
     "xarray",
     "netcdf4",
+    "dask",
     "matplotlib",
     "munch",
     "pandas",

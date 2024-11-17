@@ -303,11 +303,12 @@ def load_fctd_grid(file):
             # chla=(("depth", "time"), grd.chla),
             chi=(("depth", "time"), grd.chi),
             chi2=(("depth", "time"), grd.chi2),
-            altDist=(("depth", "time"), grd.altDist),
-            drop=(("depth", "time"), grd.drop),
-            w=(("depth", "time"), grd.w),
         ),
     )
+    for var in ["drop", "altDist", "w"]:
+        if var in grd.keys():
+            ds[var] = (("depth", "time"), grd[var])
+
     ds["SA"] = gsw.SA_from_SP(ds.s, ds.p, ds.lon, ds.lat)
     ds.SA.attrs = dict(long_name='absolute salinity', units='kg/m$^3$')
     ds["CT"] = gsw.CT_from_t(ds.SA, ds.t, ds.p)

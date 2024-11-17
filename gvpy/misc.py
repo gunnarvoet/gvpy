@@ -300,3 +300,13 @@ def yes_or_no(prompt, default="y"):
             return default == "y"
         else:
             print("Invalid input. Please enter 'y' or 'n'.")
+
+
+def determine_header_length(file, comment_char="#"):
+    header_length = 1
+    with open(file) as f:
+        g = f.readline()
+        while g[0] == comment_char:
+            header_length += 1
+            g = f.readline()
+    return header_length

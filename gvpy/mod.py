@@ -107,7 +107,6 @@ def load_epsi_raw(name):
 
 
 def load_epsi_raw_mat(file):
-
     d = scipy.io.loadmat(file)
     epsi = d["epsi"][0, 0]
     dnum = epsi["dnum"].squeeze()
@@ -149,11 +148,11 @@ def load_epsi_raw_mat(file):
     #         s=(("time"), d.ctd.S),
     #     ),
     # )
-    ds["p"]=(("time"), cds.p.interp_like(ds).data)
-    ds["t"]=(("time"), cds.t.interp_like(ds).data)
-    ds["c"]=(("time"), cds.c.interp_like(ds).data)
-    ds["s"]=(("time"), cds.s.interp_like(ds).data)
-    ds["dzdt"]=(("time"), cds.dzdt.interp_like(ds).data)
+    ds["p"] = (("time"), cds.p.interp_like(ds).data)
+    ds["t"] = (("time"), cds.t.interp_like(ds).data)
+    ds["c"] = (("time"), cds.c.interp_like(ds).data)
+    ds["s"] = (("time"), cds.s.interp_like(ds).data)
+    ds["dzdt"] = (("time"), cds.dzdt.interp_like(ds).data)
     return ds
 
 
@@ -201,7 +200,6 @@ def load_epsi_ctd_raw(name):
 def load_epsi_grid(file):
     grd = gv.io.loadmat(file)
     time = gv.time.mattime_to_datetime64(grd.dnum)
-    sgth_subtract = 1000 if np.nanmean(grd.sgth > 900) else 0
     ds = xr.Dataset(
         coords=dict(
             depth=(("depth"), grd.z),
@@ -214,7 +212,7 @@ def load_epsi_grid(file):
         data_vars=dict(
             t=(("depth", "time"), grd.t),
             th=(("depth", "time"), grd.th),
-            sgth=(("depth", "time"), grd.sgth - sgth_subtract),
+            # sgth=(("depth", "time"), grd.sgth - sgth_subtract),
             w=(("depth", "time"), grd.w),
             s=(("depth", "time"), grd.s),
             chi1=(("depth", "time"), grd.chi1),
@@ -227,11 +225,23 @@ def load_epsi_grid(file):
             a3=(("depth", "time"), grd.a3),
         ),
     )
+
+    ds["SA"] = gsw.SA_from_SP(ds.s, ds.p, ds.lon, ds.lat)
+    ds.SA.attrs = dict(long_name="absolute salinity", units="kg/m$^3$")
+    ds["CT"] = gsw.CT_from_t(ds.SA, ds.t, ds.p)
+    ds.CT.attrs = dict(long_name="conservative temperature", units="°C")
+    ds["sgth"] = gsw.density.sigma0(ds.SA, ds.CT)
+    ds.sgth.attrs = dict(long_name=r"$\sigma_0$", units="kg/m$^3$")
+
+    ds.p.data = np.float64(ds.p.data)
+
+    ds = add_n2(ds, dp=10)
+
     dist = gsw.distance(ds.lon, ds.lat)
     cdist = np.cumsum(dist)
     cdist = np.insert(cdist, 0, 0)
-    ds.coords["dist"] = (("time"), cdist/1e3)
-    ds.dist.attrs = dict(long_name='distance', units='km')
+    ds.coords["dist"] = (("time"), cdist / 1e3)
+    ds.dist.attrs = dict(long_name="distance", units="km")
     ds.t.attrs = dict(long_name="temperature", units="°C")
     ds.th.attrs = dict(long_name=r"$\Theta$", units="°C")
     ds.s.attrs = dict(long_name="salinity", units="psu")
@@ -245,12 +255,12 @@ def load_epsi_grid(file):
 
 
 def load_fctd_raw_mat(file):
-    """Read raw FCTD data from a single file in the `mat` processing directory.
+    """Read raw FCTD data at 16 Hz from a single file in the `fctd_mat` processing directory.
 
     Parameters
     ----------
     file : Path or str
-        File path or name of one .mat file in the `mat` directory.
+        File path or name of one .mat file in the `fctd_mat` directory.
 
     Returns
     -------
@@ -258,31 +268,44 @@ def load_fctd_raw_mat(file):
         Data structure with unconverted and converted raw data.
     """
     d = gv.io.loadmat(file)
-    ctd = d.ctd
-    time = gv.time.mattime_to_datetime64(ctd.dnum)
+    time = gv.time.mattime_to_datetime64(d.time)
+    microtime = gv.time.mattime_to_datetime64(d.microtime)
     ds = xr.Dataset(
         coords=dict(
             time=(("time"), time),
+            microtime=(("microtime"), microtime),
+            lon=(("time"), d.longitude),
+            lat=(("time"), d.latitude),
         ),
         data_vars=dict(
-            c_raw=(("time"), ctd.C_raw),
-            t_raw=(("time"), ctd.T_raw),
-            p_raw=(("time"), ctd.P_raw),
-            s_raw=(("time"), ctd.S_raw),
-            c=(("time"), ctd.C),
-            t=(("time"), ctd.T),
-            s=(("time"), ctd.S),
-            p=(("time"), ctd.P),
-            dpdt=(("time"), ctd.dPdt),
+            c=(("time"), d.conductivity),
+            t=(("time"), d.temperature),
+            p=(("time"), d.pressure),
+            bb=(("time"), d.bb),
+            chla=(("time"), d.chla),
+            fDOM=(("time"), d.fDOM),
+            dPdt=(("time"), d.dPdt),
+            chi=(("time"), d.chi),
+            chi2=(("time"), d.chi2),
+            w=(("time"), d.w),
+            ucon=(("microtime"), d.ucon),
         ),
     )
-    ds.time.attrs = dict(long_name='', units='')
+    ds.time.attrs = dict(long_name="", units="")
     return ds
 
 
-def load_fctd_grid(file):
+def load_fctd_grid(file, what="all"):
     tmp = gv.io.loadmat(file)
-    grd = tmp["FCTDgrid"]
+    match what:
+        case "down":
+            grd = tmp["FCTDdown"]
+        case "dn":
+            grd = tmp["FCTDdown"]
+        case "up":
+            grd = tmp["FCTDup"]
+        case _:
+            grd = tmp["FCTDgrid"]
     time = gv.time.mattime_to_datetime64(grd.time)
     ds = xr.Dataset(
         coords=dict(
@@ -305,26 +328,32 @@ def load_fctd_grid(file):
             chi2=(("depth", "time"), grd.chi2),
         ),
     )
-    for var in ["drop", "altDist", "w"]:
+    for var in ["drop", "altDist", "w", "bb", "chla"]:
         if var in grd.keys():
             ds[var] = (("depth", "time"), grd[var])
 
     ds["SA"] = gsw.SA_from_SP(ds.s, ds.p, ds.lon, ds.lat)
-    ds.SA.attrs = dict(long_name='absolute salinity', units='kg/m$^3$')
+    ds.SA.attrs = dict(long_name="absolute salinity", units="kg/m$^3$")
     ds["CT"] = gsw.CT_from_t(ds.SA, ds.t, ds.p)
-    ds.CT.attrs = dict(long_name='conservative temperature', units='°C')
+    ds.CT.attrs = dict(long_name="conservative temperature", units="°C")
     ds["sgth"] = gsw.density.sigma0(ds.SA, ds.CT)
-    ds.sgth.attrs = dict(long_name=r'$\sigma_0$', units='kg/m$^3$')
+    ds.sgth.attrs = dict(long_name=r"$\sigma_0$", units="kg/m$^3$")
 
-    ds.chi.attrs = dict(long_name=r'$\chi_1$', units='K$^2$/s')
-    ds.chi2.attrs = dict(long_name=r'$\chi_2$', units='K$^2$/s')
-    ds.t.attrs = dict(long_name='temperature', units='°C')
-    ds.s.attrs = dict(long_name='salinity', units='psu')
-    ds.depth.attrs = dict(long_name='depth', units='m')
+    ds = ds.dropna("depth", how="all")
+    mask = ~np.isnat(ds.time)
+    ds = ds.sel(time=mask)
+
+    ds = add_n2(ds, dp=10)
+
+    ds.chi.attrs = dict(long_name=r"$\chi_1$", units="K$^2$/s")
+    ds.chi2.attrs = dict(long_name=r"$\chi_2$", units="K$^2$/s")
+    ds.t.attrs = dict(long_name="temperature", units="°C")
+    ds.s.attrs = dict(long_name="salinity", units="psu")
+    ds.depth.attrs = dict(long_name="depth", units="m")
     dist = gsw.distance(ds.lon.data, ds.lat.data) / 1e3
     dist = np.insert(np.cumsum(dist), 0, 0)
     ds.coords["dist"] = (("time"), dist)
-    ds.dist.attrs = dict(long_name='distance', units='km')
+    ds.dist.attrs = dict(long_name="distance", units="km")
     return ds
 
 
@@ -360,3 +389,33 @@ def plot_epsi_profile(prof):
     ax[5].plot(prof.s, prof.depth, **opts)
     ax[5].set(xlabel="salinity")
     return ax
+
+
+def add_n2(ds, dp=10):
+    # calculate buoyancy frequency
+    ds["n2"] = ds.t.copy() * np.nan
+    ds.n2.attrs = dict(
+        long_name=r"N$^2$", units=r"s$^{-2}$", info=f"smoothed over {dp} dbar"
+    )
+    for i in range(len(ds.time)):
+        dsi = ds.isel(time=i)
+        # dsi = dsi.dropna("depth", how="any", subset=["t", "s", "p"])
+        try:
+            n2, midp = gv.ocean.nsqfcn(
+                dsi.s.data,
+                dsi.t.data,
+                dsi.p.data,
+                p0=0,
+                dp=dp,
+                lon=dsi.lon.data,
+                lat=dsi.lat.data,
+            )
+            n2i = scipy.interpolate.interp1d(midp, n2, bounds_error=False)(dsi.p.data)
+            shape = ds.t.shape
+            if len(ds.time) == shape[0]:
+                ds.n2.data[i, :] = n2i
+            elif len(ds.time) == shape[1]:
+                ds.n2.data[:, i] = n2i
+        except:
+            pass
+    return ds

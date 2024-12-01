@@ -265,15 +265,17 @@ def load_fctd_raw_mat(file):
     Returns
     -------
     ds : xr.Dataset
-        Data structure with unconverted and converted raw data.
+        Data structure with raw time series data.
+    mds : xr.Dataset
+        Data structure with raw microconductivity time series data.
     """
     d = gv.io.loadmat(file)
+
+    # fctd
     time = gv.time.mattime_to_datetime64(d.time)
-    microtime = gv.time.mattime_to_datetime64(d.microtime)
     ds = xr.Dataset(
         coords=dict(
             time=(("time"), time),
-            microtime=(("microtime"), microtime),
             lon=(("time"), d.longitude),
             lat=(("time"), d.latitude),
         ),
@@ -288,11 +290,46 @@ def load_fctd_raw_mat(file):
             chi=(("time"), d.chi),
             chi2=(("time"), d.chi2),
             w=(("time"), d.w),
-            ucon=(("microtime"), d.ucon),
         ),
     )
     ds.time.attrs = dict(long_name="", units="")
-    return ds
+
+    # microconductivity
+    microtime = gv.time.mattime_to_datetime64(d.microtime)
+    mds = xr.Dataset(
+        coords=dict(
+            time=(("time"), microtime),
+        ),
+        data_vars=dict(
+            ucon=(("time"), d.ucon),
+            ucon_corr=(("time"), d.ucon_corr),
+        ),
+    )
+    mds.time.attrs = dict(long_name="", units="")
+
+    return ds, mds
+
+
+def load_fctd_raw_time_series(proc_dir, start, end):
+    """Combine data from a number of raw FCTD .mat files in the fctd_mat
+    directory.
+
+    Parameters
+    ----------
+    proc_dir : pathlib.Path
+        `fctd_mat` directory.
+    start : np.datetime64 or str
+        Start time.
+    end : np.datetime64 or str
+        End time.
+
+    Returns
+    -------
+    ds : xr.Dataset
+        Raw FCTD time series.
+    mds : xr.Dataset
+        Raw FCTD microconductivity time series.
+    """
 
 
 def load_fctd_grid(file, what="all"):

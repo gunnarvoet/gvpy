@@ -206,7 +206,7 @@ class Trilateration:
             self.add_smith_sandwell()
         else:
             self.topo = topo
-        self.add_bathy()
+        self.add_bathy(pmlat=0.05)
         self.nav = nav
         self.drop_time = drop_time
 

@@ -783,10 +783,11 @@ def contourf_hide_edges(h):
         c.set_edgecolor("face")
 
 
-def quickmap():
+def quickmap(**kwargs):
     projection = ccrs.Mercator()
     fig, ax = quickfig(
         subplot_kw={"projection": projection},
+        **kwargs,
     )
     return fig, ax
 

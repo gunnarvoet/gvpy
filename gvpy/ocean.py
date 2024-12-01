@@ -19,7 +19,7 @@ import scipy
 import lat_lon_parser
 
 
-def nsqfcn(s, t, p, p0, dp, lon, lat):
+def nsqfcn(s, t, p, p0, dp, lon, lat, verbose=False):
     r"""Calculate square of buoyancy frequency [rad/s]^2 for profile of
     temperature, salinity and pressure.
 
@@ -159,7 +159,8 @@ def nsqfcn(s, t, p, p0, dp, lon, lat):
         n2 = G * (pd_l - pd_u) / (dp * pd_u)
 
     else:
-        print("  filtered pressure not monotonic")
+        if verbose:
+            print("  filtered pressure not monotonic")
         n2 = np.nan
         pout = np.nan
 
@@ -1797,6 +1798,27 @@ def dist_nm(lon, lat):
     """
     dist = gsw.distance(lon, lat)
     return dist * 1e-3 * KM2NM
+
+
+def cdist(lon, lat):
+    """Calculate cumulative distance in km for a number of lon/lat points.
+
+    Parameters
+    ----------
+    lon : array-like
+        Array of longitudes.
+    lat : array-like
+        Array of latitudes.
+
+    Returns
+    -------
+    cdist : array-like
+        Array of distances in km. Has the same size as lon/lat and begins at 0.
+    """
+    dist = gsw.distance(lon, lat)
+    dist = np.insert(dist/1e3, 0, 0)
+    cdist = np.cumsum(dist)
+    return cdist
 
 
 def search_marineregions_by_name(name: str, parse=True):

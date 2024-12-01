@@ -27,23 +27,11 @@ class GunnarsAccessor:
     def __init__(self, xarray_obj):
         """This class collects a bunch of methods under `.gv`"""
         self._obj = xarray_obj
-        self._center = None
         self._sampling_period = None
         if "lat" in self._obj.attrs:
             self.lat = self._obj.attrs["lat"]
-
-    # @property
-    # def center(self):
-    #     """Return the geographic center point of this dataset.
-    #     Example from the xarray docs.
-    #     """
-    #     if self._center is None:
-    #         # we can use a cache on our accessor objects, because accessors
-    #         # themselves are cached on instances that access them.
-    #         lon = self._obj.latitude
-    #         lat = self._obj.longitude
-    #         self._center = (float(lon.mean()), float(lat.mean()))
-    #     return self._center
+        if "lat" in self._obj:
+            self.add_dist = _cdist(self._obj)
 
     @property
     def sampling_period(self) -> float:
@@ -430,6 +418,8 @@ class GunnarsDatasetAccessor:
         """This class collects a bunch of methods under `.gv`"""
         self._obj = xarray_obj
         # self.to_netcdf.__doc__ = _to_netcdf.__doc__
+        if "lat" in self._obj:
+            self.add_dist = _cdist(self._obj)
 
     def to_netcdf(self, path, overwrite=True, confirm_overwrite=True):
         return _to_netcdf(self._obj, path, overwrite, confirm_overwrite)
@@ -538,6 +528,14 @@ def _to_netcdf(ds, path, overwrite=True, confirm_overwrite=True):
     ds.to_netcdf(path, **opts)
 
     return path
+
+
+def _cdist(ds, verbose=True):
+    cdist = gv.ocean.cdist(ds.lon, ds.lat)
+    ds.coords["dist"] = (("time"), cdist)
+    ds.dist.attrs = dict(long_name='distance', units='km')
+    if verbose:
+        print("adding coordinate `dist`")
 
 
 def _duration(ds, time_format="h"):

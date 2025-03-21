@@ -41,6 +41,7 @@ dependencies = [
     "lat-lon-parser",
     "cartopy",
     "loguru",
+    "ipynbname",
     ]
 
 [project.urls]

@@ -280,7 +280,7 @@ class GunnarsAccessor:
         """
         return self._obj.coarsen(time=n, boundary="trim").mean()
 
-    def plot_spectrum(self, ax=None, N=None, nwind=2, lat=None, color="0.2", show_gm=True):
+    def plot_spectrum(self, ax=None, N=None, nwind=2, lat=None, color="0.2", show_gm=True, **kwargs):
         """Plot power spectral density with respect to cpd.
 
         Parameters
@@ -336,11 +336,11 @@ class GunnarsAccessor:
         if newax:
             for freq in freqs:
                 ax.vlines(
-                    freq, 1e-3, 1e4, color="C0", alpha=0.5, linestyle="-", linewidth=0.75
+                    freq, 1e-6, 1e4, color="k", alpha=0.7, linestyle="--", linewidth=0.5,
                 )
 
         # Spectrum
-        ax.plot(omega * (3600 * 24) / (2 * np.pi), Ptot, linewidth=1, color=color)
+        ax.plot(omega * (3600 * 24) / (2 * np.pi), Ptot, linewidth=1, color=color, **kwargs)
 
         # GM
         if N is None:

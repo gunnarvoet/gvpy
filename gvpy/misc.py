@@ -10,6 +10,7 @@ import warnings
 from loguru import logger
 import numpy as np
 from IPython import get_ipython
+import ipynbname
 
 
 def near(A, target):
@@ -275,6 +276,14 @@ def is_ipython():
         return True
     else:
         return False
+
+
+def nb_name():
+    return ipynbname.name()
+
+
+def nb_path():
+    return ipynbname.path()
 
 
 def connect_to_server(server, drive):

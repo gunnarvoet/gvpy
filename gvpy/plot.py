@@ -20,6 +20,7 @@ from IPython import get_ipython
 
 # import cm to register colormaps defined therein
 from . import cm
+import gvpy as gv
 
 
 def nostalgic():
@@ -627,6 +628,9 @@ def png(fname, figdir="fig", dpi=300, verbose=True, transparent=False):
         Transparent figure background. Defaults to False.
     """
     savedir, name = _figure_name(fname, figdir, extension="png", verbose=verbose)
+    metadata = dict(Author="Gunnar Voet, https://gunnarvoet.net")
+    if gv.misc.is_notebook():
+        metadata["Producer"] = gv.misc.nb_path().as_posix()
     if transparent:
         plt.savefig(
             savedir.joinpath(fname),
@@ -634,6 +638,7 @@ def png(fname, figdir="fig", dpi=300, verbose=True, transparent=False):
             bbox_inches="tight",
             facecolor="none",
             edgecolor="none",
+            metadata=metadata,
         )
     else:
         plt.savefig(
@@ -642,6 +647,7 @@ def png(fname, figdir="fig", dpi=300, verbose=True, transparent=False):
             bbox_inches="tight",
             facecolor="w",
             edgecolor="none",
+            metadata=metadata,
         )
 
 
@@ -665,6 +671,9 @@ def pdf(fname, figdir="fig", dpi=300, verbose=True, transparent=False):
         Transparent figure background. Defaults to False.
     """
     savedir, name = _figure_name(fname, figdir, extension="pdf", verbose=verbose)
+    metadata = dict(Author="Gunnar Voet, https://gunnarvoet.net")
+    if gv.misc.is_notebook():
+        metadata["Producer"] = gv.misc.nb_path().as_posix()
     if transparent:
         plt.savefig(
             savedir.joinpath(name),
@@ -672,6 +681,7 @@ def pdf(fname, figdir="fig", dpi=300, verbose=True, transparent=False):
             bbox_inches="tight",
             facecolor="none",
             edgecolor="none",
+            metadata=metadata,
         )
     else:
         plt.savefig(
@@ -680,6 +690,7 @@ def pdf(fname, figdir="fig", dpi=300, verbose=True, transparent=False):
             bbox_inches="tight",
             facecolor="w",
             edgecolor="none",
+            metadata=metadata,
         )
 
 

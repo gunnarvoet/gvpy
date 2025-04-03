@@ -7,6 +7,7 @@ import numpy as np
 import scipy
 import pandas as pd
 import xarray as xr
+import matplotlib as mpl
 
 
 def mtlb2datetime(matlab_datenum, strip_microseconds=False, strip_seconds=False):
@@ -308,6 +309,12 @@ def datetime64_to_unix_time(dt64):
         Unix time [seconds since 1970-01-01]
     """
     return dt64.astype("datetime64[s]").astype("int")
+
+
+def datetime64_mean(dt64):
+    return np.datetime64(
+        mpl.dates.num2date(np.mean(mpl.dates.date2num(dt64))).replace(tzinfo=None)
+    )
 
 
 def convert_units(t, unit="s"):

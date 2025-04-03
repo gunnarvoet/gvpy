@@ -143,6 +143,10 @@ def quickfig(fs=11, yi=True, w=6, h=4, fgs=None, r=1, c=1, grid=False, **kwargs)
     if fgs is None:
         fgs = (w, h)
 
+    # ticks is supplied to axstyle(), not subplots()
+    ticks = kwargs.pop("ticks", "off")
+    ticklength = kwargs.pop("ticklength", 2)
+
     fig, ax = plt.subplots(
         nrows=r,
         ncols=c,
@@ -152,9 +156,9 @@ def quickfig(fs=11, yi=True, w=6, h=4, fgs=None, r=1, c=1, grid=False, **kwargs)
         **kwargs,
     )
     if isinstance(ax, np.ndarray):
-        [axstyle(axi, fontsize=fs, grid=grid) for axi in ax.flatten()]
+        [axstyle(axi, fontsize=fs, grid=grid, ticks=ticks, ticklength=ticklength) for axi in ax.flatten()]
     else:
-        axstyle(ax, fontsize=fs, grid=grid)
+        axstyle(ax, fontsize=fs, grid=grid, ticks=ticks, ticklength=ticklength)
     if yi is False:
         ax.invert_yaxis()
     if r == 1 and c == 1:
@@ -1220,7 +1224,7 @@ def annotate_corner(
     return h
 
 
-def subplotlabel(ax, color="k", fs=10, fw="bold", bg="w", bga=1, x=0, y=0.96):
+def subplotlabel(ax, color="k", fs=10, fw="bold", bg="w", bga=1, x=0, y=0.96, by_row=True):
     """Add alphabetic subplot labels to an array of axes.
 
     Parameters
@@ -1241,12 +1245,15 @@ def subplotlabel(ax, color="k", fs=10, fw="bold", bg="w", bga=1, x=0, y=0.96):
         x-position (in axis units). Default 0.
     y : float, optional
         y-position (in axis units). Default 0.96.
+    by_row : bool
+        Advance row by row if True, otherwise column by column. Defaults to True.
 
     Returns
     -------
     list
         List of matplotlib.Annotation objects.
     """
+    order = "C" if by_row == True else "F"
     out = []
     atoz = string.ascii_lowercase
     n = len(ax.flatten())
@@ -1257,7 +1264,7 @@ def subplotlabel(ax, color="k", fs=10, fw="bold", bg="w", bga=1, x=0, y=0.96):
         fontsize=fs,
         bbox=dict(facecolor=bg, edgecolor="none", alpha=bga, boxstyle="circle,pad=0.1"),
     )
-    for axi, letter in zip(ax.flatten(), atoz[:n]):
+    for axi, letter in zip(ax.flatten(order=order), atoz[:n]):
         out.append(axi.annotate(letter, (x, y), **sublabelspecs))
 
 

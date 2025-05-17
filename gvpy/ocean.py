@@ -19,7 +19,7 @@ import scipy
 import lat_lon_parser
 
 
-def nsqfcn(s, t, p, p0, dp, lon, lat, verbose=False):
+def nsqfcn(s, t, p, p0, dp, lon, lat, verbose=False, sort=False):
     r"""Calculate square of buoyancy frequency [rad/s]^2 for profile of
     temperature, salinity and pressure.
 
@@ -53,6 +53,11 @@ def nsqfcn(s, t, p, p0, dp, lon, lat, verbose=False):
         Longitude of observation
     lat : float
         Latitude of observation
+    verbose : bool
+        Print warning messages. Defaults to False.
+    sort : bool
+        Sort density prior to calculating gradients. Defaults to False.
+        NOTE: Not sure at this point if this works correctly. Use at own risk.
 
     Returns
     -------
@@ -131,6 +136,14 @@ def nsqfcn(s, t, p, p0, dp, lon, lat, verbose=False):
         #     tlp = tlp(si);
         #     slp = slp(si);
         #   end
+        # Sort density if opted for
+        if sort:
+            SA = gsw.SA_from_SP(slp, tlp, lon, lat)
+            rho = gsw.pot_rho_t_exact(SA, tlp, plp, np.mean(plp))
+            rho = gsw.pot_rho_t_exact(SA, tlp, plp, np.mean(plp))
+            si = np.argsort(rho)
+            tlp = tlp[si]
+            slp = slp[si]
 
         while p0 <= pmin:
             p0 = p0 + dp
@@ -1102,7 +1115,14 @@ def uv_rotate(u, v, theta):
 
 
 def smith_sandwell(
-    lon="all", lat="all", r15=True, subsample=False, lon360=False, pad=0, return_sid=False, sid_as_bool=True,
+    lon="all",
+    lat="all",
+    r15=True,
+    subsample=False,
+    lon360=False,
+    pad=0,
+    return_sid=False,
+    sid_as_bool=True,
 ):
     """Load Smith & Sandwell bathymetry
 
@@ -1768,7 +1788,9 @@ def woce_argo_profile(lon, lat, interp=False, load=True):
     # Calculate pressure since I often want that
     p = gsw.p_from_z(-prf.depth, prf.lat)
     prf.coords["p"] = p
-    prf.p.attrs = dict(long_name='pressure', units='dbar', note='from depth using gsw.p_from_z')
+    prf.p.attrs = dict(
+        long_name="pressure", units="dbar", note="from depth using gsw.p_from_z"
+    )
     return prf
 
 
@@ -1816,7 +1838,7 @@ def cdist(lon, lat):
         Array of distances in km. Has the same size as lon/lat and begins at 0.
     """
     dist = gsw.distance(lon, lat)
-    dist = np.insert(dist/1e3, 0, 0)
+    dist = np.insert(dist / 1e3, 0, 0)
     cdist = np.cumsum(dist)
     return cdist
 

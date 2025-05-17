@@ -81,10 +81,10 @@ class HillShade:
             self.lon = lon
             self.lat = lat
             self.topo_extent = (
-                self.lon.min(),
-                self.lon.max(),
-                self.lat.max(),
-                self.lat.min(),
+                self.lon.min().data,
+                self.lon.max().data,
+                self.lat.max().data,
+                self.lat.min().data,
             )
         self.kmap = self._make_colormap([(0, 0, 0)])
         self.kmap4 = self._add_alpha(self.kmap)

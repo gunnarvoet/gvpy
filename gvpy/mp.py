@@ -34,7 +34,9 @@ def load_proc_mat(file, subvar=None):
     if subvar is not None:
         tmp = tmp[subvar]
     mp = io.mat2dataset(tmp)
-    mp = mp.dropna(dim="z", how="all")
+    mp = mp.rename_dims(z="depth")
+    mp = mp.rename_vars(z="depth")
+    mp = mp.dropna(dim="depth", how="all")
     mp.coords["profile"] = mp.id
     mp = mp.drop("id")
     mp = add_hab(mp)
@@ -47,15 +49,15 @@ def load_proc_mat(file, subvar=None):
     if "time2d" in mp:
         time2d = np.array(
             [
-                gv.time.mattime_to_datetime64(mpi.time2d.data)
+                gv.time.mattime_to_datetime64(mpi.time2d.data.squeeze())
                 for g, mpi in mp.groupby("time")
             ]
         )
-        mp.coords["time2"] = (("z", "time"), time2d.transpose())
+        mp.coords["time2"] = (("depth", "time"), time2d.transpose())
         mp = mp.drop("time2d")
 
     atts = dict(
-        z=dict(long_name="depth", units="m"),
+        depth=dict(long_name="depth", units="m"),
         p=dict(long_name="pressure", units="dbar"),
         th=dict(long_name=r"$\Theta$", units="°C"),
         t=dict(long_name="in-situ temperature", units="°C"),
@@ -206,7 +208,11 @@ def separate_raw(mpraw):
 
 
 def read_eng(file):
-    """Read MP engineering file."""
+    """Read MP engineering file.
+
+    There are several ways to unpack the raw data files
+    (with and without header, comma-separated or space-separated).
+    This routine tries to take care of all of them."""
     def test_for_header(file):
         with open(file, "r") as f:
             count = 1
@@ -239,20 +245,45 @@ def read_eng(file):
                         searching_last_row = False
                         fcount -= 1
         return has_footer, fcount
+    def determine_delimiter(file):
+        with open(file, "r") as f:
+            a = f.readline().strip()
+            if a == "":
+                a = f.readline().strip().strip("\n")
+            if a.startswith("Profile"):
+                has_header = True
+                while a.startswith("Date") is False:
+                    a = f.readline().strip().strip("\n")
+            else:
+                has_header = False
+            if "," in a:
+                has_comma = True
+            else:
+                has_comma = False
+        if has_comma:
+            return ","
+        else:
+            return "\\s+"
     has_header, count = test_for_header(file)
     has_footer, fcount = test_for_footer(file)
     skiprows = count if has_header else 0
     skipfooter = fcount if has_footer else 0
-    # delimiter = "   " if has_header else " "
+    sep = determine_delimiter(file)
+    cols = ["datestr", "timestr", "current", "voltage", "pressure"]
+    if sep == ",":
+        cols = ["timestr", "current", "voltage", "pressure"]
     df = pd.read_csv(
         file,
-        names=["datestr", "timestr", "current", "voltage", "pressure"],
+        names=cols,
         skiprows=skiprows,
         skipfooter=skipfooter,
         engine="python",
-        sep='\\s+',
+        sep=sep,
     )
-    df["time"] = pd.to_datetime(df["datestr"] + ' ' + df["timestr"])
+    if sep == ",":
+        df["time"] = pd.to_datetime(df["timestr"])
+    else:
+        df["time"] = pd.to_datetime(df["datestr"] + ' ' + df["timestr"])
     ds = df.to_xarray()
     ds = ds.swap_dims(index="time")
     ds.current.attrs = dict(long_name='current', units='mA')
@@ -271,7 +302,7 @@ def read_ctd(file):
                 count += 1
             if a.startswith("Profile"):
                 has_header = True
-                while "." not in a:
+                while "." not in a and count<20:
                     a = f.readline().strip().strip("\n")
                     count += 1
             else:
@@ -290,21 +321,37 @@ def read_ctd(file):
                 while searching_last_row:
                     fcount += 1
                     a = lines[-fcount]
-                    if len(a)> 2 and "." in a:
+                    if len(a) > 2 and "." in a:
                         searching_last_row = False
                         fcount -= 1
         return has_footer, fcount
+    def determine_delimiter(file):
+        with open(file, "r") as f:
+            count = 1
+            a = f.readline().strip()
+            while "." not in a and count<20:
+                a = f.readline().strip().strip("\n")
+                count += 1
+            if "," in a:
+                has_comma = True
+            else:
+                has_comma = False
+        if has_comma:
+            return ","
+        else:
+            return "\\s+"
     has_header, count = test_for_header(file)
     has_footer, fcount = test_for_footer(file)
     skiprows = count if has_header else 0
     skipfooter = fcount if has_footer else 0
+    sep = determine_delimiter(file)
     df = pd.read_csv(
         file,
         names=["c", "t", "p", "freq"],
         skiprows=skiprows,
         skipfooter=skipfooter,
         engine="python",
-        sep='\\s+',
+        sep=sep,
     )
     ds = df.to_xarray()
     ds.c.attrs = dict(long_name='conductivity', units='mS/cm')
@@ -418,9 +465,10 @@ def add_overturns(mp, alpha=0.64, dnoise=5e-4, dnoise_CT=2e-3, background_eps=np
     lon = mp.attrs["lon"]
     lat = mp.attrs["lat"]
     for group, ctd in mp.groupby("time"):
-        notnan = np.isfinite(ctd["z"]) & np.isfinite(ctd["t"]) & np.isfinite(ctd["s"])
+        ctd = ctd.squeeze()
+        notnan = np.isfinite(ctd["depth"]) & np.isfinite(ctd["t"]) & np.isfinite(ctd["s"])
 
-        depth = ctd["z"][notnan].data
+        depth = ctd["depth"][notnan].data
         t = ctd["t"][notnan].data
         SP = ctd["s"][notnan].data
 
@@ -464,11 +512,11 @@ def add_overturns(mp, alpha=0.64, dnoise=5e-4, dnoise_CT=2e-3, background_eps=np
         eps_t[notnan] = epstmpt
         epsall.append(eps)
         epstall.append(eps_t)
-    mp["eps"] = (["z", "time"], mp.t.data * np.nan)
+    mp["eps"] = (["depth", "time"], mp.t.data * np.nan)
     mp.eps.attrs = dict(long_name=r"$\epsilon$", units="W/kg")
     for i, epsi in enumerate(epsall):
         mp.eps[:, i] = epsi
-    mp["eps_t"] = (["z", "time"], mp.t.data * np.nan)
+    mp["eps_t"] = (["depth", "time"], mp.t.data * np.nan)
     mp.eps_t.attrs = dict(long_name=r"$\epsilon_\mathrm{T}$", units="W/kg")
     for i, epsi in enumerate(epstall):
         mp.eps_t[:, i] = epsi
@@ -477,17 +525,17 @@ def add_overturns(mp, alpha=0.64, dnoise=5e-4, dnoise_CT=2e-3, background_eps=np
 
 def add_gsw_variables(mp):
     SA = gsw.SA_from_SP(mp.s, mp.p, mp.attrs["lon"], mp.attrs["lat"])
-    mp["SA"] = (("z", "time"), SA.data)
+    mp["SA"] = (("depth", "time"), SA.data)
     mp.SA.attrs["long_name"] = "absolute salinity"
     mp.SA.attrs["units"] = "g/kg"
 
     CT = gsw.CT_from_t(SA, mp.t, mp.p)
-    mp["CT"] = (("z", "time"), CT.data)
+    mp["CT"] = (("depth", "time"), CT.data)
     mp.CT.attrs["long_name"] = "conservative temperature"
     mp.CT.attrs["units"] = "°C"
 
     P = np.tile(mp.p.transpose(), (mp.time.size, 1)).transpose()
-    mp["P"] = (("z", "time"), P.data)
+    mp["P"] = (("depth", "time"), P.data)
     mp.P.attrs["long_name"] = "pressure"
     mp.P.attrs["units"] = "dbar"
 
@@ -500,7 +548,7 @@ def add_nsquared(mp):
     N2, pmid = gsw.Nsquared(mp.SA, mp.CT, mp.P)
     fint = sp.interpolate.interp1d(x=pmid[:, 0], y=N2, axis=0, bounds_error=False)
     N2i = fint(mp.p)
-    mp["N2"] = (("z", "time"), N2i)
+    mp["N2"] = (("depth", "time"), N2i)
     mp.N2.attrs["long_name"] = r"N$^2$"
     mp.N2.attrs["units"] = r"s$^{-2}$"
     return mp
@@ -521,7 +569,7 @@ def add_nsquared_smoothed(mp, dp=16):
         )
         N2 = sp.interpolate.interp1d(pout, n2, bounds_error=False)(mpp.P)
         n2_all[:, i] = N2
-    mp["N2s"] = (("z", "time"), n2_all)
+    mp["N2s"] = (("depth", "time"), n2_all)
     mp.N2s.attrs["long_name"] = r"N$^2$"
     mp.N2s.attrs["units"] = r"s$^{-2}$"
     return mp

@@ -7,7 +7,7 @@ packages = ["gvpy"]
 
 [project]
 name = "gvpy"
-version = "2024.04dev"
+version = "2025.05dev"
 authors = [
     {name = "Gunnar Voet", email = "gvoet@ucsd.edu"},
     ]

@@ -193,7 +193,7 @@ class GunnarsAccessor:
                 figsize=fgs,
                 subplot_kw={"projection": projection},
                 constrained_layout=True,
-                dpi=75,
+                dpi=200,
             )
         else:
             ax = kwargs["ax"]
@@ -407,6 +407,9 @@ class GunnarsAccessor:
 
     def duration(self, time_format="h"):
         return _duration(self._obj, time_format=time_format)
+
+    def range(self):
+        return self._obj.min().item(), self._obj.max().item()
 
 
 # Extend and/or modify xarray's Dataset capabilities.

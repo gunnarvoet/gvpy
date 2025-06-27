@@ -1165,13 +1165,13 @@ def smith_sandwell(
     """
     if type(lon) != type(lat):
         raise ValueError("lon and lat must be of same type")
-    if not isinstance(lon, (list, np.ndarray)):
-        lon = [lon]
-        lat = [lat]
     if type(lon) is slice:
         lon = [lon.start, lon.stop]
     if type(lat) is slice:
         lat = [lat.start, lat.stop]
+    if not isinstance(lon, (list, np.ndarray)):
+        lon = [lon]
+        lat = [lat]
     if r15:
         resolution = 15
         # nc_file = "/Users/gunnar/Data/bathymetry/smith_sandwell/SRTM15_V2.5.5.nc"

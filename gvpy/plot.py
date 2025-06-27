@@ -152,7 +152,7 @@ def quickfig(fs=11, yi=True, w=6, h=4, fgs=None, r=1, c=1, grid=False, **kwargs)
         ncols=c,
         figsize=fgs,
         constrained_layout=True,
-        dpi=75,
+        dpi=200,
         **kwargs,
     )
     if isinstance(ax, np.ndarray):

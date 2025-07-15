@@ -40,6 +40,10 @@ docs: ## generate documentation using pdoc
 	uvx --with . pdoc -d numpy -o docs -t .pdoc-theme-gv --math ./gvpy
 	$(BROWSER) docs/index.html
 
+ghdocs: ## generate documentation using pdoc
+	rm -rf docs
+	PDOC_ALLOW_EXEC=1 pdoc -d numpy -o docs -t .pdoc-theme-gv --math ./gvpy
+
 # if there are any issues with importing certain modules, set environment
 # variable PDOC_ALLOW_EXEC
 # docs: ## generate documentation using pdoc

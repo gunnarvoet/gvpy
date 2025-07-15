@@ -13,6 +13,10 @@ from IPython import get_ipython
 import ipynbname
 
 
+def hello():
+    print("hello, world!")
+
+
 def near(A, target):
     """
     Find index of value in A closest to target.

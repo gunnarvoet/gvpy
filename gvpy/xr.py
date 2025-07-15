@@ -28,6 +28,10 @@ class GunnarsAccessor:
         """This class collects a bunch of methods under `.gv`"""
         self._obj = xarray_obj
         self._sampling_period = None
+        # The accessor method appears to have issues with dask arrays. Test if
+        # this is a dask array and load if so.
+        if self._obj.chunks is not None:
+            self._obj.load()
         if "lat" in self._obj.attrs:
             self.lat = self._obj.attrs["lat"]
         if "lat" in self._obj:

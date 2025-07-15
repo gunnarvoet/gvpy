@@ -26,67 +26,30 @@ BROWSER := python -c "$$BROWSER_PYSCRIPT"
 help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
-clean: clean-build clean-pyc clean-test ## remove all build, test, coverage and Python artifacts
+lint: ## check style
+	uvx ruff check gvpy
 
-clean-build: ## remove build artifacts
-	rm -fr build/
-	rm -fr dist/
-	rm -fr .eggs/
-	find . -name '*.egg-info' -exec rm -fr {} +
-	find . -name '*.egg' -exec rm -f {} +
+check: ## check style
+	uvx ruff check gvpy
 
-clean-pyc: ## remove Python file artifacts
-	find . -name '*.pyc' -exec rm -f {} +
-	find . -name '*.pyo' -exec rm -f {} +
-	find . -name '*~' -exec rm -f {} +
-	find . -name '__pycache__' -exec rm -fr {} +
-
-clean-test: ## remove test and coverage artifacts
-	rm -fr .tox/
-	rm -f .coverage
-	rm -fr htmlcov/
-	rm -fr .pytest_cache
-
-style: ## style code using isort & black, then check style using flake8
-	isort gvpy/*.py
-	isort gvpy/tests/*.py
-	black gvpy
-	flake8 gvpy 
-
-style-check: ## check code style using isort & black, then check style using flake8
-	isort -c gvpy/*.py
-	isort -c gvpy/tests/*.py
-	black --check gvpy
-	flake8 gvpy 
-
-test: ## run tests quickly with the default Python
-	pytest
-
-# test-all: ## run tests on every Python version with tox
-# 	tox
-
-# coverage: ## check code coverage quickly with the default Python
-# 	coverage run --source gvpy -m pytest
-# 	coverage report -m
-# 	coverage html
-# 	$(BROWSER) htmlcov/index.html
+format: ## format code using ruff
+	uvx ruff format gvpy
 
 docs: ## generate documentation using pdoc
 	rm -rf docs
-	PDOC_ALLOW_EXEC=1 pdoc -d numpy -o docs -t .pdoc-theme-gv --math ./gvpy
+	uvx --with . pdoc -d numpy -o docs -t .pdoc-theme-gv --math ./gvpy
 	$(BROWSER) docs/index.html
 
+# if there are any issues with importing certain modules, set environment
+# variable PDOC_ALLOW_EXEC
+# docs: ## generate documentation using pdoc
+# 	rm -rf docs
+# 	PDOC_ALLOW_EXEC=1 uvx --with . pdoc -d numpy -o docs -t .pdoc-theme-gv --math ./gvpy
+# 	$(BROWSER) docs/index.html
+
 servedocs: ## compile the docs & watch for changes
-	PDOC_ALLOW_EXEC=1 pdoc -d numpy -t .pdoc-theme-gv --math gvpy
+	uvx --with . pdoc -d numpy -t .pdoc-theme-gv --math ./gvpy
 	# $(BROWSER) http://localhost:8080
 
-release: dist ## package and upload a release
-	twine upload dist/*
-
-dist: clean ## builds source and wheel package
-	python setup.py sdist
-	python setup.py bdist_wheel
-	ls -l dist
-
-install: clean ## install the package to the active Python's site-packages
-	python setup.py install
+test: ## run tests quickly with the default Python
+	uvx --with . pytest

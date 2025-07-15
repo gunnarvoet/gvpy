@@ -4,40 +4,27 @@ Please note that the code changes often and may do so without any warning or
 prior notice.  Consider copying snippets you find helpful to your own library.
 
 ## Installation
-
-Clone the package from
-[https://github.com/gunnarvoet/gvpy](https://github.com/gunnarvoet/gvpy). For a regular
-installation, change into the package root directory and run
-
+For a bit of sanity, small updates are now pushed to the `dev` branch.
+Changes are occasionally merged into `main` and tagged.
+If you really want to install the package please consider installing a [tagged version](https://github.com/gunnarvoet/gvpy/tags).
+For example, to install the June 2025 version of gvpy using [uv](https://docs.astral.sh/uv/):
 ```sh
-python setup.py install
+uv add git+https://github.com/gunnarvoet/gvpy --tag v2025.06
 ```
 
-or using [pip](https://pypi.org/project/pip/)
 
+
+For an editable installation, clone the package from
+[https://github.com/gunnarvoet/gvpy](https://github.com/gunnarvoet/gvpy).
+Install the package into your project in developer mode (needed to make code changes available on the fly) using either [pip](https://pypi.org/project/pip/):
 ```sh
-pip install .
+pip install -e <path to package>
 ```
-
-To install the package in developer mode (needed to make code changes available on the fly) run either
-
+or my new favorite package manager [uv](https://docs.astral.sh/uv/):
 ```sh
-python setup.py develop
+uv add --editable <path to package>
 ```
 
-or
-
-```sh
-pip install -e .
-```
-
-Now, in Python you should be able to run
-
-```python
-import gvpy
-```
-
-which will provide several sub-modules, for example `gvpy.ocean`, as documented here.
 
 ## License
 

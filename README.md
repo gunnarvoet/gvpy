@@ -7,6 +7,10 @@ prior notice.  Consider copying snippets you find helpful to your own library.
 
 Documentation is at [gunnarvoet.net/gvpy](https://gunnarvoet.github.io/gvpy/).
 
-Update 04/2024: For a bit of sanity I changed to pushing small updates to the
+Update 04/2024: For a bit of sanity I am now pushing small updates to the
 `dev` branch. Changes are occasionally merged into `main` and tagged. If you
-really wanted to install the package then install a tagged version.
+really want to install the package please consider installing a [tagged version](https://github.com/gunnarvoet/gvpy/tags).
+For example, to install the June 2025 version of gvpy using [uv](https://docs.astral.sh/uv/):
+```sh
+uv add git+https://github.com/gunnarvoet/gvpy --tag v2025.06
+```

@@ -9,3 +9,5 @@ dist/
 html
 docs
 notebooks
+
+uv.lock

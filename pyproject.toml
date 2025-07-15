@@ -7,7 +7,7 @@ packages = ["gvpy"]
 
 [project]
 name = "gvpy"
-version = "2025.06dev"
+version = "2025.07"
 authors = [
     {name = "Gunnar Voet", email = "gvoet@ucsd.edu"},
     ]
@@ -23,7 +23,7 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Oceanography",
     ]
-requires-python = ">= 3.8"
+requires-python = ">= 3.11"
 dependencies = [
     "numpy",
     "gsw",
@@ -32,11 +32,11 @@ dependencies = [
     "netcdf4",
     "dask",
     "matplotlib",
+    "cartopy",
     "munch",
     "pandas",
     "IPython",
     "requests",
-    # "mixsea",
     "mixsea@git+https://github.com/modscripps/mixsea#egg=main",
     "lat-lon-parser",
     "cartopy",
@@ -45,11 +45,10 @@ dependencies = [
     ]
 
 [project.urls]
-# Homepage = "https://example.com"
+Homepage = "https://github.com/gunnarvoet/gvpy"
 Documentation = "https://gunnarvoet.github.io/gvpy/gvpy.html"
 Repository = "https://github.com/gunnarvoet/gvpy.git"
 Issues = "https://github.com/gunnarvoet/gvpy/issues"
-# Changelog = "https://github.com/gunnarvoet/gvpy/blob/main/HISTORY.md"
 
 [tool.pytest.ini_options]
 # in general, do not place a `__init__.py` in your tests

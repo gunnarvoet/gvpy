@@ -18,8 +18,6 @@ import string
 
 from IPython import get_ipython
 
-# import cm to register colormaps defined therein
-from . import cm
 import gvpy as gv
 
 
@@ -33,7 +31,7 @@ def nostalgic():
     Depends on Routed Gothic Font:
     https://webonastick.com/fonts/routed-gothic/
     """
-    mpl.rcParams["font.size"] = 11
+    # mpl.rcParams["font.size"] = 11
     mpl.rcParams["font.family"] = "Routed Gothic"
     mpl.rcParams["mathtext.fontset"] = "custom"
     mpl.rcParams["mathtext.rm"] = "Routed Gothic"
@@ -70,7 +68,7 @@ def font_inter():
     [Inter](https://rsms.me/inter/) looks like Helvetica but is free and open
     source.
     """
-    mpl.rcParams["font.size"] = 11
+    # mpl.rcParams["font.size"] = 11
     mpl.rcParams["font.family"] = "Inter"
     mpl.rcParams["mathtext.fontset"] = "custom"
     mpl.rcParams["mathtext.rm"] = "Inter"
@@ -107,7 +105,7 @@ def switch_backend():
         print("switched to inline plots")
 
 
-def quickfig(fs=11, yi=True, w=6, h=4, fgs=None, r=1, c=1, grid=False, **kwargs):
+def quickfig(fs=10, yi=True, w=6, h=4, fgs=None, r=1, c=1, grid=False, **kwargs):
     """
     Quick single pane figure.
 
@@ -758,40 +756,6 @@ def _figure_name(fname, figdir, extension, verbose=True):
     return savedir, name
 
 
-def figsave(fname, dirname="fig"):
-    """
-    adapted from https://github.com/jklymak/pythonlib/jmkfigure.py
-    provide filename (fname)
-    """
-    import os
-
-    try:
-        os.mkdir(dirname)
-    except:
-        pass
-
-    if dirname == "fig":
-        pwd = os.getcwd() + "/fig/"
-    else:
-        pwd = dirname + "/"
-    plt.savefig(dirname + "/" + fname + ".pdf", dpi=150, bbox_inches="tight")
-    plt.savefig(dirname + "/" + fname + ".png", dpi=200, bbox_inches="tight")
-
-    fout = open(dirname + "/" + fname + ".tex", "w")
-    str = """\\begin{{figure*}}[htbp]
-\\centering
-\\includegraphics[width=1.0\\textwidth]{{{fname}}}
-\\caption{{  \\newline \\hspace{{\\linewidth}}   {{\\footnotesize {pwd}{fname}.pdf}}}}
-\\label{{fig:{fname}}}
-\\end{{figure*}}""".format(pwd=pwd, fname=fname)
-    fout.write(str)
-    fout.close()
-
-    cmd = "less " + dirname + "/%s.tex | pbcopy" % fname
-    os.system(cmd)
-    print("figure printed to {}".format(pwd))
-
-
 def contourf_hide_edges(h):
     for c in h.collections:
         c.set_rasterized(True)
@@ -805,47 +769,6 @@ def quickmap(**kwargs):
         **kwargs,
     )
     return fig, ax
-
-
-def quickbasemap(ax, lon, lat, field=None):
-    """
-    Plot a quick map using basemap.
-
-    Parameters
-    ----------
-    ax : axis object
-        Handle to axis
-    lon, lat : float
-        Longitude / Latitude
-    field : float
-        Field to plot on map
-
-    Returns
-    -------
-    m : basemp object
-        handle to the map
-    x, y : float
-        lon, lat in map coordinates for plotting
-    """
-    from mpl_toolkits.basemap import Basemap
-
-    m = Basemap(
-        llcrnrlon=np.min(lon),
-        llcrnrlat=np.min(lat),
-        urcrnrlon=np.max(lon),
-        urcrnrlat=np.max(lat),
-        resolution="l",
-        area_thresh=1000.0,
-        projection="gall",
-        lat_0=np.max(lat) - np.min(lat),
-        lon_0=np.max(lon) - np.min(lon),
-        ax=ax,
-    )
-    lonm, latm = np.meshgrid(lon, lat)
-    x, y = m(lonm, latm)
-    if field is not None:
-        m.contourf(x, y, field, ax=ax)
-    return m, x, y
 
 
 def add_cax(fig, width=0.01, pad=0.01):
@@ -1253,7 +1176,7 @@ def subplotlabel(ax, color="k", fs=10, fw="bold", bg="w", bga=1, x=0, y=0.96, by
     list
         List of matplotlib.Annotation objects.
     """
-    order = "C" if by_row == True else "F"
+    order = "C" if by_row else "F"
     out = []
     atoz = string.ascii_lowercase
     n = len(ax.flatten())

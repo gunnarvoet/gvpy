@@ -7,7 +7,13 @@ import gvpy as gv
 
 
 def test_datetime64_to_unix_time():
-    """Test triangulation. Using data from BLT MP1."""
+    """Test conversion from np.datetime64 to Unix time.
+
+    Note
+    ----
+    We can compare against command line output of `date` as Unix time is in
+    seconds; both commands will thus be run at the same time.
+    """
 
     def command_line_unix_time():
         result = subprocess.run(
@@ -15,5 +21,8 @@ def test_datetime64_to_unix_time():
         ).stdout.decode("utf-8")
         return int(result)
 
-    unix_time = gv.time.datetime64_to_unix_time(np.datetime64(datetime.datetime.utcnow()))
+    dt_now = datetime.datetime.now(datetime.UTC).replace(tzinfo=None)
+    dt64_now = np.datetime64(dt_now)
+    unix_time = gv.time.datetime64_to_unix_time(dt64_now)
+
     assert unix_time == command_line_unix_time()

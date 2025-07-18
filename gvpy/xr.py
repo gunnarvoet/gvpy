@@ -158,7 +158,9 @@ class GunnarsAccessor:
         decrease_y = True
         grid = kwargs.pop("grid", True)
         if "ax" not in kwargs:
-            fig, ax = gv.plot.quickfig(w=3.5, h=4, grid=grid)
+            fgs = kwargs.pop("fgs", (3.5, 4))
+            grid = kwargs.pop("grid", True)
+            fig, ax = gv.plot.quickfig(fgs=fgs, grid=grid)
         else:
             ax = kwargs["ax"]
         if "depth" in self._obj.coords:

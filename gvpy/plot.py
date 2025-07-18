@@ -20,6 +20,9 @@ from IPython import get_ipython
 
 import gvpy as gv
 
+# import cm to register colormaps defined therein
+from . import cm
+
 
 def nostalgic():
     """

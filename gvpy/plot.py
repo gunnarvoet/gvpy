@@ -147,13 +147,14 @@ def quickfig(fs=10, yi=True, w=6, h=4, fgs=None, r=1, c=1, grid=False, **kwargs)
     # ticks is supplied to axstyle(), not subplots()
     ticks = kwargs.pop("ticks", "off")
     ticklength = kwargs.pop("ticklength", 2)
+    # dpi = kwargs.pop("dpi", 200)
 
     fig, ax = plt.subplots(
         nrows=r,
         ncols=c,
         figsize=fgs,
         constrained_layout=True,
-        dpi=200,
+        # dpi=dpi,
         **kwargs,
     )
     if isinstance(ax, np.ndarray):

@@ -970,9 +970,9 @@ def wind_stress(u10, v10):
 def woa_get_ts(llon, llat, plot=0):
     import xarray as xr
 
-    tempfile = "/Users/gunnar/Data/world_ocean_atlas/woa13_decav_t00_04v2.nc"
-    saltfile = "/Users/gunnar/Data/world_ocean_atlas/woa13_decav_s00_04v2.nc"
-    sigmafile = "/Users/gunnar/Data/world_ocean_atlas/woa13_decav_I00_04.nc"
+    tempfile = Path.home().joinpath("Data/world_ocean_atlas/woa13_decav_t00_04v2.nc")
+    saltfile = Path.home().joinpath("Data/world_ocean_atlas/woa13_decav_s00_04v2.nc")
+    sigmafile = Path.home().joinpath("Data/world_ocean_atlas/woa13_decav_I00_04.nc")
 
     dt = xr.open_dataset(tempfile, decode_times=False)
     a = dt.isel(time=0)
@@ -1177,12 +1177,12 @@ def smith_sandwell(
         # nc_file = "/Users/gunnar/Data/bathymetry/smith_sandwell/SRTM15_V2.5.5.nc"
         # use the newer version of the 15s bathy based on ML
         # see https://doi.org/10.1029/2023EA003199 for details
-        nc_file = "/Users/gunnar/Data/bathymetry/smith_sandwell/SRTM15_V2.6.nc"
+        nc_file = Path.home().joinpath("Data/bathymetry/smith_sandwell/SRTM15_V2.6.nc")
     else:
         resolution = 30
-        nc_file = "/Users/gunnar/Data/bathymetry/smith_sandwell/topo{}.grd".format(
+        nc_file = Path.home().joinpath("Data/bathymetry/smith_sandwell/topo{}.grd".format(
             resolution
-        )
+        ))
     try:
         # by providing a chunk size, the array is loaded lazily via dask
         # b = xr.open_dataarray(nc_file, chunks=1000, engine="netcdf4")
@@ -1201,7 +1201,7 @@ def smith_sandwell(
 
     # Load SID file if requested
     if return_sid:
-        sid_file = "/Users/gunnar/Data/bathymetry/smith_sandwell/SID_V2.6.nc"
+        sid_file = Path.home().joinpath("Data/bathymetry/smith_sandwell/SID_V2.6.nc")
         sid = xr.open_dataarray(sid_file, chunks={})
     else:
         sid = None
@@ -1680,12 +1680,12 @@ def woce_climatology(lon=None, lat=None, z=None, std=False):
     More info:
     http://icdc.cen.uni-hamburg.de/1/daten/ocean/woce-climatology.html
     """
-    woce_local = "/Users/gunnar/Data/woce_hydrography/wghc_params.nc"
+    woce_local = Path.home().joinpath("Data/woce_hydrography/wghc_params.nc")
     woce_remote = (
         "http://icdc.cen.uni-hamburg.de/thredds/dodsC/"
         + "ftpthredds/woce/wghc_params.nc"
     )
-    woce_std_local = "/Users/gunnar/Data/woce_hydrography/wghc_stddev.nc"
+    woce_std_local = Path.home().joinpath("Data/woce_hydrography/wghc_stddev.nc")
     woce_std_remote = (
         "http://icdc.cen.uni-hamburg.de/thredds/dodsC/"
         + "ftpthredds/woce/wghc_stddev.nc"
@@ -1757,8 +1757,8 @@ def woce_argo_profile(lon, lat, interp=False, load=True):
     World Data Center for Climate (WDCC) at DKRZ. https://doi.org/10.1594/WDCC/WAGHC_V1.0
 
     """
-    woce_argo_path = Path(
-        "/Users/gunnar/Data/woce_argo_global_hydrographic_climatology"
+    woce_argo_path = Path.home().joinpath(
+        "Data/woce_argo_global_hydrographic_climatology"
     )
     paths = sorted(woce_argo_path.glob("WAGHC_BAR_*.nc"))
     ta = xr.open_mfdataset(
@@ -1795,7 +1795,7 @@ def woce_argo_profile(lon, lat, interp=False, load=True):
 
 
 def argo_mld_climatology():
-    datadir = Path("/Users/gunnar/Data/argo_mld_climatology/")
+    datadir = Path.home().joinpath("Data/argo_mld_climatology/")
     amld = datadir / "Argo_mixedlayers_monthlyclim_12112019.nc"
     a = xr.open_dataset(amld)
     newnames = dict(iLAT="lat", iLON="lon", iMONTH="month")

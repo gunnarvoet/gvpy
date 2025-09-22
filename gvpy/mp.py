@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """Module gvpy.mp with functions for data collected with McLane Moored Profilers."""
 
+from pathlib import Path
 import gsw
 import numpy as np
 import scipy as sp
@@ -455,6 +456,56 @@ def read_acm(file):
     return ds
 
 
+def read_compass_cal_acm(file: str | Path) -> np.ndarray:
+    """Read FSI ACM output as logged from the terminal during compass calibration.
+
+    The function ignores lines not containing exactly five values (Tx, Ty, Hx,
+    Hy, Hz) and ignores any trailing '...'
+
+    Parameters
+    ----------
+    file : str or Path
+
+    Returns
+    -------
+    np.ndarray
+    """
+    # Initialize a list to hold the parsed rows of data.
+    parsed_rows = []
+
+    with open(file, 'r') as f:
+        for line in f:
+            # Strip any leading/trailing whitespace from the line.
+            line = line.strip()
+
+            # Ignore lines that do not have a recognizable number.
+            if not any(char.isdigit() or char in '+-.' for char in line):
+                continue
+
+            # Remove the trailing '...' if it exists.
+            if line.endswith('...'):
+                line = line[:-3].strip()
+
+            # Use a nested try-except block to handle lines that might not be
+            # valid numeric data (e.g., header rows).
+            try:
+                # Split the line by whitespace and convert each part to a float.
+                numbers = [float(x) for x in line.split()]
+
+                # Check if the line contains exactly five numbers.
+                if len(numbers) == 5:
+                    # If the line is valid, add the list of numbers to our rows.
+                    parsed_rows.append(numbers)
+
+            except ValueError:
+                # If a ValueError occurs, it means the line contained non-numeric
+                # data, so we simply ignore it and move to the next line.
+                continue
+
+    # Convert the list of parsed rows into a NumPy array and return it.
+    return np.array(parsed_rows)
+
+
 def ctd_time(mpraw):
     """Align ctd pressure and engineering pressure to create ctd time vector.
 
@@ -574,34 +625,39 @@ def add_overturns(mp, alpha=0.64, dnoise=5e-4, dnoise_CT=2e-3, background_eps=np
         Roc = 0.3
 
         # Calculate Thorpe scales and diagnostics.
-        epstmp, N2tmp, diag = mx.overturn.eps_overturn(
-            depth,
-            t,
-            SP,
-            lon,
-            lat,
-            dnoise=dnoise,
-            alpha=alpha,
-            Roc=Roc,
-            background_eps=background_eps,
-            use_ip=use_ip,
-            return_diagnostics=True,
-        )
-        epstmpt, N2, diag = mx.overturn.eps_overturn(
-            depth,
-            t,
-            SP,
-            lon,
-            lat,
-            dnoise=2e-3,
-            alpha=alpha,
-            Roc=Roc,
-            background_eps=background_eps,
-            use_ip=use_ip,
-            return_diagnostics=True,
-            overturns_from_t=True,
-        )
-
+        try:
+            epstmp, N2tmp, diag = mx.overturn.eps_overturn(
+                depth,
+                t,
+                SP,
+                lon,
+                lat,
+                dnoise=dnoise,
+                alpha=alpha,
+                Roc=Roc,
+                background_eps=background_eps,
+                use_ip=use_ip,
+                return_diagnostics=True,
+            )
+        except:
+            epstmp = ctd["t"][notnan].data * np.nan
+        try:
+            epstmpt, N2, diag = mx.overturn.eps_overturn(
+                depth,
+                t,
+                SP,
+                lon,
+                lat,
+                dnoise=2e-3,
+                alpha=alpha,
+                Roc=Roc,
+                background_eps=background_eps,
+                use_ip=use_ip,
+                return_diagnostics=True,
+                overturns_from_t=True,
+            )
+        except:
+            epstmpt = ctd["t"][notnan].data * np.nan
         eps = ctd["t"].data * np.nan
         eps_t = ctd["t"].data * np.nan
         eps[notnan] = epstmp
@@ -653,18 +709,21 @@ def add_nsquared(mp):
 def add_nsquared_smoothed(mp, dp=16):
     n2_all = np.zeros_like(mp.t) * np.nan
     for i in range(mp.time.size):
-        mpp = mp.isel(time=i)
-        n2, pout = gv.ocean.nsqfcn(
-            mpp.s.data,
-            mpp.t.data,
-            mpp.P.data,
-            p0=0,
-            dp=16,
-            lon=mp.attrs["lon"],
-            lat=mp.attrs["lat"],
-        )
-        N2 = sp.interpolate.interp1d(pout, n2, bounds_error=False)(mpp.P)
-        n2_all[:, i] = N2
+        try:
+            mpp = mp.isel(time=i)
+            n2, pout = gv.ocean.nsqfcn(
+                mpp.s.data,
+                mpp.t.data,
+                mpp.P.data,
+                p0=0,
+                dp=16,
+                lon=mp.attrs["lon"],
+                lat=mp.attrs["lat"],
+            )
+            N2 = sp.interpolate.interp1d(pout, n2, bounds_error=False)(mpp.P)
+            n2_all[:, i] = N2
+        except:
+            pass
     mp["N2s"] = (("depth", "time"), n2_all)
     mp.N2s.attrs["long_name"] = r"N$^2$"
     mp.N2s.attrs["units"] = r"s$^{-2}$"

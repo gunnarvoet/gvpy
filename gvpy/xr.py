@@ -358,7 +358,9 @@ class GunnarsAccessor:
         if newax and show_gm:
             ax.plot(E.omega * 3600 * 24 / (2 * np.pi), E.KE, label="KE", color="C3")
             # show -2 slope
-            ax.plot([5e-2, 5e-1], [5e2, 5e0], color="C6")
+            ax.plot([5e-2, 5e-1], [1e2, 1e0], color="C6")
+            # show -1 slope
+            ax.plot([5e-2, 5e-1], [1e2, 1e1], color="C6")
 
         if newax:
             ax.set(xscale="log", yscale="log", xlim=(2.1e-2, 2e2), ylim=(1e-3, 1e5))

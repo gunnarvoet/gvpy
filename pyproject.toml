@@ -26,12 +26,12 @@ classifiers = [
 requires-python = ">= 3.11"
 dependencies = [
     "numpy",
-    "gsw",
-    "scipy",
+    "matplotlib>=3.10",
     "xarray",
     "netcdf4",
+    "scipy",
+    "gsw",
     "dask",
-    "matplotlib",
     "cartopy",
     "munch",
     "pandas",
@@ -39,7 +39,6 @@ dependencies = [
     "requests",
     "mixsea@git+https://github.com/modscripps/mixsea#egg=main",
     "lat-lon-parser",
-    "cartopy",
     "loguru",
     "ipynbname",
     ]

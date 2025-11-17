@@ -473,17 +473,17 @@ def read_compass_cal_acm(file: str | Path) -> np.ndarray:
     # Initialize a list to hold the parsed rows of data.
     parsed_rows = []
 
-    with open(file, 'r') as f:
+    with open(file, "r") as f:
         for line in f:
             # Strip any leading/trailing whitespace from the line.
             line = line.strip()
 
             # Ignore lines that do not have a recognizable number.
-            if not any(char.isdigit() or char in '+-.' for char in line):
+            if not any(char.isdigit() or char in "+-." for char in line):
                 continue
 
             # Remove the trailing '...' if it exists.
-            if line.endswith('...'):
+            if line.endswith("..."):
                 line = line[:-3].strip()
 
             # Use a nested try-except block to handle lines that might not be
@@ -587,7 +587,15 @@ def add_hab(mp, bottom_depth=None):
     return mp
 
 
-def add_overturns(mp, alpha=0.64, dnoise=5e-4, dnoise_CT=2e-3, background_eps=np.nan):
+def add_overturns(
+    mp,
+    alpha=0.64,
+    dnoise=5e-4,
+    dnoise_CT=2e-3,
+    roc=0.2,
+    N2_method="bulk",
+    background_eps=np.nan,
+):
     """Add Thorpe scale dissipation to MP dataset.
 
     Parameters
@@ -596,6 +604,15 @@ def add_overturns(mp, alpha=0.64, dnoise=5e-4, dnoise_CT=2e-3, background_eps=np
         MP dataset
     alpha : float, optional
         Coefficient relating the Thorpe and Ozmidov scales. Defaults to 0.64.
+    dnoise : float
+        Density resolution [kg/m^3].
+    dnoise_CT : float
+        Temperature resolution [K].
+    roc : float
+        Critical value for overturn ratio Roc. Defaults to 0.2.
+    N2_method : str
+        Method for buoyancy frequency calculation. See mixsea docs for options.
+        Defaults to "bulk".
     background_eps : float, optional
         Background value of epsilon applied where no overturns are detected.
         Defaults to NaN.
@@ -621,8 +638,8 @@ def add_overturns(mp, alpha=0.64, dnoise=5e-4, dnoise_CT=2e-3, background_eps=np
 
         # Do not use the intermediate profile method
         use_ip = False
-        # Critical value of the overturn ratio
-        Roc = 0.3
+        # Critical value of the overturn ratio; defaults to 0.2
+        Roc = roc
 
         # Calculate Thorpe scales and diagnostics.
         try:
@@ -635,6 +652,7 @@ def add_overturns(mp, alpha=0.64, dnoise=5e-4, dnoise_CT=2e-3, background_eps=np
                 dnoise=dnoise,
                 alpha=alpha,
                 Roc=Roc,
+                N2_method=N2_method,
                 background_eps=background_eps,
                 use_ip=use_ip,
                 return_diagnostics=True,
@@ -648,9 +666,10 @@ def add_overturns(mp, alpha=0.64, dnoise=5e-4, dnoise_CT=2e-3, background_eps=np
                 SP,
                 lon,
                 lat,
-                dnoise=2e-3,
+                dnoise=dnoise_CT,
                 alpha=alpha,
                 Roc=Roc,
+                N2_method=N2_method,
                 background_eps=background_eps,
                 use_ip=use_ip,
                 return_diagnostics=True,

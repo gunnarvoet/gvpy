@@ -26,23 +26,24 @@ BROWSER := python -c "$$BROWSER_PYSCRIPT"
 help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
-lint: ## check style
-	uvx ruff check gvpy
-
 check: ## check style
-	uvx ruff check gvpy
+	uv run ruff check gvpy/
 
 format: ## format code using ruff
-	uvx ruff format gvpy
+	uv run ruff format gvpy/
+
+format-check: ## check code style using ruff format --diff
+	uv run ruff format --diff gvpy/
+	uv run ruff format --diff tests/
 
 docs: ## generate documentation using pdoc
 	rm -rf docs
-	uvx --with . pdoc -d numpy -o docs -t .pdoc-theme-gv --math ./gvpy
+	uv run pdoc -d numpy -o docs -t .pdoc-theme-gv --math src/gvpy/
 	$(BROWSER) docs/index.html
 
 ghdocs: ## generate documentation using pdoc
 	rm -rf docs
-	PDOC_ALLOW_EXEC=1 pdoc -d numpy -o docs -t .pdoc-theme-gv --math ./gvpy
+	PDOC_ALLOW_EXEC=1 pdoc -d numpy -o docs -t .pdoc-theme-gv --math src/gvpy/
 
 # if there are any issues with importing certain modules, set environment
 # variable PDOC_ALLOW_EXEC
@@ -52,8 +53,8 @@ ghdocs: ## generate documentation using pdoc
 # 	$(BROWSER) docs/index.html
 
 servedocs: ## compile the docs & watch for changes
-	uvx --with . pdoc -d numpy -t .pdoc-theme-gv --math ./gvpy
+	uv run pdoc -d numpy -t .pdoc-theme-gv --math src/gvpy
 	# $(BROWSER) http://localhost:8080
 
 test: ## run tests quickly with the default Python
-	uvx --with . pytest
+	uv run pytest

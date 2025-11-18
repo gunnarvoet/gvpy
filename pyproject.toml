@@ -1,13 +1,10 @@
 [build-system]
-requires = ["setuptools", ]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools]
-packages = ["gvpy"]
+requires = ["uv_build>=0.8.22,<0.10.0"]
+build-backend = "uv_build"
 
 [project]
 name = "gvpy"
-version = "2025.07"
+version = "2025.11"
 authors = [
     {name = "Gunnar Voet", email = "gvoet@ucsd.edu"},
     ]
@@ -49,6 +46,13 @@ Documentation = "https://gunnarvoet.github.io/gvpy/gvpy.html"
 Repository = "https://github.com/gunnarvoet/gvpy.git"
 Issues = "https://github.com/gunnarvoet/gvpy/issues"
 
+[dependency-groups]
+dev = [
+    "pdoc>=16.0.0",
+    "pytest>=9.0.1",
+    "ruff>=0.14.5",
+]
+
 [tool.pytest.ini_options]
 # in general, do not place a `__init__.py` in your tests
 # options are explained here:
@@ -60,5 +64,5 @@ xfail_strict = true
 filterwarnings = ["error"]
 log_cli_level = "info"
 testpaths = [
-    "gvpy/tests",
+    "tests/",
     ]

@@ -591,12 +591,13 @@ def add_overturns(
     mp,
     alpha=0.64,
     dnoise=5e-4,
-    dnoise_CT=2e-3,
     roc=0.2,
     N2_method="bulk",
     background_eps=np.nan,
+    overturns_from_t=False,
 ):
     """Add Thorpe scale dissipation to MP dataset.
+
 
     Parameters
     ----------
@@ -605,9 +606,7 @@ def add_overturns(
     alpha : float, optional
         Coefficient relating the Thorpe and Ozmidov scales. Defaults to 0.64.
     dnoise : float
-        Density resolution [kg/m^3].
-    dnoise_CT : float
-        Temperature resolution [K].
+        Density [kg/m^3] or temperature resolution [K].
     roc : float
         Critical value for overturn ratio Roc. Defaults to 0.2.
     N2_method : str
@@ -616,82 +615,140 @@ def add_overturns(
     background_eps : float, optional
         Background value of epsilon applied where no overturns are detected.
         Defaults to NaN.
+    overturns_from_t : bool
+        Indicates whether to return results based on using density or
+        temperature as sorting variable. Defaults to False (density-based
+        sorting).
 
     Returns
     -------
     mp : xr.Dataset
-        MP dataset with variables `eps` and `eps_t`
+        MP dataset with variables `eps_ot`, `N2_ot`, `Lt_ot`, `Lp_ot`. If using
+        temperature as sorting variable, the output variables will have `_t`
+        appended, e.g. `eps_ot_t`.
+
+    Notes
+    -----
+    This is a wrapper for [mixsea](https://mixsea.readthedocs.io)
     """
-    epsall = []
-    epstall = []
-    lon = mp.attrs["lon"]
-    lat = mp.attrs["lat"]
-    for group, ctd in mp.groupby("time"):
-        ctd = ctd.squeeze()
-        notnan = (
-            np.isfinite(ctd["depth"]) & np.isfinite(ctd["t"]) & np.isfinite(ctd["s"])
-        )
+    eps, N2, Lt, Lp = xr.apply_ufunc(
+        _overturn_ufun,
+        mp.depth,
+        mp.t,
+        mp.s,
+        mp.lon,
+        mp.lat,
+        kwargs=dict(
+            dnoise=dnoise,
+            alpha=alpha,
+            roc=roc,
+            N2_method=N2_method,
+            background_eps=background_eps,
+            overturns_from_t=overturns_from_t,
+        ),
+        input_core_dims=[
+            ["depth"],
+            ["depth"],
+            ["depth"],
+            [],
+            [],
+        ],
+        output_core_dims=[
+            ["depth"],
+            ["depth"],
+            ["depth"],
+            ["depth"],
+        ],
+        vectorize=True,  # Loops over 'time' automatically
+    )
+    eps.attrs = dict(long_name=r"$\epsilon$", units="W/kg")
+    if overturns_from_t:
+        mp["eps_ot_t"] = eps
+        mp["N2_ot_t"] = N2
+        mp["Lt_ot_t"] = Lt
+        mp["Lp_ot_t"] = Lp
+    else:
+        mp["eps_ot"] = eps
+        mp["N2_ot"] = N2
+        mp["Lt_ot"] = Lt
+        mp["Lp_ot"] = Lp
 
-        depth = ctd["depth"][notnan].data
-        t = ctd["t"][notnan].data
-        SP = ctd["s"][notnan].data
-
-        # Do not use the intermediate profile method
-        use_ip = False
-        # Critical value of the overturn ratio; defaults to 0.2
-        Roc = roc
-
-        # Calculate Thorpe scales and diagnostics.
-        try:
-            epstmp, N2tmp, diag = mx.overturn.eps_overturn(
-                depth,
-                t,
-                SP,
-                lon,
-                lat,
-                dnoise=dnoise,
-                alpha=alpha,
-                Roc=Roc,
-                N2_method=N2_method,
-                background_eps=background_eps,
-                use_ip=use_ip,
-                return_diagnostics=True,
-            )
-        except:
-            epstmp = ctd["t"][notnan].data * np.nan
-        try:
-            epstmpt, N2, diag = mx.overturn.eps_overturn(
-                depth,
-                t,
-                SP,
-                lon,
-                lat,
-                dnoise=dnoise_CT,
-                alpha=alpha,
-                Roc=Roc,
-                N2_method=N2_method,
-                background_eps=background_eps,
-                use_ip=use_ip,
-                return_diagnostics=True,
-                overturns_from_t=True,
-            )
-        except:
-            epstmpt = ctd["t"][notnan].data * np.nan
-        eps = ctd["t"].data * np.nan
-        eps_t = ctd["t"].data * np.nan
-        eps[notnan] = epstmp
-        eps_t[notnan] = epstmpt
-        epsall.append(eps)
-        epstall.append(eps_t)
-    mp["eps"] = (["depth", "time"], mp.t.data * np.nan)
-    mp.eps.attrs = dict(long_name=r"$\epsilon$", units="W/kg")
-    for i, epsi in enumerate(epsall):
-        mp.eps[:, i] = epsi
-    mp["eps_t"] = (["depth", "time"], mp.t.data * np.nan)
-    mp.eps_t.attrs = dict(long_name=r"$\epsilon_\mathrm{T}$", units="W/kg")
-    for i, epsi in enumerate(epstall):
-        mp.eps_t[:, i] = epsi
     return mp
+
+
+def _overturn_ufun(
+    depth,
+    t,
+    SP,
+    lon,
+    lat,
+    dnoise,
+    alpha,
+    roc,
+    N2_method,
+    background_eps,
+    overturns_from_t,
+):
+    """Helper function for add_overturns()
+
+    Parameters
+    ----------
+    depth :
+    t :
+    SP :
+    lon :
+    lat :
+    dnoise :
+    alpha :
+    roc :
+    N2_method :
+    background_eps :
+    overturns_from_t :
+
+    Returns
+    -------
+    out_eps, out_N2, out_Lt, out_Lp
+    """
+    # Get shape for output arrays
+    out_array = t.copy() * np.nan
+    # Select non-nan data
+    notnan = np.isfinite(depth) & np.isfinite(t) & np.isfinite(SP)
+    depth = depth[notnan]
+    t = t[notnan]
+    SP = SP[notnan]
+    # Do not use the intermediate profile method
+    use_ip = False
+    # Run overturn calcs using density as sorting variable
+    eps, N2, diag = mx.overturn.eps_overturn(
+        depth,
+        t,
+        SP,
+        lon,
+        lat,
+        dnoise=dnoise,
+        alpha=alpha,
+        Roc=roc,
+        N2_method=N2_method,
+        background_eps=background_eps,
+        use_ip=use_ip,
+        return_diagnostics=True,
+        overturns_from_t=overturns_from_t,
+    )
+
+    out_eps, out_N2, out_Lt, out_Lp = [
+        np.full_like(out_array, np.nan, dtype=float) for _ in range(4)
+    ]
+    # Fill with results
+    out_eps[notnan] = eps
+    out_N2[notnan] = N2
+    # Use flags to get rid of bad overturns (already applied for eps and N2)
+    isbad = diag["noise_flag"] | diag["N2_flag"] | diag["Ro_flag"]
+    diag["Lt"][isbad] = np.nan
+    diag["Lp"][isbad] = np.nan
+    out_Lt[notnan] = diag["Lt"]
+    out_Lp[notnan] = diag["Lp"]
+
+    return out_eps, out_N2, out_Lt, out_Lp
 
 
 def add_gsw_variables(mp):

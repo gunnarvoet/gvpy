@@ -711,6 +711,10 @@ def _overturn_ufun(
     """
     # Get shape for output arrays
     out_array = t.copy() * np.nan
+    # Pre-populate output arrays
+    out_eps, out_N2, out_Lt, out_Lp = [
+        np.full_like(out_array, np.nan, dtype=float) for _ in range(4)
+    ]
     # Select non-nan data
     notnan = np.isfinite(depth) & np.isfinite(t) & np.isfinite(SP)
     depth = depth[notnan]
@@ -719,34 +723,42 @@ def _overturn_ufun(
     # Do not use the intermediate profile method
     use_ip = False
     # Run overturn calcs using density as sorting variable
-    eps, N2, diag = mx.overturn.eps_overturn(
-        depth,
-        t,
-        SP,
-        lon,
-        lat,
-        dnoise=dnoise,
-        alpha=alpha,
-        Roc=roc,
-        N2_method=N2_method,
-        background_eps=background_eps,
-        use_ip=use_ip,
-        return_diagnostics=True,
-        overturns_from_t=overturns_from_t,
-    )
+    try:
+        eps, N2, diag = mx.overturn.eps_overturn(
+            depth,
+            t,
+            SP,
+            lon,
+            lat,
+            dnoise=dnoise,
+            alpha=alpha,
+            Roc=roc,
+            N2_method=N2_method,
+            background_eps=background_eps,
+            use_ip=use_ip,
+            return_diagnostics=True,
+            overturns_from_t=overturns_from_t,
+        )
 
-    out_eps, out_N2, out_Lt, out_Lp = [
-        np.full_like(out_array, np.nan, dtype=float) for _ in range(4)
-    ]
-    # Fill with results
-    out_eps[notnan] = eps
-    out_N2[notnan] = N2
-    # Use flags to get rid of bad overturns (already applied for eps and N2)
-    isbad = diag["noise_flag"] | diag["N2_flag"] | diag["Ro_flag"]
-    diag["Lt"][isbad] = np.nan
-    diag["Lp"][isbad] = np.nan
-    out_Lt[notnan] = diag["Lt"]
-    out_Lp[notnan] = diag["Lp"]
+        # Fill output arrays with results
+        out_eps[notnan] = eps
+        out_N2[notnan] = N2
+        # Use flags to get rid of bad overturns (already applied for eps and N2)
+        isbad = diag["noise_flag"] | diag["N2_flag"] | diag["Ro_flag"]
+        diag["Lt"][isbad] = np.nan
+        diag["Lp"][isbad] = np.nan
+        out_Lt[notnan] = diag["Lt"]
+        out_Lp[notnan] = diag["Lp"]
+    except ValueError as e:
+        if "The entire profile is unstable" in str(e):
+            print("Skipping unstable profile.")
+        else:
+            raise
+    except IndexError as e:
+        if len(depth) < 10:
+            print(f"Skipping profile with only {len(depth)} points.")
+        else:
+            raise
 
     return out_eps, out_N2, out_Lt, out_Lp
 

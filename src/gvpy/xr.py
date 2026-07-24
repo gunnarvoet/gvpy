@@ -119,10 +119,11 @@ class GunnarsAccessor:
             kwargs["x"] = "time"
 
         # create figure & axis if not provided
+        fs = kwargs.pop("fs", 10)
         if "ax" not in kwargs:
             fgs = kwargs.pop("fgs", (8, 3.5))
             grid = kwargs.pop("grid", True)
-            fig, ax = gv.plot.quickfig(fgs=fgs, grid=grid)
+            fig, ax = gv.plot.quickfig(fgs=fgs, grid=grid, fs=fs)
         else:
             ax = kwargs["ax"]
         if self._obj.ndim == 2 and "hue" not in kwargs:
@@ -145,6 +146,10 @@ class GunnarsAccessor:
         if kwargs["x"] == "time":
             gv.plot.concise_date(ax, minticks=4)
             # ax.set(xlabel="", title="")
+
+        # if custom font size, apply it to colorbar
+        if fs is not None:
+             gv.plot.set_colorbar_fontsize(fs)
 
         # determine whether the y-axis should be increasing
         invert_yaxis = False
@@ -322,7 +327,7 @@ class GunnarsAccessor:
 
         """
         newax = True if ax is None else False
-        if lat is None:
+        if lat is None and show_gm:
             lat = self.lat
 
         f_cpd = gv.ocean.inertial_frequency(lat) / (2 * np.pi) * 3600 * 24
@@ -362,13 +367,13 @@ class GunnarsAccessor:
         ax.plot(omega * (3600 * 24) / (2 * np.pi), Ptot, linewidth=1, color=color, **kwargs)
 
         # GM
-        if N is None:
+        if show_gm and N is None:
             print(
                 "No N provided, using N=2e-3 reflective of buoyancy frequency at ~1km depth"
             )
             N = 2e-3
-        E = gv.gm81.calc_E_omg(N=N, lat=lat)
         if newax and show_gm:
+            E = gv.gm81.calc_E_omg(N=N, lat=lat)
             ax.plot(E.omega * 3600 * 24 / (2 * np.pi), E.KE, label="KE", color="C3")
             # show -2 slope
             ax.plot([5e-2, 5e-1], [1e2, 1e0], color="C6")
@@ -388,7 +393,7 @@ class GunnarsAccessor:
             ax2.minorticks_off()
             ax2.xaxis.set_ticks(freqs)
             ax2.xaxis.set_ticklabels(freq_labels)
-            ax.set(ylabel="power spectral density [m$^2$/s$^2$/cps]")
+            ax.set(ylabel="power spectral density [m$^2$/s$^2$/cpd]")
             ax.set_xlabel("frequency [cpd]", labelpad=35)
 
         return ax

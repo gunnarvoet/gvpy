@@ -316,21 +316,33 @@ class GunnarsAccessor:
             Buoyancy frequency used for calculating GM spectrum.
         nwind : int, optional
             Number of windows (more windows more smoothing). Defaults to 2.
+        lat : float, optional
+            Latitude. Falls back to the `lat` attribute of the DataArray.
+            Used to mark the inertial frequency and to calculate the GM
+            spectrum. Both are skipped if no latitude is available.
         color : str, optional
             Line color.
         show_gm : bool
-            Show gm level for given latitude and N.
+            Show gm level for given latitude and N. Requires a latitude.
 
         Returns
         -------
         ax
 
+        Raises
+        ------
+        ValueError
+            If `show_gm` is set but no latitude is available.
+
         """
         newax = True if ax is None else False
-        if lat is None and show_gm:
-            lat = self.lat
-
-        f_cpd = gv.ocean.inertial_frequency(lat) / (2 * np.pi) * 3600 * 24
+        if lat is None:
+            lat = getattr(self, "lat", None)
+        if show_gm and lat is None:
+            raise ValueError(
+                "the GM spectrum needs a latitude - pass lat or set a lat "
+                "attribute on the DataArray"
+            )
 
         # determine sampling period
         sp = self.sampling_period
@@ -345,18 +357,16 @@ class GunnarsAccessor:
             fig, ax = plt.subplots(
                 nrows=1, ncols=1, figsize=(7, 5), constrained_layout=True
             )
-        freqs = np.array(
-            [
-                24 / (14 * 24),
-                24 / 12.4,
-                2 * 24 / 12.4,
-                4 * 24 / 12.4,
-                f_cpd,
-                2 * f_cpd,
-                1,
-            ]
-        )
-        freq_labels = ["fortnightly", "M2", "2M2", "4M2", " \nf", " \n2f", "K1"]
+        freqs = [24 / (14 * 24), 24 / 12.4, 2 * 24 / 12.4, 4 * 24 / 12.4]
+        freq_labels = ["fortnightly", "M2", "2M2", "4M2"]
+        # the inertial frequency can only be marked if we know where we are
+        if lat is not None:
+            f_cpd = gv.ocean.inertial_frequency(lat) / (2 * np.pi) * 3600 * 24
+            freqs += [f_cpd, 2 * f_cpd]
+            freq_labels += [" \nf", " \n2f"]
+        freqs += [1]
+        freq_labels += ["K1"]
+        freqs = np.array(freqs)
         if newax:
             for freq in freqs:
                 ax.vlines(

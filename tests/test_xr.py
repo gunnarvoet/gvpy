@@ -1,3 +1,7 @@
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 import xarray as xr
@@ -50,3 +54,51 @@ def test_ts_lp_runs_for_sub_second_sampling(sampling_period_s):
     da = time_series(sampling_period_s, n=500)
     out = da.gv.ts_lp(cutoff_period=20 * sampling_period_s)
     assert np.isfinite(out).all()
+
+
+@pytest.fixture
+def spectrum_series():
+    """Time series long enough to compute a spectrum from."""
+    da = time_series(0.5, n=2000)
+    yield da
+    plt.close("all")
+
+
+def secondary_axis_labels(ax):
+    """Tick labels of the secondary frequency axis drawn by plot_spectrum."""
+    return [
+        label.get_text().strip()
+        for child in ax.child_axes
+        for label in child.get_xticklabels()
+    ]
+
+
+def test_plot_spectrum_without_latitude_runs(spectrum_series):
+    """A spectrum can be plotted for data that carries no latitude."""
+    ax = spectrum_series.gv.plot_spectrum(show_gm=False)
+    assert ax.lines
+
+
+def test_plot_spectrum_without_latitude_omits_inertial_frequency(spectrum_series):
+    """Without a latitude the inertial frequency cannot be marked."""
+    ax = spectrum_series.gv.plot_spectrum(show_gm=False)
+    assert "f" not in secondary_axis_labels(ax)
+
+
+def test_plot_spectrum_with_latitude_marks_inertial_frequency(spectrum_series):
+    """Given a latitude, the inertial frequency is marked."""
+    ax = spectrum_series.gv.plot_spectrum(lat=32.0, show_gm=False)
+    assert "f" in secondary_axis_labels(ax)
+
+
+def test_plot_spectrum_uses_latitude_attribute(spectrum_series):
+    """A lat attribute is used when no latitude is passed."""
+    da = spectrum_series.assign_attrs(lat=32.0)
+    ax = da.gv.plot_spectrum(show_gm=False)
+    assert "f" in secondary_axis_labels(ax)
+
+
+def test_plot_spectrum_show_gm_without_latitude_raises(spectrum_series):
+    """The GM spectrum needs a latitude and says so."""
+    with pytest.raises(ValueError, match="latitude"):
+        spectrum_series.gv.plot_spectrum(show_gm=True, N=2e-3)

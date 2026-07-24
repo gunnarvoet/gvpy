@@ -34,7 +34,7 @@ dependencies = [
     "pandas",
     "IPython",
     "requests",
-    "mixsea@git+https://github.com/modscripps/mixsea#egg=main",
+    "mixsea>=0.2",
     "lat-lon-parser",
     "loguru",
     "ipynbname",
@@ -52,6 +52,9 @@ dev = [
     "pytest>=9.0.1",
     "ruff>=0.14.5",
 ]
+
+[tool.uv.sources]
+mixsea = { git = "https://github.com/modscripps/mixsea", branch = "main" }
 
 [tool.pytest.ini_options]
 # in general, do not place a `__init__.py` in your tests

@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "gvpy"
-version = "2025.11"
+version = "2026.07"
 authors = [
     {name = "Gunnar Voet", email = "gvoet@ucsd.edu"},
     ]

@@ -108,7 +108,7 @@ def switch_backend():
         print("switched to inline plots")
 
 
-def quickfig(fs=10, yi=True, w=6, h=4, fgs=None, r=1, c=1, grid=False, **kwargs):
+def quickfig(fs=10, yi=True, w=6, h=4, fgs=None, r=1, c=1, grid=False, wspace=None, hspace=None, **kwargs):
     """
     Quick single pane figure.
 
@@ -133,6 +133,16 @@ def quickfig(fs=10, yi=True, w=6, h=4, fgs=None, r=1, c=1, grid=False, **kwargs)
         Number of columns (default 1)
     grid : bool
         Show grid (default False)
+    wspace, hspace : float, optional
+        Inter-axes spacing applied to the constrained-layout engine. Units
+        are fractions of the average axes width/height (constrained-layout
+        convention), not gridspec units, so values behave differently than
+        ``gridspec_kw=dict(wspace=..., hspace=...)`` — which constrained
+        layout otherwise ignores. Note these are *minimums*: constrained
+        layout will still enlarge the gap as needed to fit tick labels,
+        axis labels, etc., so small values may have no visible effect if
+        something else is reserving the space (e.g. overhanging x-tick
+        labels on the inner edge of adjacent panels).
 
     Returns
     -------
@@ -157,6 +167,13 @@ def quickfig(fs=10, yi=True, w=6, h=4, fgs=None, r=1, c=1, grid=False, **kwargs)
         # dpi=dpi,
         **kwargs,
     )
+    if wspace is not None or hspace is not None:
+        engine_kw = {}
+        if wspace is not None:
+            engine_kw["wspace"] = wspace
+        if hspace is not None:
+            engine_kw["hspace"] = hspace
+        fig.get_layout_engine().set(**engine_kw)
     if isinstance(ax, np.ndarray):
         [axstyle(axi, fontsize=fs, grid=grid, ticks=ticks, ticklength=ticklength) for axi in ax.flatten()]
     else:
@@ -477,7 +494,7 @@ def vstep(x, y, ax=None, *args, **kwargs):
     return lines
 
 
-def stickplot(ax, times, data, uv=True, units="", scale=0.1, color="k"):
+def stickplot(ax, times, data, uv=True, units="", scale=0.1, label_scale=0.1, color="k"):
     """
     Create a stick plot of the given data on the given axes.
 
@@ -499,6 +516,10 @@ def stickplot(ax, times, data, uv=True, units="", scale=0.1, color="k"):
         Units of the observation. Defaults to empty string.
     scale: float, optional
         Data scale factor. Defaults to 0.1.
+    label_scale : float, optional
+        Reference arrow magnitude for the quiver key legend. Defaults to 0.1.
+    color : str, optional
+        Stick color. Defaults to 'k'.
 
     Credits
     -------
@@ -516,8 +537,6 @@ def stickplot(ax, times, data, uv=True, units="", scale=0.1, color="k"):
         "color": color,
     }
 
-    # fixme: this should use some smarts to fit the data
-    label_scale = 0.1
     unit_label = "%3g %s" % (label_scale, units)
 
     if uv:
@@ -635,8 +654,8 @@ def png(fname, figdir="fig", dpi=300, verbose=True, transparent=False):
     """
     savedir, name = _figure_name(fname, figdir, extension="png", verbose=verbose)
     metadata = dict(Author="Gunnar Voet, https://gunnarvoet.net")
-    if gv.misc.is_notebook():
-        metadata["Producer"] = gv.misc.nb_path().as_posix()
+    # if gv.misc.is_notebook():
+        # metadata["Producer"] = gv.misc.nb_path().as_posix()
     if transparent:
         plt.savefig(
             savedir.joinpath(fname),
@@ -678,8 +697,8 @@ def pdf(fname, figdir="fig", dpi=300, verbose=True, transparent=False):
     """
     savedir, name = _figure_name(fname, figdir, extension="pdf", verbose=verbose)
     metadata = dict(Author="Gunnar Voet, https://gunnarvoet.net")
-    if gv.misc.is_notebook():
-        metadata["Producer"] = gv.misc.nb_path().as_posix()
+    # if gv.misc.is_notebook():
+        # metadata["Producer"] = gv.misc.nb_path().as_posix()
     if transparent:
         plt.savefig(
             savedir.joinpath(name),
@@ -828,19 +847,25 @@ def ydecrease(ax=None):
     ax.set_ylim(bottom=np.amax(ylims), top=np.amin(ylims))
 
 
-def ysym(ax=None):
+def ysym(ax=None, lim=None):
     """
-    Set ylim symmetric around zero based on current axis limits
+    Set ylim symmetric around zero based on current or user-provided axis
+    limits.
 
     Parameters
     ----------
     ax : axis handle
         Handle to axis (optional).
+    lim : float
+        Custom axis limit (optional).
     """
     if ax is None:
         ax = plt.gca()
-    ylims = ax.get_ylim()
-    absmax = np.max(np.abs(ylims))
+    if lim is None:
+        ylims = ax.get_ylim()
+        absmax = np.max(np.abs(ylims))
+    else:
+        absmax=np.abs(lim)
     ax.set_ylim([-absmax, absmax])
 
 
@@ -1242,3 +1267,29 @@ def remove_axis_labels(ax):
     else:
         ax.set(xlabel="", ylabel="")
     return
+
+
+def set_colorbar_fontsize(fs, fig=None):
+    """Set font size of all colorbars in a figure.
+
+    Parameters
+    ----------
+    fs : int
+        Font size
+    fig : matplotlib.figure.Figure, optional
+        Figure handle. Will determine current figure if not provided.
+
+    Notes
+    -----
+    Currently only works for vertical colorbars...
+    """
+    # Get the current figure
+    if fig is None:
+        fig = plt.gcf()
+
+    for ax in fig.get_axes():
+        if ax.get_label() == "<colorbar>":
+            cbar = ax._colorbar
+            cbar_text = ax.get_ylabel()
+            cbar.set_label(cbar_text, size=fs)
+            cbar.ax.tick_params(labelsize=fs)

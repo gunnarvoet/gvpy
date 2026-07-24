@@ -804,7 +804,7 @@ def add_nsquared_smoothed(mp, dp=16):
                 mpp.t.data,
                 mpp.P.data,
                 p0=0,
-                dp=16,
+                dp=dp,
                 lon=mp.attrs["lon"],
                 lat=mp.attrs["lat"],
             )

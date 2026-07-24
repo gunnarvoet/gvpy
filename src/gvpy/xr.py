@@ -39,22 +39,35 @@ class GunnarsAccessor:
 
     @property
     def sampling_period(self) -> float:
-        """Sampling period in seconds (with three digit precision) if one of
-        the dataset dimensions is time.
+        """Sampling period in seconds if one of the dataset dimensions is time.
+
+        Determined as the median of the time differences. The result is rounded
+        to three decimal places to remove timestamp jitter, but never to fewer
+        than three significant digits, so that sub-second sampling periods
+        survive the rounding.
 
         Returns
         -------
-        float
+        float or None
+            Sampling period in seconds. None if there is no time dimension.
+
+        Examples
+        --------
+        >>> time = np.datetime64("2025-01-01") + np.arange(4) * np.timedelta64(500, "ms")
+        >>> da = xr.DataArray(np.arange(4.0), coords=dict(time=time))
+        >>> da.gv.sampling_period
+        0.5
         """
         if self._sampling_period is None:
             if "time" in self._obj.dims:
                 sampling_period_td = (
                     self._obj.time.diff("time").median().data.astype("timedelta64[ns]")
                 )
-                sampling_period_s = np.int64(
-                    sampling_period_td.astype(np.float64) / 1e9
-                )
-                self._sampling_period = sampling_period_s.item()
+                sampling_period_s = float(sampling_period_td.astype(np.float64) / 1e9)
+                if sampling_period_s > 0:
+                    decimals = max(3, 2 - int(np.floor(np.log10(sampling_period_s))))
+                    sampling_period_s = round(sampling_period_s, decimals)
+                self._sampling_period = sampling_period_s
         return self._sampling_period
 
     def tplot(self, **kwargs):

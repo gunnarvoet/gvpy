@@ -780,9 +780,8 @@ def _figure_name(fname, figdir, extension, verbose=True):
 
 
 def contourf_hide_edges(h):
-    for c in h.collections:
-        c.set_rasterized(True)
-        c.set_edgecolor("face")
+    h.set_rasterized(True)
+    h.set_edgecolor("face")
 
 
 def quickmap(**kwargs):

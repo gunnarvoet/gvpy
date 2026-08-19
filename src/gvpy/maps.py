@@ -159,9 +159,8 @@ class HillShade:
             extend="both",
             zorder=9,
         )
-        for c in h.collections:
-            c.set_rasterized(True)
-            c.set_edgecolor("face")
+        h.set_rasterized(True)
+        h.set_edgecolor("face")
 
         ax.imshow(
             self.smoothbumps,
@@ -181,8 +180,7 @@ class HillShade:
             linewidths=0.25,
             zorder=11,
         )
-        for c in h2.collections:
-            c.set_rasterized(True)
+        h2.set_rasterized(True)
 
     def plot_topo_c(self, cmap="Blues", ax=None):
         """Plot topography with hill shading using cartopy.
@@ -221,9 +219,8 @@ class HillShade:
             zorder=2,
             transform=ccrs.PlateCarree(),
         )
-        for c in h.collections:
-            c.set_rasterized(True)
-            c.set_edgecolor("face")
+        h.set_rasterized(True)
+        h.set_edgecolor("face")
 
         ax.imshow(
             self.smoothbumps,
@@ -245,8 +242,7 @@ class HillShade:
             zorder=4,
             transform=ccrs.PlateCarree(),
         )
-        for c in h2.collections:
-            c.set_rasterized(True)
+        h2.set_rasterized(True)
 
         ax.set_extent(self.topo_extent, crs=ccrs.PlateCarree())
 

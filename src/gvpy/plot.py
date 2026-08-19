@@ -633,7 +633,8 @@ def pcm(*args, **kwargs):
     return h
 
 
-def png(fname, figdir="fig", dpi=300, verbose=True, transparent=False):
+def png(fname, figdir="fig", dpi=300, verbose=True, transparent=False,
+        bbox_inches="tight"):
     """
     Save figure to png file.
 
@@ -651,6 +652,11 @@ def png(fname, figdir="fig", dpi=300, verbose=True, transparent=False):
         Print output path that the figure is saved to in screen.
     transparent : bool, optional
         Transparent figure background. Defaults to False.
+    bbox_inches : str or Bbox or None, optional
+        Passed on to `plt.savefig`. Defaults to "tight". Use None for cartopy
+        maps: a labelled Gridliner on an axes positioned by a colorbar locator
+        makes `get_tightbbox` return only the tick-label strip, so "tight"
+        crops the map itself away.
     """
     savedir, name = _figure_name(fname, figdir, extension="png", verbose=verbose)
     metadata = dict(Author="Gunnar Voet, https://gunnarvoet.net")
@@ -660,7 +666,7 @@ def png(fname, figdir="fig", dpi=300, verbose=True, transparent=False):
         plt.savefig(
             savedir.joinpath(fname),
             dpi=dpi,
-            bbox_inches="tight",
+            bbox_inches=bbox_inches,
             facecolor="none",
             edgecolor="none",
             metadata=metadata,
@@ -669,7 +675,7 @@ def png(fname, figdir="fig", dpi=300, verbose=True, transparent=False):
         plt.savefig(
             savedir.joinpath(fname),
             dpi=dpi,
-            bbox_inches="tight",
+            bbox_inches=bbox_inches,
             facecolor="w",
             edgecolor="none",
             metadata=metadata,

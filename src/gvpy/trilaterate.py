@@ -2,18 +2,17 @@
 # -*- coding: utf-8 -*-
 """Module gvpy.trilaterate for oceanographic mooring trilateration."""
 
+import cartopy.crs as ccrs
+import gsw
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
+import netCDF4  # noqa: F401 (need this to avoid bug in pytest)
 import numpy as np
-import netCDF4 # noqa: F401 (need this to avoid bug in pytest)
 import xarray as xr
+from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
 from scipy.optimize import least_squares
-import gsw
 
 import gvpy as gv
-
-import cartopy.crs as ccrs
-from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
 
 
 class TrilaterationResult:

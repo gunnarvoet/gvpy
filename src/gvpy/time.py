@@ -3,11 +3,12 @@
 """Module gvpy.time with time conversion functions. A few of these also still live in io.py for backwards compatibility."""
 
 import datetime
-import numpy as np
-import scipy
-import pandas as pd
-import xarray as xr
+
 import matplotlib as mpl
+import numpy as np
+import pandas as pd
+import scipy
+import xarray as xr
 
 
 def mtlb2datetime(matlab_datenum, strip_microseconds=False, strip_seconds=False):
@@ -255,7 +256,7 @@ def datetime64_to_yday0(dt64):
         Year day
     """
     # convert single value to list
-    if type(dt64) == np.datetime64:
+    if type(dt64) is np.datetime64:
         dt64 = [dt64]
     # base year
     pt = pd.to_datetime(dt64)
@@ -318,7 +319,7 @@ def datetime64_mean(dt64):
 
 
 def convert_units(t, unit="s"):
-    if type(t) == xr.DataArray:
+    if type(t) is xr.DataArray:
         torig = t.copy()
         xa = True
         t = t.data
@@ -326,7 +327,7 @@ def convert_units(t, unit="s"):
         xa = False
 
     data_type = type(t)
-    if data_type == list:
+    if data_type is list:
         t0 = t[0]
         t_type = type(t0)
         if t_type == np.datetime64:
@@ -352,7 +353,7 @@ def convert_units(t, unit="s"):
         out = np.array([tfun(ti, unit) for ti in t])
     elif data_type == np.ndarray and t.size == 1:
         out = tfun(t, unit)
-    elif data_type == list:
+    elif data_type is list:
         out = [tfun(ti, unit) for ti in t]
     elif data_type == np.datetime64 or data_type == np.timedelta64:
         out = tfun(t, unit)

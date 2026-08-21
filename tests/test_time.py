@@ -1,7 +1,7 @@
-import subprocess
 import datetime
+import subprocess
+
 import numpy as np
-import pytest
 
 import gvpy as gv
 

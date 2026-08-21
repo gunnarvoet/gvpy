@@ -6,7 +6,6 @@ import datetime as dt
 import re
 from pathlib import Path
 
-import gsw
 import numpy as np
 import pandas as pd
 import scipy.io as spio
@@ -239,7 +238,7 @@ def mat2dataset(m1):
                 vars1d.append(ki)
             elif len(tmp) == 2:
                 vars2d.append(ki)
-        except:
+        except Exception:
             tmp = None
             varsint.append(ki)
 
@@ -253,7 +252,7 @@ def mat2dataset(m1):
     else:
         jj = 0
 
-    if "lon" in k and type(m1["lon"]) != float:
+    if "lon" in k and type(m1["lon"]) is not float:
         if len(m1["lon"].shape) == 1:
             ii = m1["lon"].shape[0]
     elif "dnum" in k:
@@ -446,7 +445,7 @@ def mpmat_load_raw(path_raw_mat, n):
     cvars = ["csnum", "ccond", "ctemp", "cpres"]
     for var in cvars:
         mp[var] = (["csnum"], mpts[var])
-    mp = ctd_time(mp)
+    mp = gvpy.mp.ctd_time(mp)
 
     avars = [
         "Vab",

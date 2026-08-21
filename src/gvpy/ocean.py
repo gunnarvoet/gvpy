@@ -2,21 +2,22 @@
 # -*- coding: utf-8 -*-
 """Module gvpy.ocean with oceanography related functions"""
 
-KM2NM = 0.5399568
-
-import requests
 import json
+import math
 import re
 from pathlib import Path
-import math
+
 import gsw
+import lat_lon_parser
 import numpy as np
+import requests
+import scipy
 import xarray as xr
 from scipy import interpolate
 from scipy.interpolate import NearestNDInterpolator, interp1d
 from scipy.signal import filtfilt
-import scipy
-import lat_lon_parser
+
+KM2NM = 0.5399568
 
 
 def nsqfcn(s, t, p, p0, dp, lon, lat, verbose=False, sort=False):
@@ -383,8 +384,8 @@ def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000, verbose=False):
           Temperature gradient
 
     """
-    import numpy as np
     import gsw
+    import numpy as np
 
     # avoid error due to nan's in conditional statements
     np.seterr(invalid="ignore")
@@ -436,7 +437,7 @@ def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000, verbose=False):
     sgi = np.array(sgi)
 
     # Sort (important to use mergesort here)
-    Ds = np.sort(sgi, kind="mergesort")
+    _Ds = np.sort(sgi, kind="mergesort")
     Is = np.argsort(sgi, kind="mergesort")
 
     # Calculate Thorpe length scale
@@ -473,7 +474,7 @@ def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000, verbose=False):
 
         # Sort temperature and salinity based on the density sorting index
         # for calculating the buoyancy frequency
-        PTs = PT[Is]
+        _PTs = PT[Is]
         SAs = SA[Is]
         CTs = CT[Is]
 
@@ -591,8 +592,8 @@ def eps_overturn2(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
           Temperature gradient
 
     """
-    import numpy as np
     import gsw
+    import numpy as np
 
     # avoid error due to nan's in conditional statements
     np.seterr(invalid="ignore")
@@ -643,7 +644,7 @@ def eps_overturn2(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
     sgi = np.array(sgi)
 
     # Sort (important to use mergesort here)
-    Ds = np.sort(sgi, kind="mergesort")
+    _Ds = np.sort(sgi, kind="mergesort")
     Is = np.argsort(sgi, kind="mergesort")
 
     # Sort temperature profile as well for calculation of dT/dz
@@ -660,7 +661,7 @@ def eps_overturn2(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
 
         # Sort temperature and salinity based on the density sorting index
         # for calculating the buoyancy frequency
-        PTs = PT[Is]
+        _PTs = PT[Is]
         SAs = SA[Is]
         CTs = CT[Is]
 
@@ -786,7 +787,7 @@ def vmodes(z, N, clat, nmodes):
         raise (ValueError("Depths need to be all positive"))
     z_in = z.copy()
     N_in = N.copy()
-    nsqin = N_in**2
+    _nsqin = N_in**2
 
     # pick only valid data
     good = (N > 0) & np.isfinite(N)
@@ -820,16 +821,16 @@ def vmodes(z, N, clat, nmodes):
     grainv = 1.0 / grav
 
     d = np.zeros(npts)
-    l = d.copy()
+    lo = d.copy()
     u = d.copy()
     d[0] = grainv / dz[1]
     u[1] = d[0]
 
     d[1:-1] = 2 / (nsq[1:-1] * dz[1:-1] * dz[2:])
-    l[1:-1] = 2 / (nsq[1:-1] * dz[1:-1] * (dz[2:] + dz[1:-1]))
+    lo[1:-1] = 2 / (nsq[1:-1] * dz[1:-1] * (dz[2:] + dz[1:-1]))
     u[2:] = 2 / (nsq[1:-1] * dz[2:] * (dz[2:] + dz[1:-1]))
     u[-1] = 0
-    l[-1] = 0
+    lo[-1] = 0
 
     # sw_vmodes needs to do some extra indexing for offsetting vectors. Here,
     # we can pass the offsets directly to scipy's sparse.diags() function. See
@@ -838,9 +839,9 @@ def vmodes(z, N, clat, nmodes):
     # https://stackoverflow.com/questions/5842903/block-tridiagonal-matrix-python
     offset = [-1, 0, 1]
     # At some point the following worked but it does not anymore...
-    # v = np.array([-l[1:], d, -u[1:]])
+    # v = np.array([-lo[1:], d, -u[1:]])
     # Constructing a list instead of a numpy array fixes the bug.
-    v = [-l[1:], d, -u[1:]]
+    v = [-lo[1:], d, -u[1:]]
     M = scipy.sparse.diags(v, offset).toarray()
 
     w = scipy.linalg.eig(M)
@@ -865,7 +866,7 @@ def vmodes(z, N, clat, nmodes):
         dz[i] = 1
         imax = npts - 2
         for i2 in range(imax):
-            dz[i - 1] = -((ev[imode] - d[i]) * dz[i] + u[i + 1] * dz[i + 1]) / l[i]
+            dz[i - 1] = -((ev[imode] - d[i]) * dz[i] + u[i + 1] * dz[i + 1]) / lo[i]
             i = i - 1
         sum_ = nsq[0] * dz[0] * dz[0] * z_in[1]
         difz_ = z[2:npts] - z[: npts - 2]
@@ -1163,7 +1164,7 @@ def smith_sandwell(
     -----
     Download data files at https://topex.ucsd.edu/marine_topo/
     """
-    if type(lon) != type(lat):
+    if type(lon) is not type(lat):
         raise ValueError("lon and lat must be of same type")
     if type(lon) is slice:
         lon = [lon.start, lon.stop]
@@ -1693,13 +1694,13 @@ def woce_climatology(lon=None, lat=None, z=None, std=False):
     # read data, try locally first, fall back to remote
     try:
         w = xr.open_dataset(woce_local)
-    except:
+    except Exception:
         print("accessing data remotely")
         w = xr.open_dataset(woce_remote)
     if std:
         try:
             ws = xr.open_dataset(woce_std_local)
-        except:
+        except Exception:
             ws = xr.open_dataset(woce_std_remote)
     # change a few variable names for easier access
     rnm = {
@@ -1919,7 +1920,7 @@ def lonlatstr(lon, lat):
     `>>  168° 54.948' W   9° 42.912' S`
     """
     # Convert from numpy ndarray to float if necessary
-    if type(lon) == np.ndarray:
+    if type(lon) is np.ndarray:
         lon = lon.item()
         lat = lat.item()
 

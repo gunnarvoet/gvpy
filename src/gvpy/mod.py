@@ -10,9 +10,8 @@ import gsw
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy
-from scipy import fft, optimize, signal, stats
 import xarray as xr
-import pandas as pd
+from scipy import fft, optimize, signal, stats
 
 import gvpy as gv
 
@@ -495,7 +494,7 @@ def add_n2(ds, dp=10):
                 ds.n2.data[i, :] = n2i
             elif len(ds.time) == shape[1]:
                 ds.n2.data[:, i] = n2i
-        except:
+        except Exception:
             pass
     return ds
 
@@ -1070,14 +1069,14 @@ def find_lags(ds):
     c = ds.c.data
     t = ds.t.data
     dpdt = ds.dPdt.data
-    time = ds.time.data
+    _time = ds.time.data
 
     def fit_2d_poly(lags, corrs):
         # Fit the quadratic curve
         coefficients = np.polyfit(lags, corrs, 2)
 
         # Create a polynomial function
-        quadratic_function = np.poly1d(coefficients)
+        _quadratic_function = np.poly1d(coefficients)
 
         # Find the vertex of the parabola
         vertex_x = -coefficients[1] / (2 * coefficients[0])
@@ -1098,7 +1097,7 @@ def find_lags(ds):
     t_lp = gv.signal.lowpassfilter(t, lowcut=1 / 4, fs=1)
     c_lp = gv.signal.lowpassfilter(c, lowcut=1 / 4, fs=1)
     # we'll treat dpdt as vertical velocity for now
-    dpdt_lp = gv.signal.lowpassfilter(dpdt, lowcut=1 / 32, fs=1)
+    _dpdt_lp = gv.signal.lowpassfilter(dpdt, lowcut=1 / 32, fs=1)
 
     n = len(t)
     print(n, "scans")

@@ -3,14 +3,16 @@
 """Module gvpy.mp with functions for data collected with McLane Moored Profilers."""
 
 from pathlib import Path
+
 import gsw
+import mixsea as mx
 import numpy as np
+import pandas as pd
 import scipy as sp
 import xarray as xr
-import mixsea as mx
-import pandas as pd
 
 import gvpy as gv
+
 from . import io
 
 
@@ -255,11 +257,11 @@ def read_eng(file):
             if a == "":
                 a = f.readline().strip().strip("\n")
             if a.startswith("Profile"):
-                has_header = True
+                _has_header = True
                 while a.startswith("Date") is False:
                     a = f.readline().strip().strip("\n")
             else:
-                has_header = False
+                _has_header = False
             if "," in a:
                 has_comma = True
             else:
@@ -754,7 +756,7 @@ def _overturn_ufun(
             print("Skipping unstable profile.")
         else:
             raise
-    except IndexError as e:
+    except IndexError:
         if len(depth) < 10:
             print(f"Skipping profile with only {len(depth)} points.")
         else:
@@ -810,7 +812,7 @@ def add_nsquared_smoothed(mp, dp=16):
             )
             N2 = sp.interpolate.interp1d(pout, n2, bounds_error=False)(mpp.P)
             n2_all[:, i] = N2
-        except:
+        except Exception:
             pass
     mp["N2s"] = (("depth", "time"), n2_all)
     mp.N2s.attrs["long_name"] = r"N$^2$"

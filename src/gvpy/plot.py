@@ -2,26 +2,24 @@
 # -*- coding: utf-8 -*-
 """Anything plotting related (mostly matplotlib) lives here."""
 
+import string
 from pathlib import Path
 
+import cartopy.crs as ccrs
 import matplotlib as mpl
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
+from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
 from cycler import cycler
+from IPython import get_ipython
 from matplotlib.collections import LineCollection
 from matplotlib.colors import LinearSegmentedColormap
-import cartopy.crs as ccrs
-from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
-import string
 
-from IPython import get_ipython
-
-import gvpy as gv
-
-# import cm to register colormaps defined therein
-from . import cm
+# imported for its side effect: registers the colormaps defined there with
+# matplotlib as soon as gvpy is imported
+from . import cm  # noqa: F401
 
 
 def nostalgic():

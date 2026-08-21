@@ -39,6 +39,7 @@ See also [notes that come with Jody Klymak's GM Matlab toolbox](http://jklymak.g
 import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
+
 import gvpy as gv
 
 E = 6.3e-5
@@ -238,8 +239,8 @@ def plot_E_omg(N, lat):
     # sum over modes (j refers to modes)
     K_omg = np.sum(K_omg_j, axis=1)
     P_omg = np.sum(P_omg_j, axis=1)
-    K_k = np.sum(K_k_j, axis=1)
-    P_k = np.sum(P_k_j, axis=1)
+    _K_k = np.sum(K_k_j, axis=1)
+    _P_k = np.sum(P_k_j, axis=1)
 
     # plot frequency spectra
     fig, ax = plt.subplots()
@@ -286,7 +287,7 @@ def calc_E_omg(N, lat):
 
     # reshape to allow multiplication into 2D array
     Omg = np.reshape(omg, (omg.size, 1))
-    K = np.reshape(k, (k.size, 1))
+    _K = np.reshape(k, (k.size, 1))
     J = np.reshape(j, (1, j.size))
 
     # frequency spectra (KE and PE)

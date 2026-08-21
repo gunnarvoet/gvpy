@@ -1,5 +1,4 @@
 import numpy as np
-import pytest
 
 from gvpy import trilaterate
 
@@ -22,7 +21,7 @@ def test_trilateration():
     for p, d in zip(pos, ranges):
         mp1.add_ranges(distances=d, pos=p)
 
-    t = mp1.trilaterate(i=0)
+    mp1.trilaterate(i=0)
 
     tmp = mp1.to_netcdf()
     assert tmp.offset < 100

@@ -2,15 +2,16 @@
 # -*- coding: utf-8 -*-
 """Module gvpy.misc with miscellaneous functions"""
 
-import sys
-import subprocess
 import ctypes
 import inspect
+import subprocess
+import sys
 import warnings
-from loguru import logger
+
+import ipynbname
 import numpy as np
 from IPython import get_ipython
-import ipynbname
+from loguru import logger
 
 
 def hello():

@@ -12,11 +12,12 @@ Accessors are a really neat way of attaching methods to xarray objects. Read mor
 xarray](https://docs.xarray.dev/en/stable/internals/extending-xarray.html).
 """
 
+from pathlib import Path
+
+import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
-import cartopy.crs as ccrs
-from pathlib import Path
 
 import gvpy as gv
 
@@ -207,7 +208,7 @@ class GunnarsAccessor:
 
         """
         da = self._obj
-        grid = kwargs.pop("grid", True)
+        kwargs.pop("grid", True)
         add_colorbar = kwargs.pop("add_colorbar", True)
         cbar_kwargs = kwargs.pop("cbar_kwargs", dict())
         fgs = kwargs.pop("fgs", (7, 7))
@@ -277,7 +278,7 @@ class GunnarsAccessor:
             if "units" in da.attrs:
                 cbar_label = cbar_label + f" [{da.attrs['units']}]"
 
-            cb = plt.colorbar(h, cax=cax, label=f"{cbar_label}")
+            plt.colorbar(h, cax=cax, label=f"{cbar_label}")
         gv.plot.cartopy_axes(ax, maxticks=5)
 
         # No need for axis labels on a map

@@ -27,13 +27,13 @@ help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
 check: ## check style
-	uv run ruff check gvpy/
+	uv run ruff check src/gvpy/ tests/
 
 format: ## format code using ruff
-	uv run ruff format gvpy/
+	uv run ruff format src/gvpy/ tests/
 
 format-check: ## check code style using ruff format --diff
-	uv run ruff format --diff gvpy/
+	uv run ruff format --diff src/gvpy/
 	uv run ruff format --diff tests/
 
 docs: ## generate documentation using pdoc

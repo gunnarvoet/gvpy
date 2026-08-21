@@ -2,24 +2,21 @@
 # -*- coding: utf-8 -*-
 """Cartography."""
 
-from pathlib import Path
 
-import numpy as np
-import matplotlib as mpl
+import cartopy
+import cartopy.crs as ccrs
+import cartopy.geodesic as cgeo
+import gsw
 import matplotlib.pyplot as plt
+import numpy as np
 import scipy.ndimage as ndimage
+import shapely
+import xarray as xr
 from matplotlib.colors import (
     LightSource,
     LinearSegmentedColormap,
     ListedColormap,
 )
-import xarray as xr
-import cartopy
-import cartopy.crs as ccrs
-from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
-import cartopy.geodesic as cgeo
-import shapely
-import gsw
 
 
 class HillShade:
@@ -73,7 +70,7 @@ class HillShade:
         """
 
         self.topo = topo
-        if type(topo) == xr.DataArray or type(topo) == xr.Dataset:
+        if type(topo) is xr.DataArray or type(topo) is xr.Dataset:
             if "lon" in topo:
                 self.lon = topo.lon
                 self.lat = topo.lat

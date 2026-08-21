@@ -74,4 +74,4 @@ if importlib.util.find_spec("matplotlib.pyplot") is None:
 else:
     pass
 
-from . import io, mod, misc, ocean, plot, signal, maps, time, mp, trilaterate, xr, gm81
+from . import gm81, io, maps, misc, mod, mp, ocean, plot, signal, time, trilaterate, xr

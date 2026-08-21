@@ -56,6 +56,17 @@ dev = [
 [tool.uv.sources]
 mixsea = { git = "https://github.com/modscripps/mixsea", branch = "main" }
 
+[tool.ruff.lint]
+# Pinned explicitly: ruff's default rule set has widened across releases, and
+# leaving it implicit made `make check` report hundreds of findings that are
+# style preferences rather than defects. E/F/I are the ones worth enforcing
+# here; C408 in particular is excluded because dict(...) is the idiom used
+# throughout this package.
+select = ["E", "F", "I"]
+ignore = [
+    "E501",  # line length is the formatter's job, not the linter's
+]
+
 [tool.pytest.ini_options]
 # in general, do not place a `__init__.py` in your tests
 # options are explained here:

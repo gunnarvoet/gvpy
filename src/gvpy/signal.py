@@ -5,6 +5,7 @@
 from __future__ import division, print_function
 
 import numpy as np
+import scipy
 import scipy as sp
 from scipy.signal import butter, cheby1, filtfilt, sosfiltfilt
 
@@ -377,7 +378,7 @@ def gappy_rotary(Z, nfft, fs, maxgap):
     x = x[start:stop]
     xx = xx[:, start:stop]
 
-    xorig = x.copy()
+    _xorig = x.copy()
     good = np.flatnonzero(~np.isnan(x))
     t = np.arange(x.size)
     gapx = xx[:, good]
@@ -391,7 +392,7 @@ def gappy_rotary(Z, nfft, fs, maxgap):
     bad = np.append(bad, gapt.size - 1)
     goodstart = 0
 
-    fnom = np.linspace(fs / nfft, fs / 2, nfft_half)
+    _fnom = np.linspace(fs / nfft, fs / 2, nfft_half)
 
     wind = sp.signal.windows.hann(nfft)
     W1 = 2 / (wind @ wind)
@@ -579,7 +580,7 @@ def gappy_rotary_phind_translation(x, nfft, fs, maxgap):
     Qxy = np.zeros(nfft)
 
     # Window function
-    wind = scipy.signal.hanning(nfft)
+    wind = scipy.signal.windows.hann(nfft)
     W1 = 2 / np.linalg.norm(wind) ** 2
 
     # FFT and processing

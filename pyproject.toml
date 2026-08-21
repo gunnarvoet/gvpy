@@ -65,6 +65,11 @@ mixsea = { git = "https://github.com/modscripps/mixsea", branch = "main" }
 select = ["E", "F", "I"]
 ignore = [
     "E501",  # line length is the formatter's job, not the linter's
+    # dict(key=value) is the house style throughout this package, and reads
+    # better than a literal for the keyword-heavy xarray constructors it is
+    # mostly used in. Listed here as well as left out of `select` so it stays
+    # off if the rule set is ever widened.
+    "C408",  # unnecessary-collection-call
 ]
 
 [tool.pytest.ini_options]

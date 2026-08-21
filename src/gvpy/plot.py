@@ -118,7 +118,9 @@ def quickfig(fs=10, yi=True, w=6, h=4, fgs=None, r=1, c=1, grid=False, wspace=No
     fs : int, optional
         Fontsize (default 10)
     yi : bool, optional
-        Increasing yaxis (default False)
+        Increasing yaxis (default True). Set to False to invert the y-axis
+        for a depth plot; the inversion is applied to every axes when r or c
+        is greater than one.
     w : float, optional
         Figure width in inches (default 6)
     h : float, optional
@@ -177,7 +179,10 @@ def quickfig(fs=10, yi=True, w=6, h=4, fgs=None, r=1, c=1, grid=False, wspace=No
     else:
         axstyle(ax, fontsize=fs, grid=grid, ticks=ticks, ticklength=ticklength)
     if yi is False:
-        ax.invert_yaxis()
+        if isinstance(ax, np.ndarray):
+            [axi.invert_yaxis() for axi in ax.flatten()]
+        else:
+            ax.invert_yaxis()
     if r == 1 and c == 1:
         ax.autoscale()
 

@@ -4,6 +4,8 @@
 
 from __future__ import division, print_function
 
+from collections import namedtuple
+
 import numpy as np
 import scipy
 import scipy as sp
@@ -648,3 +650,120 @@ def _cheby1_lp(cutoff, fs, order=3, rp=5):
     nyq = 0.5 * fs
     low = cutoff / nyq
     return cheby1(N=order, rp=rp, Wn=low, btype="low", analog=False, output="sos")
+
+
+BandLag = namedtuple("BandLag", ["lag", "lag_err", "n_bands", "coherence"])
+
+
+def band_lag(x, y, fs, nperseg, band, coh_min=0.5, detrend="linear"):
+    """Time lag between two series from the slope of their cross-spectral phase.
+
+    A pure time shift puts the cross-spectral phase on a straight line through
+    the origin, :math:`\\phi(f) = -2\\pi f \\tau`, so :math:`\\tau` follows from a
+    weighted fit of that line over a frequency band where the two series are
+    coherent. This resolves lags far below the sampling interval, which a
+    cross-correlation peak cannot.
+
+    Parameters
+    ----------
+    x, y : array-like
+        The two time series, same length, no NaNs. Both are detrended per
+        segment by `scipy.signal.csd`.
+    fs : float
+        Sampling frequency. Sets the units of everything else: `band` is in the
+        same units, and the returned lag is in the reciprocal.
+    nperseg : int
+        Welch segment length. Longer segments buy frequency resolution and cost
+        degrees of freedom.
+    band : tuple of float
+        `(low, high)` frequency limits of the fit, in units of `fs`.
+    coh_min : float, optional
+        Frequencies below this coherence squared are dropped from the fit.
+        Default 0.5.
+    detrend : str or bool, optional
+        Passed to `scipy.signal.csd` and `scipy.signal.coherence`. Default
+        'linear'.
+
+    Returns
+    -------
+    BandLag
+        Named tuple with fields
+
+        - `lag` : lag of `y` behind `x`, in units of `1/fs`. Positive means `y`
+          happens later than `x`.
+        - `lag_err` : one-sigma error on `lag`, scaled by the reduced chi
+          squared of the phase fit, so a fit that scatters more than its
+          weights predict reports a larger error.
+        - `n_bands` : number of frequencies that entered the fit.
+        - `coherence` : median coherence squared over those frequencies.
+
+    Raises
+    ------
+    ValueError
+        If `x` and `y` differ in length, or either contains NaNs.
+
+    Notes
+    -----
+    Weights are :math:`\\gamma^2/(1-\\gamma^2)`, the inverse of the large-sample
+    phase variance at coherence squared :math:`\\gamma^2`.
+
+    Two things to check before trusting a result.
+
+    **The answer must not depend on the band.** A shift puts the same slope on
+    every band, so if narrowing or widening `band` moves the answer, the phase
+    has structure that is not a time shift, and the lag being fitted is not the
+    quantity wanted. A response with its own frequency dependence does this.
+
+    **Phase must not wrap.** The fit assumes :math:`|\\phi| < \\pi`, i.e.
+    :math:`|\\tau| < 1/(2 f_{max})`. Well satisfied for a small lag over a low
+    band, and silently wrong outside it.
+
+    Under a lag that drifts linearly through the record, Welch's average over
+    segments returns the record mean of the drift, which for a ramp from zero is
+    half its end value. That is useful, but it means a single call cannot tell a
+    constant offset from a drift.
+
+    Examples
+    --------
+    Recover a quarter-sample shift.
+
+    >>> import numpy as np
+    >>> import gvpy as gv
+    >>> rng = np.random.default_rng(0)
+    >>> n, fs = 4096, 1.0
+    >>> t = np.arange(n)
+    >>> x = np.cumsum(rng.standard_normal(n))
+    >>> f = np.fft.rfftfreq(n, d=1 / fs)
+    >>> y = np.fft.irfft(np.fft.rfft(x) * np.exp(-2j * np.pi * f * 0.25), n=n)
+    >>> res = gv.signal.band_lag(x, y, fs=fs, nperseg=512, band=(0.01, 0.1))
+    >>> float(np.round(res.lag, 3))
+    0.25
+    """
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+    if x.shape != y.shape:
+        raise ValueError(f"x and y must have the same shape, got {x.shape} and {y.shape}")
+    if np.isnan(x).any() or np.isnan(y).any():
+        raise ValueError("band_lag does not accept NaNs; fill or subset the gaps first")
+
+    f, pxy = scipy.signal.csd(x, y, fs=fs, nperseg=nperseg, detrend=detrend)
+    _, coh = scipy.signal.coherence(x, y, fs=fs, nperseg=nperseg, detrend=detrend)
+
+    keep = (f >= band[0]) & (f <= band[1]) & (coh >= coh_min)
+    if keep.sum() < 3:
+        return BandLag(np.nan, np.nan, int(keep.sum()), np.nan)
+
+    ff = f[keep]
+    phase = np.angle(pxy[keep])
+    g2 = np.clip(coh[keep], 0.0, 1.0 - 1e-9)
+    w = g2 / (1.0 - g2)
+
+    denom = np.sum(w * ff**2)
+    slope = np.sum(w * ff * phase) / denom
+    chi2 = np.sum(w * (phase - slope * ff) ** 2) / (keep.sum() - 1)
+    return BandLag(
+        lag=-slope / (2 * np.pi),
+        lag_err=np.sqrt(chi2 / denom) / (2 * np.pi),
+        n_bands=int(keep.sum()),
+        coherence=float(np.median(g2)),
+    )

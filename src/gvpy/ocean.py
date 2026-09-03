@@ -162,11 +162,11 @@ def nsqfcn(s, t, p, p0, dp, lon, lat, verbose=False, sort=False):
         pout = np.arange(p0 + dp / 2, np.max(pwin), dp)
 
         # Compute potential density of upper window pts at output pressures
-        sa_u = gsw.SA_from_SP(s_ep[0:-1], t_ep[0:-1], lon, lat)
+        sa_u = gsw.SA_from_SP(s_ep[0:-1], pwin[0:-1], lon, lat)
         pd_u = gsw.pot_rho_t_exact(sa_u, t_ep[0:-1], pwin[0:-1], pout)
 
         # Compute potential density of lower window pts at output pressures
-        sa_l = gsw.SA_from_SP(s_ep[1:], t_ep[1:], lon, lat)
+        sa_l = gsw.SA_from_SP(s_ep[1:], pwin[1:], lon, lat)
         pd_l = gsw.pot_rho_t_exact(sa_l, t_ep[1:], pwin[1:], pout)
 
         # Compute buoyancy frequency squared
@@ -416,7 +416,7 @@ def eps_overturn(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000, verbose=False):
     s = S[x].copy()
     # cn2   = ctdn['n2'][x].copy()
 
-    SA = gsw.SA_from_SP(s, t, lon, lat)
+    SA = gsw.SA_from_SP(s, p, lon, lat)
     CT = gsw.CT_from_t(SA, t, p)
     PT = gsw.pt0_from_t(SA, t, p)
 
@@ -623,7 +623,7 @@ def eps_overturn2(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
     s = S[x].copy()
     # cn2   = ctdn['n2'][x].copy()
 
-    SA = gsw.SA_from_SP(s, t, lon, lat)
+    SA = gsw.SA_from_SP(s, p, lon, lat)
     CT = gsw.CT_from_t(SA, t, p)
     PT = gsw.pt0_from_t(SA, t, p)
 

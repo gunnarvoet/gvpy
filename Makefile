@@ -41,9 +41,9 @@ docs: ## generate documentation using pdoc
 	uv run pdoc -d numpy -o docs -t .pdoc-theme-gv --math src/gvpy/
 	$(BROWSER) docs/index.html
 
-ghdocs: ## generate documentation using pdoc
+ghdocs: ## generate documentation using pdoc, without opening a browser (used by CI)
 	rm -rf docs
-	PDOC_ALLOW_EXEC=1 pdoc -d numpy -o docs -t .pdoc-theme-gv --math src/gvpy/
+	PDOC_ALLOW_EXEC=1 uv run pdoc -d numpy -o docs -t .pdoc-theme-gv --math src/gvpy/
 
 # if there are any issues with importing certain modules, set environment
 # variable PDOC_ALLOW_EXEC

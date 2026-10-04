@@ -10,11 +10,11 @@ authors = [
     ]
 description = "Library of python modules for data analysis and visualization"
 readme = "README.md"
-license = {file = "LICENSE"}
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
 keywords = ["physical oceanography"]
 classifiers = [
     "Development Status :: 3 - Alpha",
-    "License :: OSI Approved :: MIT License",
     "Natural Language :: English",
     "Programming Language :: Python :: 3",
     "Intended Audience :: Science/Research",

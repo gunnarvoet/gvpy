@@ -150,7 +150,7 @@ class GunnarsAccessor:
 
         # if custom font size, apply it to colorbar
         if fs is not None:
-             gv.plot.set_colorbar_fontsize(fs)
+            gv.plot.set_colorbar_fontsize(fs)
 
         # determine whether the y-axis should be increasing
         invert_yaxis = False
@@ -223,7 +223,7 @@ class GunnarsAccessor:
         else:
             ax = kwargs["ax"]
 
-        if da.dtype=="bool":
+        if da.dtype == "bool":
             vmin, vmax = 0, 1
         else:
             vmin = da.min().data
@@ -270,7 +270,7 @@ class GunnarsAccessor:
             # cax.set_position([pos.x0, cbar_y0, cbar_width, cbar_height])
 
             if "label" in cbar_kwargs:
-                cbar_label = cbar_kwargs.pop("label",  "")
+                cbar_label = cbar_kwargs.pop("label", "")
             elif "long_name" in da.attrs:
                 cbar_label = da.attrs["long_name"]
             else:
@@ -305,7 +305,9 @@ class GunnarsAccessor:
         """
         return self._obj.coarsen(time=n, boundary="trim").mean()
 
-    def plot_spectrum(self, ax=None, N=None, nwind=2, lat=None, color="0.2", show_gm=True, **kwargs):
+    def plot_spectrum(
+        self, ax=None, N=None, nwind=2, lat=None, color="0.2", show_gm=True, **kwargs
+    ):
         """Plot power spectral density with respect to cpd.
 
         Parameters
@@ -371,11 +373,19 @@ class GunnarsAccessor:
         if newax:
             for freq in freqs:
                 ax.vlines(
-                    freq, 1e-6, 1e4, color="k", alpha=0.7, linestyle="--", linewidth=0.5,
+                    freq,
+                    1e-6,
+                    1e4,
+                    color="k",
+                    alpha=0.7,
+                    linestyle="--",
+                    linewidth=0.5,
                 )
 
         # Spectrum
-        ax.plot(omega * (3600 * 24) / (2 * np.pi), Ptot, linewidth=1, color=color, **kwargs)
+        ax.plot(
+            omega * (3600 * 24) / (2 * np.pi), Ptot, linewidth=1, color=color, **kwargs
+        )
 
         # GM
         if show_gm and N is None:
@@ -573,7 +583,7 @@ def _to_netcdf(ds, path, overwrite=True, confirm_overwrite=True):
 def _cdist(ds, verbose=True):
     cdist = gv.ocean.cdist(ds.lon, ds.lat)
     ds.coords["dist"] = (("time"), cdist)
-    ds.dist.attrs = dict(long_name='distance', units='km')
+    ds.dist.attrs = dict(long_name="distance", units="km")
     if verbose:
         print("adding coordinate `dist`")
 

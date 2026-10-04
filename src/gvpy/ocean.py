@@ -1181,9 +1181,9 @@ def smith_sandwell(
         nc_file = Path.home().joinpath("Data/bathymetry/smith_sandwell/SRTM15_V2.6.nc")
     else:
         resolution = 30
-        nc_file = Path.home().joinpath("Data/bathymetry/smith_sandwell/topo{}.grd".format(
-            resolution
-        ))
+        nc_file = Path.home().joinpath(
+            "Data/bathymetry/smith_sandwell/topo{}.grd".format(resolution)
+        )
     try:
         # by providing a chunk size, the array is loaded lazily via dask
         # b = xr.open_dataarray(nc_file, chunks=1000, engine="netcdf4")
@@ -1343,7 +1343,7 @@ def bathy_section(bathy, lon, lat, res=1, ext=0):
     # 2D interpolation function used below. RectBivariateSpline can't deal with
     # NaN's - we'll use NearestNDInterpolator in this case.
     if np.any(np.isnan(ptopo)):
-        print("NaN" "s present - using NearestNDInterpolator")
+        print("NaNs present - using NearestNDInterpolator")
         mplon, mplat = np.meshgrid(plon, plat)
         mask = np.isfinite(ptopo)
         intopo = ptopo[mask]

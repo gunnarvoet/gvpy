@@ -79,7 +79,9 @@ def test_band_lag_error_grows_when_the_pair_is_noisy():
     clean = _shift(x, 0.5)
     noisy = clean + 3 * rng.standard_normal(x.size) * np.std(clean)
     a = gv.signal.band_lag(x, clean, fs=FS, nperseg=1024, band=(0.005, 0.05))
-    b = gv.signal.band_lag(x, noisy, fs=FS, nperseg=1024, band=(0.005, 0.05), coh_min=0.0)
+    b = gv.signal.band_lag(
+        x, noisy, fs=FS, nperseg=1024, band=(0.005, 0.05), coh_min=0.0
+    )
     assert b.lag_err > a.lag_err
     assert b.coherence < a.coherence
 
@@ -88,7 +90,9 @@ def test_band_lag_returns_nan_when_too_few_bands_qualify():
     x = _series()
     rng = np.random.default_rng(2)
     y = rng.standard_normal(x.size)
-    res = gv.signal.band_lag(x, y, fs=FS, nperseg=1024, band=(0.005, 0.05), coh_min=0.99)
+    res = gv.signal.band_lag(
+        x, y, fs=FS, nperseg=1024, band=(0.005, 0.05), coh_min=0.99
+    )
     assert np.isnan(res.lag)
     assert np.isnan(res.lag_err)
     assert res.n_bands < 3

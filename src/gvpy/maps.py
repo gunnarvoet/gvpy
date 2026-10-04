@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """Cartography."""
 
-
 import cartopy
 import cartopy.crs as ccrs
 import cartopy.geodesic as cgeo
@@ -512,9 +511,9 @@ def add_dist_coords(ds, units="m"):
     """
     assert units in ["m", "km"], "units must be m or km"
     # this will cause trouble if having coords like "longitude" but oh well
-    assert (
-        "lon" in ds.coords and "lat" in ds.coords
-    ), "input must have coordinates lon & lat"
+    assert "lon" in ds.coords and "lat" in ds.coords, (
+        "input must have coordinates lon & lat"
+    )
 
     lon = ds.lon.data
     lat = ds.lat.data

@@ -106,7 +106,19 @@ def switch_backend():
         print("switched to inline plots")
 
 
-def quickfig(fs=10, yi=True, w=6, h=4, fgs=None, r=1, c=1, grid=False, wspace=None, hspace=None, **kwargs):
+def quickfig(
+    fs=10,
+    yi=True,
+    w=6,
+    h=4,
+    fgs=None,
+    r=1,
+    c=1,
+    grid=False,
+    wspace=None,
+    hspace=None,
+    **kwargs,
+):
     """
     Quick single pane figure.
 
@@ -175,7 +187,10 @@ def quickfig(fs=10, yi=True, w=6, h=4, fgs=None, r=1, c=1, grid=False, wspace=No
             engine_kw["hspace"] = hspace
         fig.get_layout_engine().set(**engine_kw)
     if isinstance(ax, np.ndarray):
-        [axstyle(axi, fontsize=fs, grid=grid, ticks=ticks, ticklength=ticklength) for axi in ax.flatten()]
+        [
+            axstyle(axi, fontsize=fs, grid=grid, ticks=ticks, ticklength=ticklength)
+            for axi in ax.flatten()
+        ]
     else:
         axstyle(ax, fontsize=fs, grid=grid, ticks=ticks, ticklength=ticklength)
     if yi is False:
@@ -497,7 +512,9 @@ def vstep(x, y, ax=None, *args, **kwargs):
     return lines
 
 
-def stickplot(ax, times, data, uv=True, units="", scale=0.1, label_scale=0.1, color="k"):
+def stickplot(
+    ax, times, data, uv=True, units="", scale=0.1, label_scale=0.1, color="k"
+):
     """
     Create a stick plot of the given data on the given axes.
 
@@ -636,8 +653,9 @@ def pcm(*args, **kwargs):
     return h
 
 
-def png(fname, figdir="fig", dpi=300, verbose=True, transparent=False,
-        bbox_inches="tight"):
+def png(
+    fname, figdir="fig", dpi=300, verbose=True, transparent=False, bbox_inches="tight"
+):
     """
     Save figure to png file.
 
@@ -664,7 +682,7 @@ def png(fname, figdir="fig", dpi=300, verbose=True, transparent=False,
     savedir, name = _figure_name(fname, figdir, extension="png", verbose=verbose)
     metadata = dict(Author="Gunnar Voet, https://gunnarvoet.net")
     # if gv.misc.is_notebook():
-        # metadata["Producer"] = gv.misc.nb_path().as_posix()
+    # metadata["Producer"] = gv.misc.nb_path().as_posix()
     if transparent:
         plt.savefig(
             savedir.joinpath(fname),
@@ -707,7 +725,7 @@ def pdf(fname, figdir="fig", dpi=300, verbose=True, transparent=False):
     savedir, name = _figure_name(fname, figdir, extension="pdf", verbose=verbose)
     metadata = dict(Author="Gunnar Voet, https://gunnarvoet.net")
     # if gv.misc.is_notebook():
-        # metadata["Producer"] = gv.misc.nb_path().as_posix()
+    # metadata["Producer"] = gv.misc.nb_path().as_posix()
     if transparent:
         plt.savefig(
             savedir.joinpath(name),
@@ -873,7 +891,7 @@ def ysym(ax=None, lim=None):
         ylims = ax.get_ylim()
         absmax = np.max(np.abs(ylims))
     else:
-        absmax=np.abs(lim)
+        absmax = np.abs(lim)
     ax.set_ylim([-absmax, absmax])
 
 
@@ -1184,7 +1202,9 @@ def annotate_corner(
     return h
 
 
-def subplotlabel(ax, color="k", fs=10, fw="bold", bg="w", bga=1, x=0, y=0.96, by_row=True):
+def subplotlabel(
+    ax, color="k", fs=10, fw="bold", bg="w", bga=1, x=0, y=0.96, by_row=True
+):
     """Add alphabetic subplot labels to an array of axes.
 
     Parameters

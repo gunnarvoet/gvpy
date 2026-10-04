@@ -742,7 +742,9 @@ def band_lag(x, y, fs, nperseg, band, coh_min=0.5, detrend="linear"):
     x = np.asarray(x, dtype=float)
     y = np.asarray(y, dtype=float)
     if x.shape != y.shape:
-        raise ValueError(f"x and y must have the same shape, got {x.shape} and {y.shape}")
+        raise ValueError(
+            f"x and y must have the same shape, got {x.shape} and {y.shape}"
+        )
     if np.isnan(x).any() or np.isnan(y).any():
         raise ValueError("band_lag does not accept NaNs; fill or subset the gaps first")
 

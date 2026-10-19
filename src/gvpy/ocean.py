@@ -119,11 +119,15 @@ def nsqfcn(s, t, p, p0, dp, lon, lat, verbose=False, sort=False):
         b = np.hanning(2 * np.floor(dp_med / dp))
     else:
         b = np.hanning(2 * np.floor(dp / dp_med))
-    b = b / np.sum(b)
-
-    tlp = filtfilt(b, a, t)
-    slp = filtfilt(b, a, s)
-    plp = filtfilt(b, a, p)
+    # A window shorter than 4 points is all zeros (np.hanning(2)) or empty.
+    # The data spacing is then already above dp/2, so skip the smoothing.
+    if b.size < 4:
+        tlp, slp, plp = t, s, p
+    else:
+        b = b / np.sum(b)
+        tlp = filtfilt(b, a, t)
+        slp = filtfilt(b, a, s)
+        plp = filtfilt(b, a, p)
 
     # Check that p is monotonic
     if np.all(np.diff(plp) >= 0):

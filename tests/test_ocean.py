@@ -17,3 +17,12 @@ def test_nsqfcn_matches_gsw_nsquared_on_smooth_profile():
     assert (n2 > 0).all()
     # dp is in dbar where gsw differences in Pa, about 1 % apart at depth.
     np.testing.assert_allclose(n2, ref, rtol=0.03)
+
+
+def test_nsqfcn_coarse_profile_returns_finite_n2():
+    # 6 dbar spacing with dp=10 used to build np.hanning(2), all zeros
+    p = np.arange(0, 1000.5, 6.0)
+    t = 20 - 16 * p / 1000
+    s = 34 + p / 1000
+    n2, pout = gvpy.ocean.nsqfcn(s, t, p, p0=0, dp=10, lon=-125.0, lat=45.0)
+    assert np.isfinite(n2).all()

@@ -411,7 +411,7 @@ wheels = [
 
 [[package]]
 name = "gvpy"
-version = "2026.9"
+version = "2026.10"
 source = { editable = "." }
 dependencies = [
     { name = "cartopy" },

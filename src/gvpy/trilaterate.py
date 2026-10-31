@@ -39,7 +39,8 @@ class TrilaterationResult:
         self.offset = offset
 
     def __repr__(self):
-        return f"TrilaterationResult(lon={self.lon:7.3f}, lat={self.lat:7.3f}, error={self.error:7.3f}, offset={self.offset:4.1f})"
+        offset = "None" if self.offset is None else f"{self.offset:4.1f}"
+        return f"TrilaterationResult(lon={self.lon:7.3f}, lat={self.lat:7.3f}, error={self.error:7.3f}, offset={offset})"
 
     def calculate_offset(self, reflon, reflat):
         """Calculate distance to reference location.
@@ -205,7 +206,8 @@ class Trilateration:
             self.add_smith_sandwell()
         else:
             self.topo = topo
-        self.add_bathy(pmlat=0.05)
+        if self.topo is not None:
+            self.add_bathy(pmlat=0.05)
         self.nav = nav
         self.drop_time = drop_time
 
@@ -288,6 +290,9 @@ class Trilateration:
             self.result = result
 
     def add_actual_depth(self):
+        if self.topo is None:
+            self.result.depth = np.nan
+            return
         depth = self.topo.interp(lon=self.result.lon, lat=self.result.lat).data
         self.result.depth = np.int32(np.round(depth))
 

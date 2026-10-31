@@ -39,3 +39,38 @@ def test_quickfig_default_leaves_y_increasing(r, c):
     """The default yi=True leaves the y-axis alone."""
     _fig, ax = gv.plot.quickfig(r=r, c=c)
     assert not any(axi.yaxis_inverted() for axi in axes_list(ax))
+
+
+@pytest.mark.parametrize("fname", ["fig.v2", "abc2"])
+def test_png_forces_png_extension(tmp_path, fname):
+    """Regression test: png() saved to the raw fname, so the extension was not forced."""
+    fig, ax = gv.plot.quickfig()
+    gv.plot.png(fname, figdir=tmp_path, verbose=False)
+    files = list(tmp_path.iterdir())
+    assert len(files) == 1
+    assert files[0].suffix == ".png"
+
+
+def test_subplotlabel_returns_annotations():
+    fig, ax = gv.plot.quickfig(r=2, c=2)
+    out = gv.plot.subplotlabel(ax)
+    assert [a.get_text() for a in out] == ["a", "b", "c", "d"]
+
+
+def test_remove_axis_labels_2d_axes():
+    """Regression test: a 2-D axes array raised AttributeError."""
+    fig, ax = gv.plot.quickfig(r=2, c=2)
+    for axi in ax.flatten():
+        axi.set(xlabel="x", ylabel="y")
+    gv.plot.remove_axis_labels(ax)
+    assert all(axi.get_xlabel() == "" for axi in ax.flatten())
+
+
+def test_pcm_wrong_number_of_args():
+    with pytest.raises(TypeError):
+        gv.plot.pcm(np.arange(3), np.ones((3, 3)))
+
+
+def test_cmap_partial_no_deprecation_warning():
+    """Regression test: plt.cm.get_cmap is deprecated (warnings fail tests)."""
+    gv.plot.cmap_partial("viridis", 0.2, 0.8)

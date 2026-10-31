@@ -70,17 +70,18 @@ class HillShade:
 
         self.topo = topo
         if type(topo) is xr.DataArray or type(topo) is xr.Dataset:
-            if "lon" in topo:
+            if "lon" in topo.coords:
                 self.lon = topo.lon
                 self.lat = topo.lat
         if lon is not None and lat is not None:
             self.lon = lon
             self.lat = lat
+        if hasattr(self, "lon"):
             self.topo_extent = (
-                self.lon.min().data,
-                self.lon.max().data,
-                self.lat.max().data,
-                self.lat.min().data,
+                float(np.min(self.lon)),
+                float(np.max(self.lon)),
+                float(np.max(self.lat)),
+                float(np.min(self.lat)),
             )
         self.kmap = self._make_colormap([(0, 0, 0)])
         self.kmap4 = self._add_alpha(self.kmap)
@@ -531,6 +532,7 @@ def add_dist_coords(ds, units="m"):
         x_dist = x_dist / 1e3
         y_dist = y_dist / 1e3
 
+    ds = ds.copy(deep=False)
     ds.coords["xdist"] = ds.lon.copy(data=x_dist)
     ds.xdist.attrs = dict(units=units, long_name="distance")
     ds.coords["ydist"] = ds.lat.copy(data=y_dist)

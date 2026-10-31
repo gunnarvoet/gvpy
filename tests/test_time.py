@@ -26,3 +26,11 @@ def test_datetime64_to_unix_time():
     unix_time = gv.time.datetime64_to_unix_time(dt64_now)
 
     assert unix_time == command_line_unix_time()
+
+
+def test_convert_units_second_resolution_array():
+    """Regression test: datetime64 arrays not in ns or ms raised UnboundLocalError."""
+    t = np.array(["2025-01-01T00:00:00", "2025-01-01T00:00:01"], dtype="M8[s]")
+    out = gv.time.convert_units(t, unit="ms")
+    assert out.dtype == np.dtype("M8[ms]")
+    np.testing.assert_array_equal(out, t)

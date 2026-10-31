@@ -103,6 +103,7 @@ def nsqfcn(s, t, p, p0, dp, lon, lat, verbose=False, sort=False):
     if ~p.any():
         n2 = np.nan
         pout = np.nan
+        return n2, pout
 
     # Reverse order of upward profiles
     if p[-1] < p[0]:
@@ -239,8 +240,7 @@ def tzfcn(CT, z, z0, dz):
 
     # Put out all nan if no good data left
     if ~z.any():
-        tz = np.nan
-        zout = np.nan
+        return np.full(np.shape(zin), np.nan)
 
     # Low pass filter temp to match specified dz
     dz_data = np.diff(z)
@@ -285,8 +285,7 @@ def tzfcn(CT, z, z0, dz):
 
     else:
         print("  filtered depth not monotonic")
-        tz = np.nan
-        zout = np.nan
+        tzout = np.full(np.shape(zin), np.nan)
 
     return tzout
 
@@ -335,7 +334,7 @@ def hydrostatic_depth_base(s, t, p, lon, lat):
     rho = rho[mask]
     p = p[mask]
     # calculate depth from hydrostatic equation
-    int_depth = np.trapz((1 / (rho[mask])), p * 1e4) / 9.81
+    int_depth = np.trapezoid((1 / (rho[mask])), p * 1e4) / 9.81
     return int_depth
 
 
@@ -640,7 +639,7 @@ def eps_overturn2(P, Z, T, S, lon, lat, dnoise=0.001, pdref=4000):
     n = sgt / dnoise
     n = np.fix(n)
     sgi = [D0 + n * dnoise]  # first element
-    for i in np.arange(1, np.alen(sg), 1):
+    for i in np.arange(1, len(sg), 1):
         sgt = sg[i] - sgi[i - 1]
         n = sgt / dnoise
         n = np.fix(n)
@@ -960,13 +959,15 @@ def wind_stress(u10, v10):
     """
     rho = 1.2  # kg/m^3, air density
     U = np.sqrt(u10**2 + v10**2)  # wind speed
-    Cd = np.full_like(U, np.nan)
-    Cd[np.where(U <= 1)] = 0.00218
-    Cd[np.where((U > 1) & (U <= 3))] = (
-        0.62 + 1.56 / U[np.where((U > 1) & (U <= 3))]
-    ) * 0.001
-    Cd[np.where((U > 3) & (U < 10))] = 0.00114
-    Cd[np.where(U >= 10)] = (0.49 + 0.065 * U[np.where(U >= 10)]) * 0.001
+    # boolean masks on a plain array also work for scalar input
+    Ua = np.asarray(U, dtype=float)
+    Cd = np.full_like(Ua, np.nan)
+    Cd[Ua <= 1] = 0.00218
+    mask = (Ua > 1) & (Ua <= 3)
+    Cd[mask] = (0.62 + 1.56 / Ua[mask]) * 0.001
+    Cd[(Ua > 3) & (Ua < 10)] = 0.00114
+    mask = Ua >= 10
+    Cd[mask] = (0.49 + 0.065 * Ua[mask]) * 0.001
     Tx = Cd * rho * U * u10  # N/m^2
     Ty = Cd * rho * U * v10
     return Tx, Ty
@@ -1174,9 +1175,10 @@ def smith_sandwell(
         lon = [lon.start, lon.stop]
     if type(lat) is slice:
         lat = [lat.start, lat.stop]
-    if not isinstance(lon, (list, np.ndarray)):
+    if not isinstance(lon, (list, np.ndarray, str)):
         lon = [lon]
         lat = [lat]
+    only_one = False
     if r15:
         resolution = 15
         # nc_file = "/Users/gunnar/Data/bathymetry/smith_sandwell/SRTM15_V2.5.5.nc"
@@ -1245,7 +1247,7 @@ def smith_sandwell(
 
     # Change SID to boolean array
     if sid_as_bool and sid is not None:
-        sid = sid.copy(data=np.bool(sid))
+        sid = sid.astype(bool)
 
     # Transforming lon from 0:360 to -180:180 means we also have to sort the
     # dataset along the new coordinate.
@@ -1485,7 +1487,7 @@ def bathy_section(bathy, lon, lat, res=1, ext=0):
                 deltalon = dlon / n
                 lons = np.arange(lon[i], lon[i + 1], deltalon)
             else:
-                lons = np.tile(lon[i], np.int(np.ceil(n)))
+                lons = np.tile(lon[i], int(np.ceil(n)))
             ilon = np.hstack([ilon, lons])
 
             dlat = lat[i + 1] - lat[i]
@@ -1493,7 +1495,7 @@ def bathy_section(bathy, lon, lat, res=1, ext=0):
                 deltalat = dlat / n
                 lats = np.arange(lat[i], lat[i + 1], deltalat)
             else:
-                lats = np.tile(lat[i], np.int(np.ceil(n)))
+                lats = np.tile(lat[i], int(np.ceil(n)))
             ilat = np.hstack([ilat, lats])
 
             if i == len(lon) - 1:

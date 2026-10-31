@@ -8,7 +8,6 @@ import subprocess
 import sys
 import warnings
 
-import ipynbname
 import numpy as np
 from IPython import get_ipython
 from loguru import logger
@@ -28,7 +27,7 @@ def near(A, target):
     left = A[idx - 1]
     right = A[idx]
     idx -= target - left < right - target
-    assert len(idx) == 1, "returning two values"
+    assert np.size(idx) == 1, "returning two values"
     return idx
 
 
@@ -252,7 +251,6 @@ def pretty_print(d, indent=0, indentstr="   ", print_values=True):
     print_values : bool, optional
         Show dictionary values. Defaults to True.
     """
-    indentstr = "   "
     for key, value in d.items():
         print(indentstr * indent + str(key))
         if isinstance(value, dict):
@@ -284,10 +282,14 @@ def is_ipython():
 
 
 def nb_name():
+    import ipynbname
+
     return ipynbname.name()
 
 
 def nb_path():
+    import ipynbname
+
     return ipynbname.path()
 
 

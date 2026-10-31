@@ -99,10 +99,10 @@ def switch_backend():
     ]
     current_backend = mpl.get_backend()
     if current_backend == backend_list[0]:
-        ipython.magic("matplotlib widget")
+        ipython.run_line_magic("matplotlib", "widget")
         print("switched to ipympl plots")
     else:
-        ipython.magic("matplotlib inline")
+        ipython.run_line_magic("matplotlib", "inline")
         print("switched to inline plots")
 
 
@@ -605,6 +605,8 @@ def pcm(*args, **kwargs):
         z = args[0]
     elif len(args) == 3:
         x, y, z = args
+    else:
+        raise TypeError(f"pcm takes 1 (z) or 3 (x, y, z) arguments, got {len(args)}")
 
     # set vmin, vmax based on percentiles and determine whether this is a
     # diverging ataset or not
@@ -647,8 +649,6 @@ def pcm(*args, **kwargs):
             h = plt.pcolormesh(
                 x, y, np.ma.masked_invalid(z), vmin=vmin, vmax=vmax, **kwargs
             )
-    else:
-        print("You need to pass either 1 (z) or 3 (x,y,z) arguments.")
 
     return h
 
@@ -685,7 +685,7 @@ def png(
     # metadata["Producer"] = gv.misc.nb_path().as_posix()
     if transparent:
         plt.savefig(
-            savedir.joinpath(fname),
+            savedir.joinpath(name),
             dpi=dpi,
             bbox_inches=bbox_inches,
             facecolor="none",
@@ -694,7 +694,7 @@ def png(
         )
     else:
         plt.savefig(
-            savedir.joinpath(fname),
+            savedir.joinpath(name),
             dpi=dpi,
             bbox_inches=bbox_inches,
             facecolor="w",
@@ -1246,6 +1246,7 @@ def subplotlabel(
     )
     for axi, letter in zip(ax.flatten(order=order), atoz[:n]):
         out.append(axi.annotate(letter, (x, y), **sublabelspecs))
+    return out
 
 
 def cmap_partial(cmap_name, min, max):
@@ -1267,7 +1268,7 @@ def cmap_partial(cmap_name, min, max):
         Colormap
     """
     interval = np.linspace(min, max)
-    tmp = plt.cm.get_cmap(cmap_name)
+    tmp = mpl.colormaps[cmap_name]
     colors = tmp(interval)
     cmap = LinearSegmentedColormap.from_list("name", colors)
     return cmap
@@ -1291,7 +1292,7 @@ def get_max_zorder(ax):
 
 def remove_axis_labels(ax):
     if isinstance(ax, np.ndarray):
-        [axi.set(xlabel="", ylabel="", title="") for axi in ax]
+        [axi.set(xlabel="", ylabel="", title="") for axi in ax.flatten()]
     else:
         ax.set(xlabel="", ylabel="")
     return

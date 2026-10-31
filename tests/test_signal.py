@@ -120,3 +120,49 @@ def test_band_lag_returns_record_mean_under_a_linear_drift():
     y = np.interp(i - end * (i / (i.size - 1)), i, x)
     res = gv.signal.band_lag(x, y, fs=FS, nperseg=1024, band=(0.005, 0.05))
     assert res.lag == pytest.approx(end / 2, rel=0.15)
+
+
+def test_psd_axis0_matches_transposed_input():
+    """Regression test: `axis == 0 & len(M0) > 1` was always False.
+
+    The transpose never happened, so axis=0 returned spectra of the rows. Detrending
+    also has to happen along the transformed axis.
+    """
+    g = np.random.default_rng(0).normal(size=(64, 3)) + np.arange(64)[:, None]
+    _, _, P0, om0 = gv.signal.psd(g, 1.0, axis=0)
+    _, _, P1, om1 = gv.signal.psd(g.T, 1.0, axis=1)
+    assert P0.shape == (33, 3)
+    np.testing.assert_allclose(P0, P1.T)
+    np.testing.assert_allclose(om0, om1)
+
+
+@pytest.mark.parametrize("n", [4, 15, 16, 17, 64])
+def test_psd_parseval(n):
+    """Integrated spectrum equals the variance for even and odd lengths.
+
+    Regression test: for even lengths the Nyquist term was taken from the wrong
+    bins (and raised IndexError for n=4).
+    """
+    x = np.random.default_rng(1).normal(size=n)
+    _, _, P, omega = gv.signal.psd(x, 1.0, detrend=False)
+    assert np.isrealobj(P)
+    np.testing.assert_allclose(P.sum() * (omega[1] - omega[0]), np.mean(x**2))
+
+
+def test_psd_nyquist_cosine_keeps_power():
+    n = 16
+    x = np.cos(np.pi * np.arange(n))
+    _, _, P, omega = gv.signal.psd(x, 1.0, detrend=False)
+    np.testing.assert_allclose(P[:-1], 0, atol=1e-12)
+    np.testing.assert_allclose(P[-1] * (omega[1] - omega[0]), 1.0)
+
+
+@pytest.mark.parametrize("nperseg", [64, 63])
+def test_psd_welch_no_nan(nperseg):
+    """Regression test: a window shorter than the series left the lowest cw bins NaN."""
+    x = np.random.default_rng(2).normal(size=1024)
+    Pcw, Pccw, P, omega = gv.signal.psd(x, 1.0, ffttype="t", tser_window=nperseg)
+    assert not np.isnan(Pcw).any()
+    assert not np.isnan(P).any()
+    # white noise, so the integrated spectrum is close to the variance
+    np.testing.assert_allclose(P.sum() * (omega[1] - omega[0]), np.var(x), rtol=0.1)

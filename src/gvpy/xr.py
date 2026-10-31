@@ -372,7 +372,7 @@ class GunnarsAccessor:
         freq_labels = ["fortnightly", "M2", "2M2", "4M2"]
         # the inertial frequency can only be marked if we know where we are
         if lat is not None:
-            f_cpd = gv.ocean.inertial_frequency(lat) / (2 * np.pi) * 3600 * 24
+            f_cpd = np.abs(gv.ocean.inertial_frequency(lat)) / (2 * np.pi) * 3600 * 24
             freqs += [f_cpd, 2 * f_cpd]
             freq_labels += [" \nf", " \n2f"]
         freqs += [1]

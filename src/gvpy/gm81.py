@@ -206,7 +206,8 @@ def plot_E_omg(N, lat):
     -------
     ax
     """
-    f = gv.ocean.inertial_frequency(lat)
+    # GM81 is symmetric in f, use |f| so southern latitudes work
+    f = np.abs(gv.ocean.inertial_frequency(lat))
 
     # surface-extrapolated buoyancy frequency
     N0 = 5.2e-3
@@ -268,7 +269,8 @@ def calc_E_omg(N, lat):
     E : xr.Dataset
         Dataset with KE and PE in frequency space.
     """
-    f = gv.ocean.inertial_frequency(lat)
+    # GM81 is symmetric in f, use |f| so southern latitudes work
+    f = np.abs(gv.ocean.inertial_frequency(lat))
 
     # surface-extrapolated buoyancy frequency
     N0 = 5.2e-3

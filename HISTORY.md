@@ -3,7 +3,7 @@
 Entries from 2023.12 onward are summarized from commit messages, grouped by
 release tag, and list notable changes only.
 
-## Unreleased
+## 2026.10.1 (2026-10-31)
 
 Changes that alter existing results or figures:
 

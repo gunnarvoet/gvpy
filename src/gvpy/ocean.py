@@ -144,8 +144,7 @@ def nsqfcn(s, t, p, p0, dp, lon, lat, verbose=False, sort=False):
         #   end
         # Sort density if opted for
         if sort:
-            SA = gsw.SA_from_SP(slp, tlp, lon, lat)
-            rho = gsw.pot_rho_t_exact(SA, tlp, plp, np.mean(plp))
+            SA = gsw.SA_from_SP(slp, plp, lon, lat)
             rho = gsw.pot_rho_t_exact(SA, tlp, plp, np.mean(plp))
             si = np.argsort(rho)
             tlp = tlp[si]

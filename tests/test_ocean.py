@@ -104,3 +104,23 @@ def test_bathy_section_meridional_segment():
         dims=("lat", "lon"),
     )
     gvpy.ocean.bathy_section(bathy, np.array([0.5, 0.5]), np.array([0.1, 0.9]), res=0.1)
+
+
+def test_nsqfcn_sort_uses_pressure_for_absolute_salinity(monkeypatch):
+    """Regression test: sort=True passed temperature as pressure to SA_from_SP."""
+    p = np.arange(0, 1000.5, 0.5)
+    t = 20 - 16 * p / 1000
+    s = 34 + p / 1000
+    calls = []
+    SA_from_SP = gsw.SA_from_SP
+
+    def spy(SP, pressure, lon, lat):
+        calls.append(np.asarray(pressure))
+        return SA_from_SP(SP, pressure, lon, lat)
+
+    monkeypatch.setattr(gsw, "SA_from_SP", spy)
+    n2, pout = gvpy.ocean.nsqfcn(s, t, p, p0=0, dp=10, lon=-125, lat=45, sort=True)
+    # the sorting call gets the full filtered pressure profile
+    assert any(c.size == p.size and np.allclose(c, p, atol=1) for c in calls)
+    assert not any(c.size == p.size and np.allclose(c, t, atol=1) for c in calls)
+    assert (n2 > 0).all()

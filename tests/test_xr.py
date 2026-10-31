@@ -102,3 +102,38 @@ def test_plot_spectrum_show_gm_without_latitude_raises(spectrum_series):
     """The GM spectrum needs a latitude and says so."""
     with pytest.raises(ValueError, match="latitude"):
         spectrum_series.gv.plot_spectrum(show_gm=True, N=2e-3)
+
+
+def test_tplot_does_not_change_input_units():
+    """Regression test: tplot rewrote the caller's units attribute in place."""
+    da = time_series(60.0)
+    da.attrs["units"] = "m s-1"
+    da.gv.tplot()
+    assert da.attrs["units"] == "m s-1"
+
+
+def test_zplot_grid_false():
+    """Regression test: grid was popped twice, so grid=False still drew a grid."""
+    da = xr.DataArray(np.arange(5.0), coords=dict(depth=np.arange(5.0)))
+    ax = da.gv.zplot(grid=False)
+    assert not any(line.get_visible() for line in ax.get_xgridlines())
+
+
+def test_dataset_accessor_on_gridded_dataset():
+    """Regression test: ds.gv raised for 1-D lat/lon dimension coordinates."""
+    ds = xr.Dataset(
+        dict(z=(("lat", "lon"), np.zeros((3, 4)))),
+        coords=dict(lat=np.arange(3.0), lon=np.arange(4.0)),
+    )
+    ds.gv
+    assert "dist" not in ds.coords
+
+
+def test_dataset_accessor_adds_dist_for_track():
+    time = np.datetime64("2025-01-01") + np.arange(3) * np.timedelta64(1, "h")
+    ds = xr.Dataset(
+        coords=dict(time=time, lon=("time", [0.0, 0.1, 0.2]), lat=("time", [0.0] * 3))
+    )
+    ds.gv
+    assert ds.dist.dims == ("time",)
+    assert ds.dist[0] == 0 and ds.dist[-1] > 0

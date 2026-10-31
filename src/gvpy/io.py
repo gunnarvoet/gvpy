@@ -184,7 +184,7 @@ def read_sadcp(ncfile):
     sadcp = xr.open_dataset(ncfile)
 
     mdepth = sadcp.depth.median(dim="time")
-    sadcp = sadcp.drop("depth")
+    sadcp = sadcp.drop_vars("depth")
     # sadcp['depth'] = (['depth_cell'], mdepth)
     sadcp = sadcp.rename_dims({"depth_cell": "depth"})
     sadcp.coords["depth"] = (["depth"], mdepth.data)
@@ -216,6 +216,8 @@ def mat2dataset(m1):
     xr.Dataset
         Dataset with named variables
     """
+    # work on a copy so that renaming keys does not alter the input dict
+    m1 = dict(m1)
     if "DateNum" in m1.keys() and "datenum" not in m1.keys():
         m1["datenum"] = m1.pop("DateNum")
     if "mtime" in m1.keys() and "datenum" not in m1.keys():
@@ -310,7 +312,7 @@ def mat2dataset(m1):
         out = out.swap_dims({"x": "time"})
 
     # drop dummy
-    out = out.drop(["dummy"])
+    out = out.drop_vars(["dummy"])
 
     # remove entries without time stamp
     if "time" in out.coords:
@@ -501,6 +503,8 @@ class ANTS(object):
 
         test = []
         for c in content:
+            if not c:
+                continue
             if c[0] == "#":
                 if p_error.match(c):
                     print("error")
@@ -534,7 +538,7 @@ class ANTS(object):
         ds : xarray.Dataset
             xarray data structure
         """
-        return self._to_xarray(self)
+        return self._to_xarray()
 
     def _to_xarray(self):
         """

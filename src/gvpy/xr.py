@@ -108,12 +108,14 @@ class GunnarsAccessor:
                     cmap = cmapi
             return cmap
 
-        def change_cf_labels():
-            if "units" in self._obj.attrs:
-                if self._obj.attrs["units"] == "m s-1":
-                    self._obj.attrs["units"] = r"m$\,$s$^{-1}$"
+        def change_cf_labels(da):
+            # change units on a shallow copy to leave the input attrs untouched
+            if da.attrs.get("units") == "m s-1":
+                da = da.copy(deep=False)
+                da.attrs["units"] = r"m$\,$s$^{-1}$"
+            return da
 
-        change_cf_labels()
+        da = change_cf_labels(self._obj)
 
         # set x-axis coordinate if not provided
         if "x" not in kwargs:
@@ -142,7 +144,7 @@ class GunnarsAccessor:
             )
         if "hue" in kwargs and "add_legend" not in kwargs:
             kwargs["add_legend"] = False
-        self._obj.plot(**kwargs)
+        da.plot(**kwargs)
         ax.set(title="")
         if kwargs["x"] == "time":
             gv.plot.concise_date(ax, minticks=4)
@@ -178,7 +180,6 @@ class GunnarsAccessor:
         grid = kwargs.pop("grid", True)
         if "ax" not in kwargs:
             fgs = kwargs.pop("fgs", (3.5, 4))
-            grid = kwargs.pop("grid", True)
             fig, ax = gv.plot.quickfig(fgs=fgs, grid=grid)
         else:
             ax = kwargs["ax"]
@@ -274,7 +275,7 @@ class GunnarsAccessor:
             elif "long_name" in da.attrs:
                 cbar_label = da.attrs["long_name"]
             else:
-                cbar_label = da.name
+                cbar_label = da.name if da.name is not None else ""
             if "units" in da.attrs:
                 cbar_label = cbar_label + f" [{da.attrs['units']}]"
 
@@ -468,7 +469,7 @@ class GunnarsDatasetAccessor:
         """This class collects a bunch of methods under `.gv`"""
         self._obj = xarray_obj
         # self.to_netcdf.__doc__ = _to_netcdf.__doc__
-        if "lat" in self._obj:
+        if _is_track(self._obj):
             self.add_dist = _cdist(self._obj)
 
     def to_netcdf(self, path, overwrite=True, confirm_overwrite=True):
@@ -578,6 +579,11 @@ def _to_netcdf(ds, path, overwrite=True, confirm_overwrite=True):
     ds.to_netcdf(path, **opts)
 
     return path
+
+
+def _is_track(ds):
+    """True if `ds` holds a ship track: 1-D lon and lat along time."""
+    return all(v in ds.variables and ds[v].dims == ("time",) for v in ["lon", "lat"])
 
 
 def _cdist(ds, verbose=True):

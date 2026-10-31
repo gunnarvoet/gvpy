@@ -41,11 +41,11 @@ def load_proc_mat(file, subvar=None):
     mp = mp.rename_vars(z="depth")
     mp = mp.dropna(dim="depth", how="all")
     mp.coords["profile"] = mp.id
-    mp = mp.drop("id")
+    mp = mp.drop_vars("id")
     mp = add_hab(mp)
     lon = np.round(mp.lon.median().data, decimals=4)
     lat = np.round(mp.lat.median().data, decimals=4)
-    mp = mp.drop(["lon", "lat"])
+    mp = mp.drop_vars(["lon", "lat"])
     mp.attrs["lon"] = lon
     mp.attrs["lat"] = lat
 
@@ -57,7 +57,7 @@ def load_proc_mat(file, subvar=None):
             ]
         )
         mp.coords["time2"] = (("depth", "time"), time2d.transpose())
-        mp = mp.drop("time2d")
+        mp = mp.drop_vars("time2d")
 
     atts = dict(
         depth=dict(long_name="depth", units="m"),
@@ -206,7 +206,7 @@ def separate_raw(mpraw):
     ctd = mpraw[ctdvars]
     engvars = ["epres", "ecurr", "evolt", "edpdt", "esnum", "engtime", "etime"]
     eng = mpraw[engvars]
-    acm = mpraw.drop(ctdvars).drop(engvars)
+    acm = mpraw.drop_vars(ctdvars).drop_vars(engvars)
     return ctd, acm, eng
 
 

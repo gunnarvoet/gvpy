@@ -335,11 +335,9 @@ def convert_units(t, unit="s"):
         elif t_type == np.timedelta64:
             tfun = np.timedelta64
     elif data_type == np.ndarray:
-        if t.dtype == "<M8[ns]":
+        if np.issubdtype(t.dtype, np.datetime64):
             tfun = np.datetime64
-        elif t.dtype == "<M8[ms]":
-            tfun = np.datetime64
-        elif t.dtype == "<m8[ns]":
+        elif np.issubdtype(t.dtype, np.timedelta64):
             tfun = np.timedelta64
     else:
         t0 = t
@@ -360,7 +358,7 @@ def convert_units(t, unit="s"):
 
     if xa:
         time = out.copy()
-        new_coords = torig.drop("time").coords
+        new_coords = torig.drop_vars("time").coords
         out = xr.DataArray(time, coords=new_coords)
         out.coords["time"] = time
 

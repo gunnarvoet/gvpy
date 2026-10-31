@@ -70,8 +70,9 @@ Src-layout package in `src/gvpy/`, one flat module per topic, built with `uv_bui
 ## Branches, releases, docs
 
 - Work lands on `dev`. `dev` is occasionally merged into `main` and tagged `vYYYY.MM`.
-- The version is `YYYY.MM`, bumped by hand in `pyproject.toml`. `__version__` reads it from the
-  installed package metadata.
+- The version is `YYYY.MM`, bumped by hand in `pyproject.toml`. A further release in the same month
+  adds `.1`, `.2`, and so on (`2026.10.1`). `__version__` reads it from the installed package
+  metadata.
 - A push to `main` triggers `.github/workflows/docs.yml`, which installs from `uv.lock`
   (`uv sync --locked`), runs `make ghdocs`, and deploys to GitHub Pages. A dependency change
   without an updated `uv.lock` fails that build.

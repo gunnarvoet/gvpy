@@ -51,6 +51,41 @@ def test_png_forces_png_extension(tmp_path, fname):
     assert files[0].suffix == ".png"
 
 
+@pytest.mark.parametrize(
+    "save, ext", [(gv.plot.png, "png"), (gv.plot.pdf, "pdf")], ids=["png", "pdf"]
+)
+def test_figure_names_with_dots_stay_distinct(tmp_path, save, ext):
+    """Dots in a name are kept, so a second figure does not overwrite the first."""
+    fig, ax = gv.plot.quickfig()
+    save("a_0.5m", figdir=tmp_path, verbose=False)
+    save("a_0.7m", figdir=tmp_path, verbose=False)
+    names = sorted(f.name for f in tmp_path.iterdir())
+    assert names == [f"a_0.5m.{ext}", f"a_0.7m.{ext}"]
+
+
+@pytest.mark.parametrize(
+    "save, ext", [(gv.plot.png, "png"), (gv.plot.pdf, "pdf")], ids=["png", "pdf"]
+)
+def test_figure_name_keeps_relative_subdirectory(tmp_path, save, ext):
+    fig, ax = gv.plot.quickfig()
+    save("sub/nested", figdir=tmp_path, verbose=False)
+    assert (tmp_path / "sub" / f"nested.{ext}").exists()
+
+
+@pytest.mark.parametrize("fname", ["x.png", "x.pdf", "x.PNG"])
+def test_png_replaces_figure_extension(tmp_path, fname):
+    fig, ax = gv.plot.quickfig()
+    gv.plot.png(fname, figdir=tmp_path, verbose=False)
+    assert [f.name for f in tmp_path.iterdir()] == ["x.png"]
+
+
+def test_png_absolute_path_overrides_figdir(tmp_path):
+    fig, ax = gv.plot.quickfig()
+    gv.plot.png(tmp_path / "out" / "x.png", figdir="unused", verbose=False)
+    assert (tmp_path / "out" / "x.png").exists()
+    assert not (tmp_path / "unused").exists()
+
+
 def test_subplotlabel_returns_annotations():
     fig, ax = gv.plot.quickfig(r=2, c=2)
     out = gv.plot.subplotlabel(ax)

@@ -770,26 +770,21 @@ def _figure_name(fname, figdir, extension, verbose=True):
     name : str
         File name.
     """
-    # get current working directory
-    cwd = Path.cwd()
-    # see if we have a path instance with an absolute path. then we make this
-    # the figure directory and file name.
-    if isinstance(fname, Path):
-        if fname.is_absolute():
-            savedir = fname.parent
-        else:
-            savedir = cwd.joinpath(figdir)
-        name = fname.stem
-    # otherwise deal with str
-    elif isinstance(fname, str):
-        tmpname = Path(fname)
-        if tmpname.is_absolute():
-            savedir = tmpname.parent
-        else:
-            savedir = cwd.joinpath(figdir)
+    if not isinstance(fname, (str, Path)):
+        raise TypeError("Input must be str or Path instance")
+    tmpname = Path(fname)
+    # An absolute path sets the figure directory. A relative one, including any
+    # subdirectory in it, goes below figdir.
+    if tmpname.is_absolute():
+        savedir = tmpname.parent
+    else:
+        savedir = Path.cwd().joinpath(figdir, tmpname.parent)
+    # Only a figure extension is replaced. Any other dot is part of the name, so
+    # that "a_0.5m" and "a_0.7m" do not end up in the same file.
+    if tmpname.suffix.lower() in [".png", ".pdf"]:
         name = tmpname.stem
     else:
-        raise TypeError("Input must be str or Path instance")
+        name = tmpname.name
 
     # see if we already have a figure directory
     if savedir.exists() and savedir.is_dir():
@@ -798,7 +793,7 @@ def _figure_name(fname, figdir, extension, verbose=True):
     else:
         if verbose:
             print("creating figure directory at {}/".format(savedir))
-        savedir.mkdir()
+        savedir.mkdir(parents=True)
 
     if extension[0] == ".":
         extension = extension[1:]

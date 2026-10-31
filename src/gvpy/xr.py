@@ -311,6 +311,10 @@ class GunnarsAccessor:
     ):
         """Plot power spectral density with respect to cpd.
 
+        Spectral densities are converted from per rad/s (as returned by
+        `gvpy.signal.psd` and `gvpy.gm81.calc_E_omg`) to per cpd, so that the
+        area under the curve on the cpd axis is the variance.
+
         Parameters
         ----------
         ax : optional
@@ -353,6 +357,9 @@ class GunnarsAccessor:
 
         # calculate spectral density
         g = self._obj.data
+        # psd and GM81 return density per rad/s, convert to per cpd
+        rad_per_s_to_cpd = 3600 * 24 / (2 * np.pi)
+        cpd_density = 1 / rad_per_s_to_cpd
         Pcw, Pccw, Ptot, omega = gv.signal.psd(
             g, sp, ffttype="t", window="hann", tser_window=g.size / nwind
         )
@@ -375,8 +382,8 @@ class GunnarsAccessor:
             for freq in freqs:
                 ax.vlines(
                     freq,
-                    1e-6,
-                    1e4,
+                    1e-6 * cpd_density,
+                    1e4 * cpd_density,
                     color="k",
                     alpha=0.7,
                     linestyle="--",
@@ -385,7 +392,11 @@ class GunnarsAccessor:
 
         # Spectrum
         ax.plot(
-            omega * (3600 * 24) / (2 * np.pi), Ptot, linewidth=1, color=color, **kwargs
+            omega * rad_per_s_to_cpd,
+            Ptot * cpd_density,
+            linewidth=1,
+            color=color,
+            **kwargs,
         )
 
         # GM
@@ -396,14 +407,24 @@ class GunnarsAccessor:
             N = 2e-3
         if newax and show_gm:
             E = gv.gm81.calc_E_omg(N=N, lat=lat)
-            ax.plot(E.omega * 3600 * 24 / (2 * np.pi), E.KE, label="KE", color="C3")
+            ax.plot(
+                E.omega * rad_per_s_to_cpd,
+                E.KE * cpd_density,
+                label="KE",
+                color="C3",
+            )
             # show -2 slope
-            ax.plot([5e-2, 5e-1], [1e2, 1e0], color="C6")
+            ax.plot([5e-2, 5e-1], np.array([1e2, 1e0]) * cpd_density, color="C6")
             # show -1 slope
-            ax.plot([5e-2, 5e-1], [1e2, 1e1], color="C6")
+            ax.plot([5e-2, 5e-1], np.array([1e2, 1e1]) * cpd_density, color="C6")
 
         if newax:
-            ax.set(xscale="log", yscale="log", xlim=(2.1e-2, 2e2), ylim=(1e-3, 1e5))
+            ax.set(
+                xscale="log",
+                yscale="log",
+                xlim=(2.1e-2, 2e2),
+                ylim=(1e-3 * cpd_density, 1e5 * cpd_density),
+            )
             ax = gv.plot.axstyle(ax, ticks="in", grid=True, spine_offset=10)
             gv.plot.gridstyle(ax, which="both")
             gv.plot.tickstyle(ax, which="both", direction="in")

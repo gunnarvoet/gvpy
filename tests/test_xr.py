@@ -137,3 +137,35 @@ def test_dataset_accessor_adds_dist_for_track():
     ds.gv
     assert ds.dist.dims == ("time",)
     assert ds.dist[0] == 0 and ds.dist[-1] > 0
+
+
+def test_plot_spectrum_is_density_per_cpd():
+    """The area under the plotted spectrum on the cpd axis equals the variance.
+
+    Regression test: the spectrum was plotted per rad/s while labelled per cpd,
+    about 86400 / 2 pi times too large.
+    """
+    rng = np.random.default_rng(0)
+    time = np.datetime64("2025-01-01") + np.arange(4096) * np.timedelta64(1, "h")
+    da = xr.DataArray(rng.normal(size=time.size), coords=dict(time=time))
+    ax = da.gv.plot_spectrum(nwind=1, show_gm=False)
+    line = ax.get_lines()[-1]
+    f_cpd, S = line.get_xdata(), line.get_ydata()
+    assert f_cpd[-1] == pytest.approx(12.0)  # Nyquist for hourly data
+    np.testing.assert_allclose(np.sum(S) * (f_cpd[1] - f_cpd[0]), da.var(), rtol=0.05)
+
+
+def test_plot_spectrum_gm_is_density_per_cpd():
+    """The GM81 curve is converted to per cpd the same way."""
+    time = np.datetime64("2025-01-01") + np.arange(1024) * np.timedelta64(1, "h")
+    da = xr.DataArray(
+        np.random.default_rng(1).normal(size=time.size), coords=dict(time=time)
+    )
+    ax = da.gv.plot_spectrum(lat=30.0, N=2e-3)
+    gm = next(line for line in ax.get_lines() if line.get_label() == "KE")
+    E = gv.gm81.calc_E_omg(N=2e-3, lat=30.0)
+    np.testing.assert_allclose(
+        np.trapezoid(gm.get_ydata(), gm.get_xdata()),
+        np.trapezoid(E.KE, E.omega),
+        rtol=1e-6,
+    )

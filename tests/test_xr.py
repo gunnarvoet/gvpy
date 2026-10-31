@@ -169,3 +169,44 @@ def test_plot_spectrum_gm_is_density_per_cpd():
         np.trapezoid(E.KE, E.omega),
         rtol=1e-6,
     )
+
+
+def hourly_noise(scale, seed=0):
+    time = np.datetime64("2025-01-01") + np.arange(1024) * np.timedelta64(1, "h")
+    rng = np.random.default_rng(seed)
+    return xr.DataArray(scale * rng.normal(size=time.size), coords=dict(time=time))
+
+
+@pytest.mark.parametrize("scale", [1e-4, 1.0, 1e3])
+def test_plot_spectrum_ylim_follows_data(scale):
+    """The y-limits frame the spectrum for any variance."""
+    ax = hourly_noise(scale).gv.plot_spectrum(show_gm=False)
+    S = ax.get_lines()[-1].get_ydata()
+    ymin, ymax = ax.get_ylim()
+    assert ymin <= S.min() and S.max() <= ymax
+    # no more than one decade of empty space on either side
+    assert S.min() / ymin < 10 and ymax / S.max() < 10
+
+
+def test_plot_spectrum_ylim_grows_with_overlay():
+    ax = hourly_noise(1.0).gv.plot_spectrum(show_gm=False)
+    ax = hourly_noise(1e3, seed=1).gv.plot_spectrum(ax=ax, show_gm=False)
+    assert ax.get_lines()[-1].get_ydata().max() <= ax.get_ylim()[1]
+
+
+def test_plot_spectrum_overlay_keeps_ylim_set_by_caller():
+    ax = hourly_noise(1.0).gv.plot_spectrum(show_gm=False)
+    ax.set(ylim=(1e-6, 1e-1))
+    ax = hourly_noise(1e3, seed=1).gv.plot_spectrum(ax=ax, show_gm=False)
+    assert ax.get_ylim() == pytest.approx((1e-6, 1e-1))
+
+
+def test_plot_spectrum_slope_guides_follow_spectrum():
+    """The guides sit at the spectrum level, so they scale with the data."""
+    ylims = []
+    for scale in [1.0, 1e3]:
+        ax = hourly_noise(scale).gv.plot_spectrum(lat=30.0, N=2e-3)
+        guides = [line for line in ax.get_lines() if line.get_color() == "C6"]
+        assert len(guides) == 2
+        ylims.append(guides[0].get_ydata()[0])
+    assert ylims[1] / ylims[0] == pytest.approx(1e6)

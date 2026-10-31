@@ -315,6 +315,9 @@ class GunnarsAccessor:
         `gvpy.signal.psd` and `gvpy.gm81.calc_E_omg`) to per cpd, so that the
         area under the curve on the cpd axis is the variance.
 
+        The y-limits follow the plotted data and grow when another spectrum is
+        added with `ax`. Limits set by the caller are left alone.
+
         Parameters
         ----------
         ax : optional
@@ -380,20 +383,21 @@ class GunnarsAccessor:
         freqs = np.array(freqs)
         if newax:
             for freq in freqs:
-                ax.vlines(
+                ax.axvline(
                     freq,
-                    1e-6 * cpd_density,
-                    1e4 * cpd_density,
                     color="k",
                     alpha=0.7,
                     linestyle="--",
                     linewidth=0.5,
                 )
 
-        # Spectrum
+        # Spectrum. The zero frequency bin cannot be shown on a log axis. It would
+        # still count towards the y-limits, and it is close to zero after detrending.
+        f_spec = omega[1:] * rad_per_s_to_cpd
+        S_spec = Ptot[1:] * cpd_density
         ax.plot(
-            omega * rad_per_s_to_cpd,
-            Ptot * cpd_density,
+            f_spec,
+            S_spec,
             linewidth=1,
             color=color,
             **kwargs,
@@ -413,18 +417,15 @@ class GunnarsAccessor:
                 label="KE",
                 color="C3",
             )
+            # slope guides start above the spectrum at their low-frequency end
+            S0 = 3 * np.interp(5e-2, f_spec, S_spec)
             # show -2 slope
-            ax.plot([5e-2, 5e-1], np.array([1e2, 1e0]) * cpd_density, color="C6")
+            ax.plot([5e-2, 5e-1], S0 * np.array([1, 1e-2]), color="C6")
             # show -1 slope
-            ax.plot([5e-2, 5e-1], np.array([1e2, 1e1]) * cpd_density, color="C6")
+            ax.plot([5e-2, 5e-1], S0 * np.array([1, 1e-1]), color="C6")
 
         if newax:
-            ax.set(
-                xscale="log",
-                yscale="log",
-                xlim=(2.1e-2, 2e2),
-                ylim=(1e-3 * cpd_density, 1e5 * cpd_density),
-            )
+            ax.set(xscale="log", yscale="log", xlim=(2.1e-2, 2e2))
             ax = gv.plot.axstyle(ax, ticks="in", grid=True, spine_offset=10)
             gv.plot.gridstyle(ax, which="both")
             gv.plot.tickstyle(ax, which="both", direction="in")

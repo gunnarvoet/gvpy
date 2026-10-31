@@ -176,15 +176,15 @@ def psd(
     omega: array-like
         Vector of wavenumbers. For plotting use frequency f = omega/(2*pi).
     """
-    M0 = g.shape
+    columnwise = axis == 0 and np.ndim(g) > 1
     g = np.atleast_2d(g)
-    if detrend:
-        g = sp.signal.detrend(g)
 
     # FFT and welch act on rows by default. If we want to calculate column-wise,
     # simply transpose the input matrix.
-    if axis == 0 & len(M0) > 1:
+    if columnwise:
         g = np.transpose(g)
+    if detrend:
+        g = sp.signal.detrend(g, axis=-1)
     M = g.shape
 
     # If sin or cos transform needed, appropriately extend time series
@@ -223,7 +223,7 @@ def psd(
     if ffttype in ["p", "c", "s"]:
         P0 = sp.fftpack.fft(g, axis=-1)
         # Normalize by wavenumber in RADIANS
-        Pxx = P0 * np.conj(P0) / M[1] / (M[1] * domega)
+        Pxx = (P0 * np.conj(P0)).real / M[1] / (M[1] * domega)
 
     if ffttype == "t":
         if tser_window is None:
@@ -253,6 +253,10 @@ def psd(
         # !!! the above code shifting the frequency vector did not work! below
         # is what amy suggests works.
         f0 = np.fft.fftshift(f0) + np.abs(f0).max()
+        # The spectrum is periodic in frequency. Repeat the zero frequency
+        # value at fs so that interpolation covers the full range of f_full.
+        f0 = np.append(f0, 1 / dx)
+        Pxx0 = np.concatenate((Pxx0, Pxx0[..., :1]), axis=-1)
 
         Pxx0 = sp.interpolate.interp1d(f0, Pxx0, bounds_error=False, axis=-1)(f_full)
         Pxx = Pxx0.copy()
@@ -264,7 +268,7 @@ def psd(
             (
                 np.reshape(0.5 * Pxx[:, 0], (-1, 1)),
                 Pxx[:, 1 : int((M[1]) / 2)],
-                np.reshape(0.5 * Pxx[:, int(M[1] / 2) + 1], (-1, 1)),
+                np.reshape(0.5 * Pxx[:, int(M[1] / 2)], (-1, 1)),
             ),
             axis=1,
         )
@@ -272,7 +276,7 @@ def psd(
             (
                 np.reshape(0.5 * Pxx[:, 0], (-1, 1)),
                 np.flip(Pxx[:, int(M[1] / 2 + 1) : M[1]], axis=1),
-                np.reshape(0.5 * Pxx[:, int(M[1] / 2) + 2], (-1, 1)),
+                np.reshape(0.5 * Pxx[:, int(M[1] / 2)], (-1, 1)),
             ),
             axis=1,
         )
@@ -300,7 +304,7 @@ def psd(
     Pccw = np.squeeze(Pccw)
 
     # transpose back if axis=0
-    if axis == 0 & len(M0) > 1:
+    if columnwise:
         Ptot = Ptot.transpose()
         Pcw = Pcw.transpose()
         Pccw = Pccw.transpose()
